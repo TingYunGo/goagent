@@ -1,0 +1,114 @@
+syntax = "proto3";
+
+package protoc;
+
+message ActionTraces {
+  repeated ActionTrace traces = 1;
+}
+
+message ActionTrace{
+  int64 time = 1;
+  string tid = 2;
+  string rid = 3;
+  string refid = 4;
+  int64 duration = 5;
+  string tmd5 = 6;
+  string action = 7;
+  string cross = 9;
+  bool unableBack = 10;
+  UserInfo user = 12;
+  TraceDetail detail = 13;
+  string ip = 14;
+  HttpMethod method = 15;
+  int32 status = 16;
+  string url = 17;
+  bool noSample = 18; // false 采样 true 非采样
+}
+
+message UserInfo{
+    UserInfoOriginType origin = 1;
+    string value = 2;
+    string error = 3;
+}
+
+message TraceDetail{
+    // query string
+  string queryStringParameters = 1;
+  map<string, string> custom = 2;
+  repeated TracerItem tracers = 3;
+  map<string, string> health = 4;
+  // For custom point cuts
+  map<string, string> posts = 5;
+  map<string, string> requestHeader = 6;
+  map<string, string> responseHeader = 7;
+  map<string, string> session = 8;
+}
+
+message TracerItem{
+  int32 tracerId = 1;
+  int32 parentTracerId = 2;
+  int64 start = 3;
+  int64 end = 4;
+  string metric = 5;
+  string clazz = 6;
+  string method = 7;
+  TracerType type = 8;
+  TracerParams params = 9;
+  map<string, string> datas = 10;
+  repeated string backtrace = 11;
+  repeated TracerException exception = 12;
+}
+
+enum TracerType {
+    Java = 0;
+	Database = 1;
+	Redis = 2;
+	Memcached = 3;
+	Mongo = 4;
+	External= 5;
+	MQP = 6;
+	MQC = 7;
+}
+
+enum HttpMethod {
+    UNKNOWN = 0;
+    GET = 1;
+    POST = 2;
+    PUT = 3;
+    DELETE = 4;
+    HEAD = 5;
+    CONNECT = 6;
+    OPTIONS = 7;
+    TRACE = 8;
+    PATCH = 9;
+}
+
+message TracerParams{
+  string vendor = 1;
+  string protocol = 2;
+  string instance = 3;
+  string operation = 4;
+  string key = 5;
+  int32 bytes = 6;
+  string externalId = 7;
+  string txData = 8;
+  bool asyncWait = 9;
+  string asyncContext = 10;
+  int32 handleRows = 11;
+}
+
+message TracerException{
+  string name = 1;
+  string msg = 2;
+  repeated string stack = 3;
+  bool error = 4;
+}
+
+enum UserInfoOriginType {
+    SELF = 0;
+    SERVER = 1;
+    APP = 2;
+    BROWSER = 3;
+    NETWORK =4;
+}
+
