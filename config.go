@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/TingYunGo/goagent/utils/cache_config"
-	log "github.com/TingYunGo/goagent/utils/logger"
-	"github.com/TingYunGo/goagent/utils/service"
+	"git.codemonky.net/TingYunGo/goagent/utils/cache_config"
+	log "git.codemonky.net/TingYunGo/goagent/utils/logger"
+	"git.codemonky.net/TingYunGo/goagent/utils/service"
 )
 
 const (

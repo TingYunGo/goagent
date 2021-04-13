@@ -21,9 +21,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TingYunGo/goagent/libs/pool"
-	"github.com/TingYunGo/goagent/utils/cache_config"
-	"github.com/TingYunGo/goagent/utils/service"
+	"git.codemonky.net/TingYunGo/goagent/libs/pool"
+	"git.codemonky.net/TingYunGo/goagent/utils/cache_config"
+	"git.codemonky.net/TingYunGo/goagent/utils/service"
 )
 
 type Logger struct {

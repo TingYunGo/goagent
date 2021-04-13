@@ -1,4 +1,4 @@
-// Copyright 2016-2019 冯立强 fenglq@tingyun.com.  All rights reserved.
+// Copyright 2016-2021 冯立强 fenglq@tingyun.com.  All rights reserved.
 
 //Package pool 无锁消息池，多读多写, 用于goroutine 间收发消息
 package pool

@@ -1,3 +1,4 @@
+// Copyright 2021 冯立强 fenglq@tingyun.com.  All rights reserved.
 // +build linux
 // +build amd64
 
@@ -12,8 +13,8 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/TingYunGo/goagent"
-	"github.com/TingYunGo/goagent/libs/tystring"
+	"git.codemonky.net/TingYunGo/goagent"
+	"git.codemonky.net/TingYunGo/goagent/libs/tystring"
 )
 
 type dbinstanceSet struct {
@@ -93,9 +94,6 @@ func DBOpen(driverName, dataSourceName string) (*sql.DB, error) {
 
 //go:noinline
 func WrapDBOpen(driverName, dataSourceName string) (*sql.DB, error) {
-	// action := tingyun3.GetAction()
-	// fmt.Println("action:", action.GetName())
-	// fmt.Println("sql.Open(", driverName, ", ", dataSourceName, ")")
 	db, err := DBOpen(driverName, dataSourceName)
 	if db != nil {
 		info := databaseInfo{}
@@ -135,12 +133,9 @@ func coreWrapPrepareContext(begin time.Time, db *sql.DB, query string, stmt *sql
 		}
 	}
 	callerName := getCallName(3)
-	// fmt.Println("DSN:", info.dsn, " , host:", info.host, ", dbname: ", info.dbname)
 	component := action.CreateSQLComponent(getTingyunDBType(info.vender), info.host, info.dbname, query, callerName)
 	component.FixBegin(begin)
-	//PrepareContext失败,
 	if stmt == nil || e != nil {
-		// fmt.Println("prepare error: ", e)
 		component.SetError(e, callerName, 3)
 		component.End(1)
 		return
@@ -154,9 +149,6 @@ func coreWrapPrepareContext(begin time.Time, db *sql.DB, query string, stmt *sql
 		tingyun3.LocalDelete(1)
 	})
 	dbctx.stmts[stmt] = component
-
-	// fmt.Println(callerName, "create db component ", info.vender, ":", info.dsn, ":", query)
-	// fmt.Println("Host:", host, ",db:", dbname)
 }
 func coreWrapExecContext(begin time.Time, db *sql.DB, query string, r sql.Result, e error) {
 	action := tingyun3.GetAction()
@@ -176,9 +168,6 @@ func coreWrapExecContext(begin time.Time, db *sql.DB, query string, r sql.Result
 		return
 	}
 	component.End(1)
-
-	// fmt.Println(callerName, "create db component ", info.vender, ":", info.dsn, ":", query)
-	// fmt.Println("Host:", host, ",db:", dbname)
 }
 func coreWrapQueryContext(begin time.Time, db *sql.DB, query string, r *sql.Rows, e error) {
 	action := tingyun3.GetAction()
@@ -200,7 +189,6 @@ func coreWrapQueryContext(begin time.Time, db *sql.DB, query string, r *sql.Rows
 	callerName := getCallName(3)
 	component := action.CreateSQLComponent(getTingyunDBType(info.vender), info.host, info.dbname, query, callerName)
 	component.FixBegin(begin)
-	//QueryContext失败,
 	if r == nil && e != nil {
 		component.SetError(e, callerName, 3)
 		component.End(1)
@@ -211,9 +199,6 @@ func coreWrapQueryContext(begin time.Time, db *sql.DB, query string, r *sql.Rows
 		tingyun3.LocalSet(1, dbctx)
 	}
 	dbctx.records[r] = component
-
-	// fmt.Println(callerName, "create db component ", info.vender, ":", info.dsn, ":", query)
-	// fmt.Println("Host:", host, ",db:", dbname)
 }
 
 //go:noinline
@@ -225,7 +210,6 @@ func DBPrepareContext(db *sql.DB, ctx context.Context, query string) (*sql.Stmt,
 //go:noinline
 func WrapDBPrepareContext(db *sql.DB, ctx context.Context, query string) (*sql.Stmt, error) {
 	begin := time.Now()
-	// fmt.Println("On DB prepare: ", query)
 	stmt, e := DBPrepareContext(db, ctx, query)
 	coreWrapPrepareContext(begin, db, query, stmt, e)
 	return stmt, e
@@ -383,7 +367,6 @@ func StmtQueryContext(s *sql.Stmt, ctx context.Context, args ...interface{}) (*s
 //go:noinline
 func WrapStmtQueryContext(s *sql.Stmt, ctx context.Context, args ...interface{}) (*sql.Rows, error) {
 	r, e := StmtQueryContext(s, ctx, args...)
-	// fmt.Println("Stmt QueryContext")
 	if c := tingyun3.LocalGet(1); c != nil {
 		dbctx := c.(*databaseContext)
 		component, found := dbctx.stmts[s]
@@ -415,13 +398,11 @@ func StmtClose(s *sql.Stmt) error {
 func WrapStmtClose(s *sql.Stmt) error {
 	err := StmtClose(s)
 
-	// fmt.Println("Stmt Close")
 	if c := tingyun3.LocalGet(1); c != nil {
 		dbctx := c.(*databaseContext)
 		if c, found := dbctx.stmts[s]; found {
 			c.End(1)
 			delete(dbctx.stmts, s)
-			// fmt.Println("Component finished")
 		}
 		if dbctx.empty() {
 			dbctx.clear()
@@ -441,12 +422,10 @@ func StmtExecContext(s *sql.Stmt, ctx context.Context, args ...interface{}) (sql
 func WrapStmtExecContext(s *sql.Stmt, ctx context.Context, args ...interface{}) (sql.Result, error) {
 	r, e := StmtExecContext(s, ctx, args...)
 
-	// fmt.Println("Stmt Exec")
 	if c := tingyun3.LocalGet(1); c != nil {
 		dbctx := c.(*databaseContext)
 		if c, found := dbctx.stmts[s]; found {
 			c.End(1)
-			// fmt.Println("Component finished on exec")
 		}
 	}
 	return r, e
@@ -461,13 +440,11 @@ func RowsClose(rs *sql.Rows) error {
 //go:noinline
 func WrapRowsClose(rs *sql.Rows) error {
 	err := RowsClose(rs)
-	// fmt.Println("Rows Close")
 	if c := tingyun3.LocalGet(1); c != nil {
 		dbctx := c.(*databaseContext)
 		if c, found := dbctx.records[rs]; found {
 			c.End(1)
 			delete(dbctx.records, rs)
-			// fmt.Println("Component finished")
 		}
 		if dbctx.empty() {
 			tingyun3.LocalDelete(1)

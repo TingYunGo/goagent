@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TingYunGo/goagent/protoc"
+	"git.codemonky.net/TingYunGo/goagent/protoc"
 	proto "github.com/golang/protobuf/proto"
 )
 

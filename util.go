@@ -4,7 +4,6 @@ package tingyun3
 
 import (
 	"crypto/md5"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"runtime"
@@ -295,12 +294,4 @@ func parseMethod(method string) (string, string) {
 		classRet = classRet + "." + array[i]
 	}
 	return classRet, array[arrayLen-1]
-}
-func jsonDecodeArray(src string) []interface{} {
-	ret := make([]interface{}, 0)
-	err := json.Unmarshal([]byte(src), &ret)
-	if err != nil {
-		return nil
-	}
-	return ret
 }

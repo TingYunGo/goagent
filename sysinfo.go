@@ -44,12 +44,6 @@ func (s *sysInfo) Init() *sysInfo {
 	}
 
 	s.FdSize, s.err = elementCount(fmt.Sprintf("/proc/%d/fd/", os.Getpid()))
-	//	if s.FdSize, s.err = elementCount(fmt.Sprintf("/proc/%d/fd/", os.Getpid())); s.err != nil {
-	//		limit := &syscall.Rlimit{}
-	//		if s.err = syscall.Getrlimit(syscall.RLIMIT_FSIZE, limit); s.err == nil {
-	//			s.FdSize = int(limit.Max)
-	//		}
-	//	}
 	s.Threads, s.err = elementCount(fmt.Sprintf("/proc/%d/task/", os.Getpid()))
 	bytes, err := ioutil.ReadFile(fmt.Sprintf("/proc/%d/stat", os.Getpid()))
 	if err != nil {

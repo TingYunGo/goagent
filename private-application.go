@@ -6,11 +6,11 @@ import (
 	"errors"
 	"time"
 
-	"github.com/TingYunGo/goagent/utils/logger"
+	"git.codemonky.net/TingYunGo/goagent/utils/logger"
 
-	"github.com/TingYunGo/goagent/libs/list"
-	"github.com/TingYunGo/goagent/libs/pool"
-	"github.com/TingYunGo/goagent/utils/service"
+	"git.codemonky.net/TingYunGo/goagent/libs/list"
+	"git.codemonky.net/TingYunGo/goagent/libs/pool"
+	"git.codemonky.net/TingYunGo/goagent/utils/service"
 )
 
 func (a *application) stop() {
@@ -126,9 +126,8 @@ func (a *application) createAction(name string, method string) (*Action, error) 
 }
 
 type application struct {
-	configs configurations "配置选项集合"
-	//	actionPool  pool.SerialReadPool "完成事务消息池"
-	actionPool  pool.Pool "完成事务消息池"
+	configs     configurations "配置选项集合"
+	actionPool  pool.Pool      "完成事务消息池"
 	logger      *log.Logger
 	svc         service.Service
 	server      serviceDC

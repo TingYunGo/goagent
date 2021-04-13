@@ -5,7 +5,7 @@ package tingyun3
 import (
 	"sync"
 
-	odmap "github.com/TingYunGo/goagent/libs/map"
+	odmap "git.codemonky.net/TingYunGo/goagent/libs/map"
 )
 
 // Unit is The GoRoutine LocalStorage Unit

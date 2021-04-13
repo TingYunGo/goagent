@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TingYunGo/goagent/libs/tystring"
+	"git.codemonky.net/TingYunGo/goagent/libs/tystring"
 )
 
 // Component : 构成事务的组件过程
@@ -202,4 +202,28 @@ func (c *Component) CreateComponent(method string) *Component {
 	}
 	c.action.cache.Put(r)
 	return r
+}
+
+func (c *Component) destroy() {
+	if c._type == componentUnused {
+		return
+	}
+	c.name = ""
+	c.method = ""
+	c.txdata = ""
+	c.callStack = nil
+	c.action = nil
+	c._type = componentUnused
+}
+
+//FixBegin : 校正事务开始时间
+func (c *Component) FixBegin(begin time.Time) {
+	c.time.begin = begin
+}
+
+func (c *Component) unicID() string {
+	if c.exID {
+		return unicID(c.time.begin, c)
+	}
+	return ""
 }

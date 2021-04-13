@@ -10,48 +10,7 @@ type structPerformance struct {
 	sumSquare   float64 //平方和
 	accessCount int32   //累加次数
 }
-type structSQLTracePerf struct {
-	Count int32
-	Sum   float64
-	Max   float64
-	Min   float64
-}
 
-func (s *structSQLTracePerf) Reset() {
-	s.Count = 0
-	s.Sum = 0
-	s.Max = 0
-	s.Min = 0
-}
-func (s *structSQLTracePerf) Append(t *structSQLTracePerf) {
-	s.Sum += t.Sum
-	if t.Count > 0 {
-		if s.Count == 0 || t.Max > s.Max {
-			s.Max = t.Max
-		}
-		if s.Count == 0 || t.Min < s.Min {
-			s.Min = t.Min
-		}
-	}
-	s.Count += t.Count
-}
-func (s *structSQLTracePerf) Add(value float64) {
-	if s.Count == 0 {
-		s.Max = value
-		s.Min = value
-	} else {
-		if value > s.Max {
-			s.Max = value
-		} else if value < s.Min {
-			s.Min = value
-		}
-	}
-	s.Count++
-	s.Sum += value
-}
-func newStructSQLTracePerf() *structSQLTracePerf {
-	return &structSQLTracePerf{0, 0, 0, 0}
-}
 func (p *structPerformance) IntSlice() []int64 {
 	r := make([]int64, 6)
 	r[0] = int64(p.accessCount)
@@ -135,26 +94,4 @@ func (p *structPerformance) AddValue(value float64, excl float64) {
 	p.accessCount++
 	p.sumSquare += value * value
 	p.exclusive += excl
-}
-
-//!used
-func (p *structPerformance) AppendValue(value float64, count int32, excl float64) {
-	if count > 0 {
-		avg := value / float64(count)
-		if p.accessCount == 0 {
-			p.valueMax = avg
-			p.valueMin = avg
-		} else {
-			if p.valueMax < avg {
-				p.valueMax = avg
-			}
-			if p.valueMin > avg {
-				p.valueMin = avg
-			}
-		}
-		p.accessCount += count
-		p.sum += value
-		p.sumSquare += avg * value
-		p.exclusive += excl
-	}
 }

@@ -1,3 +1,4 @@
+// Copyright 2021 冯立强 fenglq@tingyun.com.  All rights reserved.
 // +build linux
 // +build amd64
 
@@ -12,7 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/TingYunGo/goagent"
+	"git.codemonky.net/TingYunGo/goagent"
 )
 
 func getHandlerName(handler gin.HandlerFunc) string {
@@ -20,7 +21,6 @@ func getHandlerName(handler gin.HandlerFunc) string {
 	return runtime.FuncForPC(handlerPC).Name()
 }
 func preHandler(relativePath, method string) gin.HandlerFunc {
-	// fmt.Println("Handler: ", relativePath, ":=>", method)
 	return func(c *gin.Context) {
 		action := tingyun3.GetAction()
 		if action == nil {
@@ -87,7 +87,6 @@ func RouterGroupGET(group *gin.RouterGroup, relativePath string, handlers ...gin
 
 //go:noinline
 func WrapRouterGroupGET(group *gin.RouterGroup, relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
-	fmt.Println("Route GET:", relativePath, "method: ", handlers[0])
 	handlers = pushFrontHandler(group, relativePath, handlers)
 	return RouterGroupGET(group, relativePath, handlers...)
 }

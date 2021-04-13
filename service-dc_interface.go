@@ -9,10 +9,12 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strconv"
+	"strings"
 	"sync/atomic"
 	"time"
 
-	postRequest "github.com/TingYunGo/goagent/utils/httprequest"
+	postRequest "git.codemonky.net/TingYunGo/goagent/utils/httprequest"
 )
 
 //登陆中..1.inredirect
@@ -75,18 +77,16 @@ func (s *serviceDC) Login(callback func(error, map[string]interface{})) error {
 	if s.inLogin {
 		return errors.New("Login already Startd")
 	}
-	protocol := "https"
-	if !s.configs.local.CBools.Read(configLocalBoolSSL, true) {
-		protocol = "http"
+	if host := s.configs.local.CStrings.Read(configLocalStringNbsHost, ""); len(host) == 0 {
+		return errors.New("No collector address in configuration file")
 	}
 	appName := s.configs.local.CStrings.Read(configLocalStringNbsAppName, "GO_LANG")
 	license := s.configs.local.CStrings.Read(configLocalStringNbsLicenseKey, "_")
 
-	requrl := fmt.Sprintf("%s/redirect?app=%s&license=%s&request=entry&version=%s", getRedirectHost(s, protocol), url.QueryEscape(appName), license, "3.2.0")
+	requrl := fmt.Sprintf("%s/redirect?app=%s&license=%s&request=entry&version=%s", getRedirectHost(s, s.getConfigProtocol()), url.QueryEscape(appName), license, "3.2.0")
 	params := make(map[string]string)
 	var err error = nil
 	Log().Println(LevelInfo, "Redirect:", requrl)
-	//post数据到redirect服务器
 	s.request, err = postRequest.New(requrl, params, []byte("{}"), time.Second*10, func(data []byte, statusCode int, err error) {
 
 		//完成回调,在另一个routine中触发
@@ -116,9 +116,8 @@ func (s *serviceDC) Login(callback func(error, map[string]interface{})) error {
 			}
 			requrl := fmt.Sprintf("%s://%s/init?app=%s&license=%s&request=login&version=%s", protocol, s.uploadHost, url.QueryEscape(appName), url.QueryEscape(license), "3.2.0")
 			Log().Println(LevelInfo, "Login:", requrl)
-			Log().Println(LevelInfo|Audit, "Login Request Data:", string(b))
-			//post数据到login服务器,上行数据启用deflate压缩
-			s.request, e = postRequest.New(requrl, map[string]string{"Content-Encoding": "deflate"}, b, time.Second*10, func(data []byte, statusCode int, err error) {
+			Log().Println(LevelInfo|Audit, "Login Request: ", string(b))
+			s.request, e = postRequest.New(requrl, map[string]string{ /*"Content-Encoding": "deflate"*/ }, b, time.Second*10, func(data []byte, statusCode int, err error) {
 				use := atomic.AddInt32(&s.locked, 1)
 				defer atomic.AddInt32(&s.locked, -1)
 				if use != 1 {
@@ -146,31 +145,21 @@ func (s *serviceDC) Login(callback func(error, map[string]interface{})) error {
 	}
 	return err
 }
-
-// HEAD::string mktraceurl(const char *request = "trace") {
-//   if ( sessionKey.size() == 0 ) return "";
-//   HEAD::refstring data_version = DATA_VERSION;
-//   HEAD::smart_buffer<char, 256> url(sessionKey.size() + data_version.size() + _dcurl.size() + 128);
-//   int size = sprintf(&url, "http://%.*s/%s?version=%.*s&sessionKey=%.*s",
-//                      (int)_dcurl.size(), _dcurl.c_str(),
-//                      request,
-//                      (int)data_version.size(), data_version.c_str(),
-//                      (int)sessionKey.size(), sessionKey.c_str());
-//   return HEAD::string(&url, size);
-// }
-
+func (s *serviceDC) getConfigProtocol() string {
+	protocol := "https"
+	if !s.configs.local.CBools.Read(configLocalBoolSSL, true) {
+		protocol = "http"
+	}
+	return protocol
+}
 func (s *serviceDC) makeTraceURL(request string) (string, error) {
 	sessionKey := s.configs.server.CStrings.Read(configServerStringAppSessionKey, "")
 	if sessionKey == "" {
 		return "", errors.New("makeTraceUrl: " + request + " server session key not found.")
 	}
-	protocol := "https"
-	if !s.configs.local.CBools.Read(configLocalBoolSSL, true) {
-		protocol = "http"
-	}
 	appName := s.configs.local.CStrings.Read(configLocalStringNbsAppName, "GO_LANG")
 	license := s.configs.local.CStrings.Read(configLocalStringNbsLicenseKey, "_")
-	requrl := fmt.Sprintf("%s://%s/%s?app=%s&license=%s&sessionKey=%s&version=%s", protocol, s.uploadHost, request, url.QueryEscape(appName), url.QueryEscape(license), url.QueryEscape(sessionKey), "3.2.0")
+	requrl := fmt.Sprintf("%s://%s/%s?app=%s&license=%s&sessionKey=%s&version=%s", s.getConfigProtocol(), s.uploadHost, request, url.QueryEscape(appName), url.QueryEscape(license), url.QueryEscape(sessionKey), "3.2.0")
 	return requrl, nil
 }
 
@@ -190,9 +179,7 @@ func (s *serviceDC) Upload(data []byte, callback func(err error, rCode int, http
 	}
 	Log().Println(LevelInfo|Audit, "Upload", len(data), "bytes:", requrl)
 	Log().Println(LevelInfo|Audit, "Upload Request Data:", len(data))
-	//post数据到login服务器,上行数据启用deflate压缩
-	//	return postRequest.New(requrl, map[string]string{"Content-Encoding": "deflate"}, data, time.Second*10, func(data []byte, statusCode int, err error) {
-	return postRequest.New(requrl, map[string]string{}, data, time.Second*10, func(data []byte, statusCode int, err error) {
+	return postRequest.New(requrl, map[string]string{ /*"Content-Encoding": "deflate"*/ }, data, time.Second*10, func(data []byte, statusCode int, err error) {
 		use := atomic.AddInt32(&s.locked, 1)
 		defer atomic.AddInt32(&s.locked, -1)
 		if use != 1 {
@@ -206,8 +193,6 @@ func (s *serviceDC) Upload(data []byte, callback func(err error, rCode int, http
 		}
 		r, er := parseJSON(data, statusCode, err)
 		if er != nil {
-			//发生网络错误（即http发送失败）
-			//DC故障（即可以获取到http响应，但状态码不等于200或返回内容为非法json）
 			Log().Println(LevelError, "Upload Error:", er, r)
 			callback(er, -2, statusCode)
 		} else if status, er := jsonReadString(r, "status"); er == nil && status == "success" {
@@ -219,10 +204,8 @@ func (s *serviceDC) Upload(data []byte, callback func(err error, rCode int, http
 	})
 }
 func (s *serviceDC) Release() {
-	for { //serverObject对象的生命周期与app的生命周期同样长，
-		//这里的等待只有在app停止时的瞬间，post恰好返回时,才可能会发生。所以这里的等待不会成为性能瓶颈
-		use := atomic.AddInt32(&s.locked, 1)
-		if use == 1 {
+	for {
+		if use := atomic.AddInt32(&s.locked, 1); use == 1 {
 			break
 		}
 		atomic.AddInt32(&s.locked, -1)
@@ -233,8 +216,70 @@ func (s *serviceDC) Release() {
 }
 func (s *serviceDC) init(config *configurations) {
 	s.configs = config
-	//fmt.Println("serverObject.init")
 	s.request = nil
 	s.inLogin = false
 	s.locked = 0
+}
+
+func parseJSON(data []byte, statusCode int, err error) (map[string]interface{}, error) {
+
+	if err != nil { //http过程有错误
+		return nil, err
+	}
+	if statusCode != 200 {
+		return nil, fmt.Errorf("server response status %d", statusCode)
+	}
+	jsonData := make(map[string]interface{})
+	if err := json.Unmarshal(data, &jsonData); err != nil {
+		return nil, err
+	}
+	return jsonData, nil
+}
+
+//解析redirect服务器返回值，成功则返回loginhost,失败则返回error
+func parseRedirectResult(jsonData map[string]interface{}) (string, error) {
+	result, resok := jsonData["result"]
+	var resString string = "has no result"
+	if resok {
+		resString = fmt.Sprint(result)
+	}
+	if status, ok := jsonData["status"]; !ok { //验证是否有status
+		return "", errors.New("server result have no status")
+	} else if v, ok := status.(string); !ok { //类型验证
+		return "", errors.New("server result status format error")
+	} else if v != "success" { //值验证
+		firstRun = false
+		return "", errors.New("server result not success: " + resString)
+	}
+	if !resok {
+		return "", errors.New("Redirect server status is success, no result")
+	}
+	return resString, nil
+}
+
+func getRedirectHost(s *serviceDC, protocol string) string {
+	host := s.configs.local.CStrings.Read(configLocalStringNbsHost, "")
+	array := strings.Split(host, "://")
+	if len(array) > 1 {
+		host = array[1]
+	}
+	array = strings.Split(host, "/")
+	if len(array) > 1 {
+		host = array[0]
+	}
+	array = strings.Split(host, ":")
+	if len(array) > 1 {
+		host = array[0]
+	}
+	port := 80
+	if len(array) > 1 {
+		if p, e := strconv.Atoi(array[1]); e == nil {
+			port = p
+		}
+	}
+	if protocol != "http" {
+		port = 443
+	}
+	port = int(s.configs.local.CIntegers.Read(configLocalIntegerNbsPort, int64(port)))
+	return fmt.Sprintf("%s://%s:%d", protocol, host, port)
 }

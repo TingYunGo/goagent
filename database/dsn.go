@@ -1,3 +1,5 @@
+// Copyright 2021 冯立强 fenglq@tingyun.com.  All rights reserved.
+
 package database
 
 import (
@@ -7,7 +9,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/TingYunGo/goagent/libs/tystring"
+	"git.codemonky.net/TingYunGo/goagent/libs/tystring"
 )
 
 type scanner struct {
@@ -152,7 +154,6 @@ func (i *databaseInfo) init(vender, dsn string) {
 		}
 	}
 	i.host, i.dbname = parseDSN(i.vender, i.dsn)
-	// fmt.Println("host:", i.host, ", db:", i.dbname)
 }
 func trimDBName(name string) string {
 	begin := 0

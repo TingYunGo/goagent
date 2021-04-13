@@ -1,6 +1,6 @@
+// Copyright 2021 冯立强 fenglq@tingyun.com.  All rights reserved.
 // +build linux
 // +build amd64
-// Copyright 2021 冯立强 fenglq@tingyun.com.  All rights reserved.
 
 package tingyun3
 
@@ -102,13 +102,9 @@ func (w *writeWrapper) onAnswer(statusCode int) {
 		}
 	}
 	if len(w.action.trackID) > 0 {
-		//写跨应用追踪应答
 		if txData := w.action.GetTxData(); len(txData) > 0 {
 			headers := w.w.Header()
 			headers.Set("X-Tingyun-Data", txData)
-			// fmt.Println("Set txData:", txData)
-		} else {
-			// fmt.Println("Get txData failed\n")
 		}
 	}
 	w.action.SetHTTPStatus(uint16(statusCode), 3)
@@ -150,7 +146,6 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 	h := handler
 	var method_name string
 	class_name := reflect.TypeOf(handler).String()
-	// fmt.Println("handle type: ", class_name)
 	if class_name == "http.HandlerFunc" || class_name == "HandlerFunc" {
 		handler_pc := reflect.ValueOf(handler).Pointer()
 		method_name = runtime.FuncForPC(handler_pc).Name()
@@ -160,7 +155,6 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 		}
 		method_name = class_name + ".ServeHTTP"
 	}
-	// fmt.Println("handle :", pattern, ", =>Method: ", method_name)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		action, _ := CreateAction("ROUTER", method_name)
 		var rule *dataItemRules = nil
@@ -169,7 +163,6 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 			action.SetHTTPMethod(strings.ToUpper(r.Method))
 			if trackId := r.Header.Get("X-Tingyun"); len(trackId) > 0 {
 				action.SetTrackID(trackId)
-				// fmt.Println("Set track id: ", trackId)
 			}
 			rule = app.configs.dataItemRules.Get()
 			for _, item := range rule.requestHeader {
@@ -185,15 +178,13 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 		}
 		defer func() {
 			if exception := recover(); exception != nil {
-				//异常处理
-				// fmt.Println("Exception:", exception)
 				action.setError(exception, "error", 2)
 				action.Finish()
 				routineLocalRemove()
 				if action != nil {
 					resWriter.(*writeWrapper).reset()
 				}
-				//重新抛出异常
+				//re throw
 				panic(exception)
 			} else {
 				action.Finish()
@@ -225,11 +216,6 @@ func WrapServerServe(srv *http.Server, l net.Listener) error {
 	}
 	return ServerServe(srv, l)
 }
-
-//net/http.(*Server).Serve
-//net/http.(*Server).ServeTLS
-//net/http.(*Server).ListenAndServe
-//net/http.(*Server).ListenAndServeTLS
 
 // GetGID is Return the goroutine id
 //go:noinline

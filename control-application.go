@@ -11,9 +11,9 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/TingYunGo/goagent/libs/pool"
+	"git.codemonky.net/TingYunGo/goagent/libs/pool"
 
-	log "github.com/TingYunGo/goagent/utils/logger"
+	log "git.codemonky.net/TingYunGo/goagent/utils/logger"
 )
 
 /*
@@ -289,10 +289,6 @@ func (a *application) upload() {
 			}
 			a.serverCtrl.Pushback(func() {
 				a.serverCtrl.OnReturn()
-				// if err != nil {
-				// 	//上传失败,重新启动login过程
-				// 	a.serverCtrl.loginState = serverLoginFaild
-				// }
 			})
 		})
 		if err != nil {
@@ -304,6 +300,7 @@ func (a *application) upload() {
 
 func (a *application) loop(running func() bool) {
 	lastCount := 1
+	sleepDuration := time.Millisecond
 	for running() {
 		a.serverCtrl.doEvent()
 		//1.action事件处理
@@ -312,11 +309,12 @@ func (a *application) loop(running func() bool) {
 		//3.server通信事件处理
 		a.timerCheck()
 		if handleCount == 0 {
-			if lastCount == 0 {
-				time.Sleep(10 * time.Millisecond)
-			} else {
-				time.Sleep(1 * time.Millisecond)
+			if lastCount == 0 && sleepDuration < 100*time.Millisecond {
+				sleepDuration *= 2
 			}
+			time.Sleep(sleepDuration)
+		} else {
+			sleepDuration = time.Millisecond
 		}
 		lastCount = handleCount
 	}
