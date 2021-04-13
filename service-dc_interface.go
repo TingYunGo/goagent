@@ -114,7 +114,7 @@ func (s *serviceDC) Login(callback func(error, map[string]interface{})) error {
 			if b, e = makeLoginRequest(); e != nil {
 				break
 			}
-			requrl := fmt.Sprintf("%s://%s/init?app=%s&license=%s&request=login&version=%s", protocol, s.uploadHost, url.QueryEscape(appName), url.QueryEscape(license), "3.2.0")
+			requrl := fmt.Sprintf("%s://%s/init?app=%s&license=%s&request=login&version=%s", s.getConfigProtocol(), s.uploadHost, url.QueryEscape(appName), url.QueryEscape(license), "3.2.0")
 			Log().Println(LevelInfo, "Login:", requrl)
 			Log().Println(LevelInfo|Audit, "Login Request: ", string(b))
 			s.request, e = postRequest.New(requrl, map[string]string{ /*"Content-Encoding": "deflate"*/ }, b, time.Second*10, func(data []byte, statusCode int, err error) {
