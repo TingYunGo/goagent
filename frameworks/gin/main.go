@@ -13,7 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"git.codemonky.net/TingYunGo/goagent"
+	"github.com/TingYunGo/goagent"
 )
 
 func getHandlerName(handler gin.HandlerFunc) string {

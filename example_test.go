@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	tingyun3 "git.codemonky.net/TingYunGo/goagent"
+	tingyun3 "github.com/TingYunGo/goagent"
 )
 
 func ExampleCreateAction() {

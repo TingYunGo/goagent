@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"git.codemonky.net/TingYunGo/goagent/utils/zip"
+	"github.com/TingYunGo/goagent/utils/zip"
 )
 
 type Request struct {

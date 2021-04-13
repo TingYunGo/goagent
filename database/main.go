@@ -13,8 +13,8 @@ import (
 	"time"
 	"unsafe"
 
-	"git.codemonky.net/TingYunGo/goagent"
-	"git.codemonky.net/TingYunGo/goagent/libs/tystring"
+	"github.com/TingYunGo/goagent"
+	"github.com/TingYunGo/goagent/libs/tystring"
 )
 
 type dbinstanceSet struct {

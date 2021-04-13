@@ -11,9 +11,9 @@ import (
 	"runtime"
 	"time"
 
-	"git.codemonky.net/TingYunGo/goagent/libs/pool"
+	"github.com/TingYunGo/goagent/libs/pool"
 
-	log "git.codemonky.net/TingYunGo/goagent/utils/logger"
+	log "github.com/TingYunGo/goagent/utils/logger"
 )
 
 /*

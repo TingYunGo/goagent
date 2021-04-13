@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"git.codemonky.net/TingYunGo/goagent/libs/pool"
-	"git.codemonky.net/TingYunGo/goagent/libs/tystring"
+	"github.com/TingYunGo/goagent/libs/pool"
+	"github.com/TingYunGo/goagent/libs/tystring"
 )
 
 /*

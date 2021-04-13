@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"git.codemonky.net/TingYunGo/goagent/libs/tystring"
+	"github.com/TingYunGo/goagent/libs/tystring"
 )
 
 // Component : 构成事务的组件过程

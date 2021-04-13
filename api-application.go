@@ -8,7 +8,7 @@ package tingyun3
 import (
 	"os"
 
-	"git.codemonky.net/TingYunGo/goagent/utils/logger"
+	"github.com/TingYunGo/goagent/utils/logger"
 )
 
 //AppInit : 初始化听云探针

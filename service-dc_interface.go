@@ -14,7 +14,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	postRequest "git.codemonky.net/TingYunGo/goagent/utils/httprequest"
+	postRequest "github.com/TingYunGo/goagent/utils/httprequest"
 )
 
 //登陆中..1.inredirect

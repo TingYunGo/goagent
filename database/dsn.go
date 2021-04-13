@@ -9,7 +9,7 @@ import (
 	"strings"
 	"unicode"
 
-	"git.codemonky.net/TingYunGo/goagent/libs/tystring"
+	"github.com/TingYunGo/goagent/libs/tystring"
 )
 
 type scanner struct {

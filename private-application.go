@@ -6,11 +6,11 @@ import (
 	"errors"
 	"time"
 
-	"git.codemonky.net/TingYunGo/goagent/utils/logger"
+	"github.com/TingYunGo/goagent/utils/logger"
 
-	"git.codemonky.net/TingYunGo/goagent/libs/list"
-	"git.codemonky.net/TingYunGo/goagent/libs/pool"
-	"git.codemonky.net/TingYunGo/goagent/utils/service"
+	"github.com/TingYunGo/goagent/libs/list"
+	"github.com/TingYunGo/goagent/libs/pool"
+	"github.com/TingYunGo/goagent/utils/service"
 )
 
 func (a *application) stop() {

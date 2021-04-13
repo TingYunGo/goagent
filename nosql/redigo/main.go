@@ -12,8 +12,8 @@ import (
 
 	redigo "github.com/gomodule/redigo/redis"
 
-	"git.codemonky.net/TingYunGo/goagent"
-	"git.codemonky.net/TingYunGo/goagent/libs/tystring"
+	"github.com/TingYunGo/goagent"
+	"github.com/TingYunGo/goagent/libs/tystring"
 )
 
 type instanceSet struct {
