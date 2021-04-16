@@ -48,6 +48,7 @@ type Action struct {
 	method         string
 	httpMethod     string
 	trackID        string
+	actionID       string
 	cache          pool.SerialReadPool
 	errors         pool.Pool
 	requestParams  map[string]string
@@ -86,8 +87,6 @@ func (a *Action) CreateExternalComponent(url string, method string) *Component {
 		exID:           false,
 		callStack:      nil,
 		time:           timeRange{time.Now(), -1},
-		aloneTime:      0,
-		remoteDuration: 0,
 		_type:          ComponentExternal,
 	}
 	a.cache.Put(c)
@@ -120,21 +119,19 @@ func (a *Action) CreateMQComponent(vender string, isConsumer bool, host, queue s
 		method:         GetCallerName(1),
 		protocol:       "",
 		vender:         vender,
-		instance:       getDefault(host, "NULL") + "/" + getDefault(queue, "NULL"),
+		instance:       getValidString(host, "NULL") + "/" + getValidString(queue, "NULL"),
 		tracerParentID: a.root.tracerID,
 		tracerID:       a.makeTracerID(),
 		exID:           false,
 		callStack:      nil,
 		time:           timeRange{time.Now(), -1},
-		aloneTime:      0,
-		remoteDuration: 0,
 		_type:          mqType,
 	}
 	a.cache.Put(c)
 	return c
 }
 
-func getDefault(value, defaultValue string) string {
+func getValidString(value, defaultValue string) string {
 	if len(value) == 0 {
 		return defaultValue
 	}
@@ -143,16 +140,15 @@ func getDefault(value, defaultValue string) string {
 
 // CreateRedisComponent : 创建一个Redis数据库访问组件
 func (a *Action) CreateRedisComponent(host, cmd, key, method string) *Component {
-	// fmt.Println("CreateRedisComponent(", host, ", ", cmd, ", ", key, ", ", method)
 	if app == nil || a == nil || a.stateUsed != actionUsing {
 		return nil
 	}
-	key = getDefault(key, "NULL")
+	key = getValidString(key, "NULL")
 	c := &Component{
 		action:         a,
 		name:           "",
 		method:         method,
-		instance:       getDefault(host, "NULL") + "/" + key,
+		instance:       getValidString(host, "NULL") + "/" + key,
 		table:          key,
 		op:             cmd,
 		tracerParentID: a.root.tracerID,
@@ -160,8 +156,6 @@ func (a *Action) CreateRedisComponent(host, cmd, key, method string) *Component 
 		exID:           false,
 		callStack:      nil,
 		time:           timeRange{time.Now(), -1},
-		aloneTime:      0,
-		remoteDuration: 0,
 		_type:          ComponentRedis,
 	}
 	a.cache.Put(c)
@@ -188,22 +182,22 @@ func (a *Action) CreateDBComponent(dbType uint8, host string, dbname string, tab
 		action:         a,
 		name:           "",
 		method:         method,
-		vender:         getDefault(dbNameMap[nameID], "UnDefDatabase"),
-		instance:       getDefault(host, "NULL") + "/" + getDefault(dbname, "NULL"),
-		table:          getDefault(table, "NULL"),
+		vender:         getValidString(dbNameMap[nameID], "UnDefDatabase"),
+		instance:       getValidString(host, "NULL") + "/" + getValidString(dbname, "NULL"),
+		table:          getValidString(table, "NULL"),
 		op:             op,
 		callStack:      nil,
 		tracerParentID: a.root.tracerID,
 		tracerID:       a.makeTracerID(),
 		time:           timeRange{time.Now(), -1},
-		aloneTime:      0,
-		remoteDuration: 0,
 		exID:           false,
 		_type:          dbType,
 	}
 	a.cache.Put(c)
 	return c
 }
+
+// CreateMongoComponent 创建 Mongo 组件
 func (a *Action) CreateMongoComponent(host, database, collection, op, method string) *Component {
 	if app == nil || a == nil || a.stateUsed != actionUsing {
 		return nil
@@ -212,16 +206,14 @@ func (a *Action) CreateMongoComponent(host, database, collection, op, method str
 		action:         a,
 		name:           "",
 		method:         method,
-		vender:         getDefault(dbNameMap[ComponentMongo-ComponentDefaultDB], "MongoDB"),
-		instance:       getDefault(host, "NULL") + "/" + getDefault(database, "NULL"),
-		table:          getDefault(collection, "NULL"),
+		vender:         getValidString(dbNameMap[ComponentMongo-ComponentDefaultDB], "MongoDB"),
+		instance:       getValidString(host, "NULL") + "/" + getValidString(database, "NULL"),
+		table:          getValidString(collection, "NULL"),
 		op:             op,
 		callStack:      nil,
 		tracerParentID: a.root.tracerID,
 		tracerID:       a.makeTracerID(),
 		time:           timeRange{time.Now(), -1},
-		aloneTime:      0,
-		remoteDuration: 0,
 		exID:           false,
 		_type:          ComponentMongo,
 	}
@@ -243,14 +235,12 @@ func (a *Action) CreateSQLComponent(dbType uint8, host string, dbname string, sq
 		name:           "",
 		method:         method,
 		sql:            sql,
-		vender:         getDefault(dbNameMap[nameID], "UnDefDatabase"),
-		instance:       getDefault(host, "NULL") + "/" + getDefault(dbname, "NULL"),
+		vender:         getValidString(dbNameMap[nameID], "UnDefDatabase"),
+		instance:       getValidString(host, "NULL") + "/" + getValidString(dbname, "NULL"),
 		callStack:      nil,
 		tracerParentID: a.root.tracerID,
 		tracerID:       a.makeTracerID(),
 		time:           timeRange{time.Now(), -1},
-		aloneTime:      0,
-		remoteDuration: 0,
 		exID:           false,
 		_type:          dbType,
 	}
@@ -273,8 +263,6 @@ func (a *Action) CreateComponent(method string) *Component {
 		tracerParentID: a.root.tracerID,
 		tracerID:       a.makeTracerID(),
 		time:           timeRange{time.Now(), -1},
-		aloneTime:      0,
-		remoteDuration: 0,
 		exID:           false,
 		_type:          ComponentDefault,
 	}
@@ -313,7 +301,7 @@ func (a *Action) GetTxData() string {
 	if a == nil || a.stateUsed != actionUsing || len(a.trackID) == 0 {
 		return ""
 	}
-	if enabled := readServerConfigBool(configServerConfigBoolActionTracerEnabled, false); !enabled {
+	if !readServerConfigBool(configServerConfigBoolActionTracerEnabled, false) {
 		return ""
 	}
 	secID := app.configs.server.CStrings.Read(configServerStringTingyunIDSecret, "")
@@ -326,8 +314,8 @@ func (a *Action) GetTxData() string {
 	res := map[string]interface{}{
 		"id":       secID,
 		"tname":    a.GetName(),
-		"tid":      a.unicID(),
-		"rid":      unicID(a.time.begin, a),
+		"tid":      a.getTransactionID(),
+		"rid":      a.unicID(),
 		"duration": currentDuration / time.Millisecond,
 	}
 
@@ -422,8 +410,7 @@ func (a *Action) Slow() bool {
 	if a == nil {
 		return false
 	}
-	enabled := readServerConfigBool(configServerConfigBoolActionTracerEnabled, true)
-	if !enabled {
+	if !readServerConfigBool(configServerConfigBoolActionTracerEnabled, true) {
 		return false
 	}
 	if a.stateUsed == actionUnused {
@@ -561,12 +548,16 @@ func (a *Action) destroy() {
 	}
 	a.name = ""
 	a.url = ""
+	a.method = ""
+	a.httpMethod = ""
 	a.trackID = ""
+	a.actionID = ""
 	for component := a.cache.Get(); component != nil; component = a.cache.Get() {
 		component.(*Component).destroy()
 	}
 	for a.errors.Get() != nil {
 	}
+	a.callbacks = nil
 	a.root = nil
 	a.requestParams = nil
 	a.customParams = nil

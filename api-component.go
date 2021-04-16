@@ -3,12 +3,8 @@
 package tingyun3
 
 import (
-	"encoding/json"
 	"net/url"
-	"strings"
 	"time"
-
-	"github.com/TingYunGo/goagent/libs/tystring"
 )
 
 // Component : 构成事务的组件过程
@@ -18,10 +14,8 @@ type Component struct {
 	method         string
 	classname      string
 	txdata         string
-	extSecretID    string
 	protocol       string
 	vender         string
-	host           string
 	instance       string
 	table          string
 	op             string
@@ -29,8 +23,6 @@ type Component struct {
 	callStack      []string
 	errors         []*errInfo
 	time           timeRange
-	aloneTime      time.Duration
-	remoteDuration float64
 	tracerID       int32
 	tracerParentID int32
 	exID           bool
@@ -111,9 +103,6 @@ func (c *Component) Finish() {
 func (c *Component) End(skip int) {
 	if c != nil {
 		c.time.End()
-		if c._type != ComponentDefault {
-			c.aloneTime = c.time.duration
-		}
 		if len(c.callStack) > 0 {
 			return
 		}
@@ -133,25 +122,22 @@ func (c *Component) CreateTrackID() string {
 	if app == nil || c == nil || c.action == nil || c._type != ComponentExternal {
 		return ""
 	}
-	if enabled := readServerConfigBool(configServerConfigBoolActionTracerEnabled, false); !enabled {
+	if !readServerConfigBool(configServerConfigBoolActionTracerEnabled, false) {
 		return ""
 	}
-	//TINGYUN_ID_SECRET;c=CALLER_TYPE;r=REQ_ID;x=TX_ID;e=EXTERNAL_ID;p=PROTOCOL
-	//时间+对象地址=>生成exId
+	//c=CALL_LIST;x=TRANSACTION_TRACE_GUID;e=EXTERNAL_TRACE_GUID;n=TRANSACTION_NAME_MD5;
 	if secID := app.configs.server.CStrings.Read(configServerStringTingyunIDSecret, ""); len(secID) != 0 {
 		c.exID = true
-		// protocol := "http"
-		// if arr := strings.Split(c.name, "://"); len(arr) > 1 {
-		// 	protocol = arr[0]
-		// }
-		if len(c.action.trackID) > 0 && strings.Contains(c.action.trackID, ";n=") {
-			preTrackIds := strings.Split(c.action.trackID, ";")
-			return "c=S|" + secID + ";" + tystring.SubString(preTrackIds[0], 2, len(preTrackIds[0])-2) + ";" + preTrackIds[1] + ";e=" + c.unicID() + ";n=" + md5sum(c.action.GetName())
+		callList, transactionID := c.action.parseTrackID()
+		if len(callList) > 0 {
+			callList = "," + callList
 		}
-		return "c=S|" + secID + ";x=" + c.action.unicID() + ";e=" + c.unicID() + ";n=" + md5sum(c.action.GetName())
+		if len(transactionID) == 0 {
+			transactionID = c.action.unicID()
+		}
+		return "c=S|" + secID + callList + ";x=" + transactionID + ";e=" + c.unicID() + ";n=" + md5sum(c.action.GetName()) + ";"
 	}
 	return ""
-
 }
 
 //SetTxData : 跨应用追踪接口,用于调用端,将被调用端返回的事务性能数据保存到外部调用组件
@@ -161,14 +147,9 @@ func (c *Component) SetTxData(txData string) {
 	if app == nil || c == nil || c.action == nil || c._type != ComponentExternal {
 		return
 	}
-	jsonData := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(txData), &jsonData); err != nil {
-		return
+	if readServerConfigBool(configServerConfigBoolActionTracerEnabled, false) {
+		c.txdata = txData
 	}
-	if tr, err := jsonReadInt(jsonData, "tr"); err == nil {
-		c.action.trackEnable = (tr != 0)
-	}
-	c.txdata = txData
 }
 
 //AppendSQL : 用于数据库组件,通过此接口将sql查询语句保存到数据库组件,在报表慢事务追踪列表展示
@@ -195,8 +176,6 @@ func (c *Component) CreateComponent(method string) *Component {
 		tracerParentID: c.tracerID,
 		tracerID:       c.action.makeTracerID(),
 		time:           timeRange{time.Now(), -1},
-		aloneTime:      0,
-		remoteDuration: 0,
 		exID:           false,
 		_type:          ComponentDefault,
 	}
@@ -210,8 +189,16 @@ func (c *Component) destroy() {
 	}
 	c.name = ""
 	c.method = ""
+	c.classname = ""
 	c.txdata = ""
+	c.protocol = ""
+	c.vender = ""
+	c.instance = ""
+	c.table = ""
+	c.op = ""
+	c.sql = ""
 	c.callStack = nil
+	c.errors = nil
 	c.action = nil
 	c._type = componentUnused
 }

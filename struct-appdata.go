@@ -7,26 +7,14 @@ import (
 	"strings"
 	"time"
 
+	"ithub.com/TingYunGo/goagent/libs/tystring"
+
 	"github.com/TingYunGo/goagent/protoc"
 	proto "github.com/golang/protobuf/proto"
 )
 
 type structAppData struct {
-	sys         *sysInfo
-	runtimeData runtimeBlock
-	traces      *protoc.ActionTraces
-}
-
-func (r *structAppData) init() *structAppData {
-	r.traces = nil
-	r.sys = nil
-	return r
-}
-
-func (r *structAppData) end(perf *runtimePerf) {
-	perf.Snap()
-	r.runtimeData.Read(perf)
-	perf.Reset()
+	traces protoc.ActionTraces
 }
 
 func mapTraceType(t uint8) protoc.TracerType {
@@ -63,39 +51,28 @@ func mapTraceType(t uint8) protoc.TracerType {
 //tingyun3: 2021
 //追加action数据
 func (r *structAppData) Append(action *Action) {
-	if r.traces == nil {
-		r.traces = &protoc.ActionTraces{}
-	}
 
 	trace := &protoc.ActionTrace{}
 	trace.Action = action.GetName()
 	trace.Time = action.time.begin.Unix()
 	trace.Duration = (int64)(action.time.duration / time.Millisecond)
-	trace.Rid = unicID(action.time.begin, action)
-	if array := strings.Split(action.trackID, ";"); len(array) > 1 {
-		for i := 0; i < len(array); i++ {
-			item := array[i]
-			switch string(item[0:2]) {
-			case "e=":
-				trace.Refid = item[2:]
-			case "c=":
-				trace.Cross = item[2:]
-			case "n=":
-				trace.Tmd5 = item[2:]
-			case "x=":
-				trace.Tid = item[2:]
-			default:
-			}
+	trace.Rid = action.unicID()
+	array := strings.Split(action.trackID, ";")
+	for _, item := range array {
+		switch tystring.SubString(item, 0, 2) {
+		case "e=":
+			trace.Refid = tystring.SubString(item, 2, len(item)-2)
+		case "c=":
+			trace.Cross = tystring.SubString(item, 2, len(item)-2)
+		case "n=":
+			trace.Tmd5 = tystring.SubString(item, 2, len(item)-2)
+		case "x=":
+			trace.Tid = tystring.SubString(item, 2, len(item)-2)
+		default:
 		}
-		// entryTrace := parseTrackId(action.trackId)
-		// if entryTrace != nil {
-		// 	entryTrace["time"] = mkTime(action.time.duration, 0, 0, 0, 0, 0, 0)
-		// 	action.customParams["entryTrace"] = entryTrace
-		// }
-
-	} else {
+	}
+	if trace.Tmd5 == "" {
 		trace.Tmd5 = md5sum(trace.Action)
-		trace.Refid = action.trackID
 	}
 	if len(trace.Tid) == 0 {
 		trace.Tid = trace.Rid
@@ -141,15 +118,13 @@ func (r *structAppData) Append(action *Action) {
 		traceItem.Clazz = component.classname
 		traceItem.Method = component.method
 		traceItem.Backtrace = component.callStack
-		if len(component.errors) > 0 {
-			for i := 0; i < len(component.errors); i++ {
-				exception := &protoc.TracerException{}
-				exception.Error = true
-				exception.Msg = fmt.Sprint(component.errors[i].e)
-				exception.Name = component.errors[i].eType
-				exception.Stack = component.errors[i].stack
-				traceItem.Exception = append(traceItem.Exception, exception)
-			}
+		for i := 0; i < len(component.errors); i++ {
+			exception := &protoc.TracerException{}
+			exception.Error = true
+			exception.Msg = fmt.Sprint(component.errors[i].e)
+			exception.Name = component.errors[i].eType
+			exception.Stack = component.errors[i].stack
+			traceItem.Exception = append(traceItem.Exception, exception)
 		}
 		var params *protoc.TracerParams = nil
 		if component._type != ComponentDefault {
@@ -165,72 +140,29 @@ func (r *structAppData) Append(action *Action) {
 		detail.Tracers = append(detail.Tracers, traceItem)
 	}
 	action.root = nil
-	// componentMap.Clear()
-	//添加trace
 	r.traces.Traces = append(r.traces.Traces, trace)
 }
 
-const (
-	//采样值,采样时刻进程内的go程数
-	metricNumGoroutine = "GoRuntime/NULL/Goroutine"
-	//单位时间内事件次数, =>一个累加值 在两次采样之间的差值。
-	metricNumCgoCall = "GoRuntime/NULL/CgoCall"
-	//单位时间内GC耗时的累加和,单位毫秒
-	metricPauseTotalMs = "GoRuntime/NULL/PauseTotalMs"
-	//单位时间内,每次GC耗时的5值统计性能数据
-	metricGCTime = "GC/NULL/Time"
-	//单位时间内 Free的次数
-	metricFrees = "GoRuntime/NULL/Frees"
-	//单位时间内 Malloc的次数
-	metricMallocs = "GoRuntime/NULL/Mallocs"
-	//单位时间内 Lookup的次数
-	metricLookups = "GoRuntime/NULL/Lookups"
-	//采样值,系统总的申请内存数 MB
-	metricMemTotalSys = "Memory/NULL/MemSys"
-	//采样值,系统栈内存数 MB
-	metricMemStackSys = "Memory/Stack/StackSys"
-	//采样值,系统堆内存数 MB
-	metricMemHeapSys = "Memory/Heap/HeapSys"
-	//采样值,系统内存区间结构数
-	metricMSpanSys = "Memory/MSpan/MSpanSys"
-	//采样值,系统内存Cache结构数
-	metricMCacheSys = "Memory/MCache/MCacheSys"
-	//采样值,系统内存BuckHash数
-	metricBuckHashSys = "Memory/NULL/BuckHashSys"
-	//采样值,使用中的堆内存数 MB
-	metricHeapInuse = "Memory/Heap/HeapInuse"
-	//采样值,使用中的栈内存数 MB
-	metricStackInuse = "Memory/Stack/StackInuse"
-	//采样值,使用中的内存区间结构数
-	metricMSpanInuse = "Memory/MSpan/MSpanInuse"
-	//采样值,使用中的内存Cache结构数
-	metricMCacheInuse     = "Memory/MCache/MCacheInuse"
-	metricUserTime        = "CPU/NULL/UserTime"
-	metricUserUtilization = "CPU/NULL/UserUtilization"
-	metricmem             = "Memory/NULL/PhysicalUsed"
-	//采样值,进程打开文件句柄数(linux)
-	metricFDSize = "Process/NULL/FD"
-	//采样值,进程内的系统线程数(linux)
-	metricThreads = "Process/NULL/Threads"
-)
-
 //数据序列化
 func (r *structAppData) Serialize() ([]byte, error) {
-	return proto.Marshal(r.traces)
+	return proto.Marshal(&r.traces)
 }
 
-//释放内存
 func (r *structAppData) destroy() {
-	r.traces = nil
-	r.sys = nil
+	if len(r.traces.Traces) > 0 {
+		for _, trace := range r.traces.Traces {
+			trace.Reset()
+		}
+	}
+	r.traces.Reset()
 }
 func (a *application) GetReportBlock() *structAppData {
 	if a.reportQueue.Size() == 0 {
-		a.reportQueue.PushBack(new(structAppData).init())
+		a.reportQueue.PushBack(&structAppData{})
 	}
 	data, _ := a.reportQueue.Back().Value()
-	if datablock := data.(*structAppData); datablock.traces != nil && len(datablock.traces.Traces) >= 5000 {
-		a.reportQueue.PushBack(new(structAppData).init())
+	if datablock := data.(*structAppData); len(datablock.traces.Traces) >= 5000 {
+		a.reportQueue.PushBack(&structAppData{})
 	}
 	data, _ = a.reportQueue.Back().Value()
 	return data.(*structAppData)

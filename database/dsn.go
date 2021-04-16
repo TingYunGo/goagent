@@ -121,10 +121,14 @@ func parsePostgreOpts(name string, o map[string]string) error {
 func parseMyDSN(dsn string) (host, db string) {
 	hostSize := strings.LastIndex(dsn, "/")
 	if hostSize == -1 {
-		return dsn, ""
+		hostSize = len(dsn)
 	}
 	host = dsn[0:hostSize]
-	db = dsn[hostSize+1:]
+	if id := strings.Index(host, "@"); id != -1 {
+		host = host[id+1:]
+	}
+	db = tystring.SubString(dsn, hostSize+1, len(dsn)-hostSize-1)
+
 	if dbSize := strings.LastIndex(db, "?"); dbSize != -1 {
 		db = db[0:dbSize]
 	}

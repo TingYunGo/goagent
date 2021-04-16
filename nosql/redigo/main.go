@@ -25,9 +25,9 @@ type dbinstanceSet struct {
 	dbset [8192]instanceSet
 }
 
-func (i *dbinstanceSet) init() {
-	for k := range i.dbset {
-		db := &(i.dbset[k])
+func (d *dbinstanceSet) init() {
+	for k := range d.dbset {
+		db := &(d.dbset[k])
 		db.init()
 	}
 }

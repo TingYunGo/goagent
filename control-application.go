@@ -31,18 +31,12 @@ const (
 	Audit         = log.Audit
 )
 
-//action 结构化
-func (a *application) parseAction(action *Action) {
-	defer action.destroy()
-	a.GetReportBlock().Append(action)
-}
-
 //actionPool里的请求归纳处理
 func (a *application) parseActions(parseMax int) int {
-	handleCount := 0
-	for a.actionPool.Size() > 0 && handleCount < parseMax {
+	actionParsed := 0
+	for a.actionPool.Size() > 0 && actionParsed < parseMax {
 		if action := a.actionPool.Get(); action != nil {
-			handleCount++
+			actionParsed++
 			if a.configs.HasLogin() {
 				a.GetReportBlock().Append(action.(*Action))
 			}
@@ -51,7 +45,7 @@ func (a *application) parseActions(parseMax int) int {
 			break
 		}
 	}
-	return handleCount
+	return actionParsed
 }
 
 const (
@@ -243,7 +237,7 @@ func (a *application) timerCheck() {
 				if args, err := jsonReadObjects(result, "args"); err == nil {
 					if sessionKey := a.configs.server.CStrings.Read(configServerStringAppSessionKey, ""); len(sessionKey) > 0 {
 						args["sessionKey"] = sessionKey
-						args["appId"] = a.configs.appId
+						args["appId"] = a.configs.appID
 						a.configs.UpdateServerConfig(args, false)
 					}
 				}
@@ -269,7 +263,7 @@ func (a *application) upload() {
 		for a.reportQueue.Size() > int(saveCount) {
 			data, _ := a.reportQueue.PopFront()
 			t := data.(*structAppData)
-			if t.traces != nil && len(t.traces.Traces) > 0 {
+			if len(t.traces.Traces) > 0 {
 				dropTrace += len(t.traces.Traces)
 			}
 			t.destroy()
@@ -277,7 +271,7 @@ func (a *application) upload() {
 
 		data, _ := a.reportQueue.PopFront()
 		traceData := data.(*structAppData)
-		if traceData.traces == nil || len(traceData.traces.Traces) == 0 {
+		if len(traceData.traces.Traces) == 0 {
 			return
 		}
 		b, _ := traceData.Serialize()
@@ -299,24 +293,24 @@ func (a *application) upload() {
 }
 
 func (a *application) loop(running func() bool) {
-	lastCount := 1
+	lastParsed := 1
 	sleepDuration := time.Millisecond
 	for running() {
 		a.serverCtrl.doEvent()
-		//1.action事件处理
-		handleCount := a.parseActions(10000)
+		//处理采集到的事务
+		actionParsed := a.parseActions(10000)
 
-		//3.server通信事件处理
+		//发送到server
 		a.timerCheck()
-		if handleCount == 0 {
-			if lastCount == 0 && sleepDuration < 100*time.Millisecond {
+		if actionParsed == 0 {
+			if lastParsed == 0 && sleepDuration < 100*time.Millisecond {
 				sleepDuration *= 2
 			}
 			time.Sleep(sleepDuration)
 		} else {
 			sleepDuration = time.Millisecond
 		}
-		lastCount = handleCount
+		lastParsed = actionParsed
 	}
 }
 

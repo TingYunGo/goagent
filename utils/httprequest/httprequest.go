@@ -1,42 +1,68 @@
-// Copyright 2016-2019 冯立强 fenglq@tingyun.com.  All rights reserved.
+// Copyright 2016-2021 冯立强 fenglq@tingyun.com.  All rights reserved.
 
 //Post请求异步封装
 package postRequest
 
 import (
-	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
-	"sync/atomic"
+	"sync"
 	"time"
 
 	"github.com/TingYunGo/goagent/utils/zip"
 )
 
 type Request struct {
-	used     int32 //初始化为0,调用callback前原子 +1,不为1则-1后return.调用callback后+1；release前原子+1判定是否为1，否则-1,等为2时return
+	lock     sync.Mutex
 	callback func(data []byte, statusCode int, err error)
 }
 
 func (r *Request) answer(data []byte, statusCode int, err error) {
-	use := atomic.AddInt32(&r.used, 1)
-	if use != 1 {
-		return
+	r.lock.Lock()
+	callback := r.callback
+	r.callback = nil
+	r.lock.Unlock()
+	if callback != nil {
+		callback(data, statusCode, err)
 	}
-	defer atomic.AddInt32(&r.used, 1)
-	r.callback(data, statusCode, err)
 }
 
 //释放请求对象，不管返回结果
 func (r *Request) Release() {
-	defer func() { r.callback = nil }()
-	if atomic.AddInt32(&r.used, 1) != 1 {
-		atomic.AddInt32(&r.used, -1)
-		for r.used != 2 {
-			time.Sleep(1 * time.Millisecond)
-		}
+	r.lock.Lock()
+	defer r.lock.Unlock()
+	r.callback = nil
+}
+
+type ioReader struct {
+	data  []byte
+	begin int
+}
+
+//go:nosplit
+func min(a, b int) int {
+
+	if a < b {
+		return a
 	}
+	return b
+}
+func (b *ioReader) Read(p []byte) (n int, err error) {
+	if b.data == nil {
+		return 0, io.EOF
+	}
+	if len(b.data) == b.begin {
+		b.data = nil
+		return 0, io.EOF
+	}
+	res := copy(p, b.data[b.begin:])
+	b.begin += res
+	if b.begin == len(b.data) {
+		b.data = nil
+	}
+	return res, nil
 }
 
 //发起一个post请求,返回请求对象
@@ -51,7 +77,7 @@ func New(url string, params map[string]string, data []byte, duration time.Durati
 	if err != nil {
 		return nil, err
 	}
-	request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	request, err := http.NewRequest("POST", url, &ioReader{data: body})
 	if nil != err {
 		return nil, err
 	}
@@ -62,7 +88,7 @@ func New(url string, params map[string]string, data []byte, duration time.Durati
 	for k, v := range params {
 		useParams[k] = v
 	}
-	res := &Request{0, callback}
+	res := &Request{callback: callback}
 	for k, v := range useParams {
 		request.Header.Add(k, v)
 	}
@@ -72,6 +98,7 @@ func New(url string, params map[string]string, data []byte, duration time.Durati
 			if exception := recover(); exception != nil {
 				fmt.Println(exception)
 			}
+			request.Body.Close()
 		}()
 		response, err := client.Do(request)
 		if err != nil {
@@ -96,6 +123,7 @@ func New(url string, params map[string]string, data []byte, duration time.Durati
 		} else {
 			res.answer(nil, response.StatusCode, nil)
 		}
+
 	}(request)
 	return res, nil
 }

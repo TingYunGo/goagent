@@ -1,4 +1,4 @@
-// Copyright 2016-2019 冯立强 fenglq@tingyun.com.  All rights reserved.
+// Copyright 2016-2021 冯立强 fenglq@tingyun.com.  All rights reserved.
 
 //日志功能模块。
 package log
@@ -211,7 +211,6 @@ func (l *Logger) openFile() {
 	if logfile == "" {
 		return
 	}
-	//	fmt.Println("open log file:", logfile)
 	fp, err := os.OpenFile(logfile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err == nil {
 		l.fp = fp
@@ -226,7 +225,6 @@ func (l *Logger) openFile() {
 }
 func (l *Logger) updateLogSize() {
 	l.maxLogSize = int64(l.configs.CIntegers.Read(ConfigIntegerNBSMaxLogSize, 10)) * 1024 * 1024
-	//	fmt.Println("maxLogSize=", l.maxLogSize)
 }
 func (l *Logger) closeFile() {
 	if l.fp != nil {
@@ -234,8 +232,9 @@ func (l *Logger) closeFile() {
 		l.fp = nil
 	}
 }
-func (l *Logger) processMessage() {
+func (l *Logger) processMessage() int {
 	updated := false
+	messageWrited := 0
 	for l.messagePool.Size() > 0 {
 		if !updated {
 			l.updateLogSize()
@@ -243,14 +242,15 @@ func (l *Logger) processMessage() {
 		for msg := l.messagePool.Get(); msg != nil; msg = l.messagePool.Get() {
 			l.openFile()
 			l.write(msg.(*message).data)
+			messageWrited++
 			if l.maxLogSize <= l.topSize {
 				l.closeFile()
 				l.logsShift()
 			}
 		}
-		time.Sleep(100 * time.Millisecond)
 	}
 	l.closeFile()
+	return messageWrited
 }
 func (l *Logger) logsShift() {
 	logfile := l.configs.CStrings.Read(ConfigStringNBSLogFileName, "")
@@ -267,9 +267,20 @@ func (l *Logger) logsShift() {
 
 }
 func (l *Logger) loop(running func() bool) {
+
+	sleepDuration := time.Millisecond
+	lastWrited := 1
 	for running() {
-		l.processMessage()
-		time.Sleep(10 * time.Millisecond)
+		messageWrited := l.processMessage()
+		if messageWrited == 0 {
+			if lastWrited == 0 && sleepDuration < 100*time.Millisecond {
+				sleepDuration *= 2
+			}
+			time.Sleep(sleepDuration)
+		} else {
+			sleepDuration = time.Millisecond
+		}
+		lastWrited = messageWrited
 	}
 	l.processMessage()
 }

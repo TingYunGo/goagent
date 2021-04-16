@@ -6,6 +6,8 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
+
+	"github.com/TingYunGo/goagent/libs/tystring"
 )
 
 func (a *Action) setError(e interface{}, errType string, skipStack int) {
@@ -19,63 +21,29 @@ func (a *Action) makeTracerID() int32 {
 	return atomic.AddInt32(&a.tracerIDMaker, 1)
 }
 
-func getAppSecID(id string) string {
-	sidArray := strings.Split(id, "|")
-	if len(sidArray) < 2 {
-		return ""
-	}
-	trackID := sidArray[1]
-	for i := 2; i < len(sidArray); i++ {
-		trackID += "|" + sidArray[i]
-	}
-	return trackID
-
-}
-func getTxID(id string) string {
-	array := strings.Split(id, ";")
-	if len(array) < 4 {
-		return ""
-	}
-	for i := 0; i < len(array); i++ {
-		paire := strings.Split(array[i], "=")
-		if paire[0] == "x" {
-			if len(paire) < 2 {
-				return ""
-			}
-			xid := paire[1]
-			for i := 2; i < len(paire); i++ {
-				xid += "=" + paire[i]
-			}
-			return xid
-		}
-	}
-	return ""
-}
-func getTopMetric(id string) string {
-	array := strings.Split(id, ";")
-	if len(array) < 4 {
-		return ""
-	}
-	for i := 1; i < len(array); i++ {
-		paire := strings.Split(array[i], "=")
-		if paire[0] == "p" {
-			if len(paire) < 2 {
-				return ""
-			}
-			protocol := paire[1]
-			for i := 2; i < len(paire); i++ {
-				protocol += "=" + paire[i]
-			}
-			return "EntryTransaction/" + protocol + "/" + getAppSecID(array[0])
-		}
-	}
-	return ""
-}
-
 func (a *Action) unicID() string {
-	txID := getTxID(a.trackID)
-	if txID == "" {
-		return unicID(a.time.begin, a)
+	if len(a.actionID) == 0 {
+		a.actionID = unicID(a.time.begin, a)
 	}
-	return txID
+	return a.actionID
+}
+func (a *Action) getTransactionID() string {
+	if _, transactionID := a.parseTrackID(); len(transactionID) > 0 {
+		return transactionID
+	}
+	return a.unicID()
+}
+
+func (a *Action) parseTrackID() (callList, transactionID string) {
+	callList, transactionID = "", ""
+	if parts := strings.Split(a.trackID, ";"); len(parts) > 0 {
+		for _, v := range parts {
+			if tystring.SubString(v, 0, 2) == "c=" {
+				callList = tystring.SubString(v, 2, len(v)-2)
+			} else if tystring.SubString(v, 0, 2) == "x=" {
+				transactionID = tystring.SubString(v, 2, len(v)-2)
+			}
+		}
+	}
+	return
 }

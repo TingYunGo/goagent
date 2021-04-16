@@ -239,7 +239,7 @@ type configurations struct {
 	dataItemRules dataItemRulesConfig
 	loginCount    int64
 	configfile    string
-	appId         int64
+	appID         int64
 	lock          sync.RWMutex
 	started       bool
 	loginError    bool
@@ -291,7 +291,7 @@ func (c *configurations) Init(configfile string) error {
 				lastModify = lastTime
 			}
 			for running() {
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(time.Second)
 				if now := time.Now(); now.Sub(lastTime) < 60*time.Second {
 					continue
 				}
@@ -326,7 +326,7 @@ func (c *configurations) UpdateServerConfig(result map[string]interface{}, login
 		} else if _, err = jsonToString(result, "appId"); err != nil {
 			return err
 		} else {
-			c.appId, _ = jsonReadInt64(result, "appId")
+			c.appID, _ = jsonReadInt64(result, "appId")
 			for k, v := range result {
 				c.server.Update(serverStringKeyMap, serverBoolKeyMap, serverIntegerKeyMap, k, v)
 			}

@@ -170,28 +170,6 @@ func WrapbaseClientprocessPipeline(c *baseClient, ctx context.Context, cmds []re
 	return e
 }
 
-//go:noinline
-func baseClientProcess(c *baseClientV6, cmd redis.Cmder) error {
-	fmt.Println(cmd.Name())
-	return nil
-}
-
-//go:noinline
-func WrapbaseClientProcess(c *baseClientV6, cmd redis.Cmder) error {
-	begin := time.Now()
-	req := tingyun3.LocalGet(9)
-	if req == nil {
-		tingyun3.LocalSet(9, 1)
-	}
-
-	err := baseClientProcess(c, cmd)
-	if req == nil {
-		tingyun3.LocalDelete(9)
-		handleGoRedis(c.opt.Addr, cmd.Args(), begin)
-	}
-	return err
-}
-
 type instanceSet struct {
 	lock  sync.RWMutex
 	items map[*redis.Client]string
@@ -224,6 +202,5 @@ var dbs instanceSet
 func init() {
 	dbs.init()
 	tingyun3.Register(reflect.ValueOf(WrapbaseClientprocess).Pointer())
-	tingyun3.Register(reflect.ValueOf(WrapbaseClientProcess).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapbaseClientprocessPipeline).Pointer())
 }

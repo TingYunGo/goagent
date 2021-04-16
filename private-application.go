@@ -110,8 +110,6 @@ func (a *application) createAction(name string, method string) (*Action, error) 
 			exID:           false,
 			callStack:      nil,
 			time:           timeRange{time.Now(), -1},
-			aloneTime:      0,
-			remoteDuration: 0,
 			_type:          ComponentDefault,
 		},
 	}

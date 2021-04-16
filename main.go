@@ -33,14 +33,16 @@ func HttpClientDo(ptr uintptr, req *http.Request) (*http.Response, error) {
 	fmt.Println(ptr, req)
 	return nil, nil
 }
+
+//go:noinline
 func WrapHttpClientDo(ptr uintptr, req *http.Request) (*http.Response, error) {
 	var component *Component = nil
 	if action := getAction(); action != nil {
 		_, pc := GetCallerPC(3)
-		method_name := runtime.FuncForPC(pc).Name()
-		component = action.CreateExternalComponent(req.URL.String(), method_name)
-		if trackId := component.CreateTrackID(); len(trackId) > 0 {
-			req.Header.Add("X-Tingyun", trackId)
+		methodName := runtime.FuncForPC(pc).Name()
+		component = action.CreateExternalComponent(req.URL.String(), methodName)
+		if trackID := component.CreateTrackID(); len(trackID) > 0 {
+			req.Header.Add("X-Tingyun", trackID)
 		}
 	}
 	defer func() {
@@ -144,27 +146,26 @@ func (w *writeWrapper) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 }
 func wrapHandler(pattern string, handler http.Handler) http.Handler {
 	h := handler
-	var method_name string
-	class_name := reflect.TypeOf(handler).String()
-	if class_name == "http.HandlerFunc" || class_name == "HandlerFunc" {
-		handler_pc := reflect.ValueOf(handler).Pointer()
-		method_name = runtime.FuncForPC(handler_pc).Name()
+	var methodName string
+	className := reflect.TypeOf(handler).String()
+	if className == "http.HandlerFunc" || className == "HandlerFunc" {
+		handlerPC := reflect.ValueOf(handler).Pointer()
+		methodName = runtime.FuncForPC(handlerPC).Name()
 	} else {
-		if len(class_name) > 0 && class_name[0] == '*' {
-			class_name = class_name[1:]
+		if len(className) > 0 && className[0] == '*' {
+			className = className[1:]
 		}
-		method_name = class_name + ".ServeHTTP"
+		methodName = className + ".ServeHTTP"
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		action, _ := CreateAction("ROUTER", method_name)
-		var rule *dataItemRules = nil
+		action, _ := CreateAction("ROUTER", methodName)
 		resWriter := w
 		if action != nil {
 			action.SetHTTPMethod(strings.ToUpper(r.Method))
-			if trackId := r.Header.Get("X-Tingyun"); len(trackId) > 0 {
-				action.SetTrackID(trackId)
+			if trackID := r.Header.Get("X-Tingyun"); len(trackID) > 0 {
+				action.SetTrackID(trackID)
 			}
-			rule = app.configs.dataItemRules.Get()
+			rule := app.configs.dataItemRules.Get()
 			for _, item := range rule.requestHeader {
 				if value := r.Header.Get(item); len(value) > 0 {
 					action.AddRequestParam(item, value)
@@ -217,7 +218,7 @@ func WrapServerServe(srv *http.Server, l net.Listener) error {
 	return ServerServe(srv, l)
 }
 
-// GetGID is Return the goroutine id
+// GetGID return goroutine id
 //go:noinline
 func GetGID() int64 {
 	fmt.Println(1)

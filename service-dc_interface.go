@@ -111,7 +111,8 @@ func (s *serviceDC) Login(callback func(error, map[string]interface{})) error {
 				break
 			}
 			var b []byte
-			if b, e = makeLoginRequest(); e != nil {
+			b, e = makeLoginRequest()
+			if e != nil {
 				break
 			}
 			requrl := fmt.Sprintf("%s://%s/init?app=%s&license=%s&request=login&version=%s", s.getConfigProtocol(), s.uploadHost, url.QueryEscape(appName), url.QueryEscape(license), "3.2.0")
@@ -186,9 +187,10 @@ func (s *serviceDC) Upload(data []byte, callback func(err error, rCode int, http
 			return
 		}
 		if err == nil {
-			Log().Println(LevelInfo|Audit, "Upload Status Code:", statusCode)
 			if len(data) > 0 {
-				Log().Println(LevelInfo|Audit, "Upload Response Data:", string(data))
+				Log().Println(LevelInfo|Audit, "Upload Status Code:", statusCode, ", Data:", string(data))
+			} else {
+				Log().Println(LevelInfo|Audit, "Upload Status Code:", statusCode)
 			}
 		}
 		r, er := parseJSON(data, statusCode, err)
