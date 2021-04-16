@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"ithub.com/TingYunGo/goagent/libs/tystring"
+	"github.com/TingYunGo/goagent/libs/tystring"
 
 	"github.com/TingYunGo/goagent/protoc"
 	proto "github.com/golang/protobuf/proto"
