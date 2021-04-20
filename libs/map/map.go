@@ -114,7 +114,7 @@ func (m *Map) Set(key, value interface{}) Iterator {
 
 // Find is find node by key
 func (m *Map) Find(key interface{}) Iterator {
-	if isParent, node := m._Tree.Find(key); !isParent && node != nil {
+	if isParent, node := m._Tree.Find(key); (!isParent) && (node != nil) {
 		return Iterator{node}
 	}
 	return Iterator{nil}

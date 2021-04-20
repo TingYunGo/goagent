@@ -64,6 +64,13 @@ func (b *ioReader) Read(p []byte) (n int, err error) {
 	}
 	return res, nil
 }
+func (b *ioReader) Close() error {
+	if b != nil {
+		b.data = nil
+		b.begin = 0
+	}
+	return nil
+}
 
 //发起一个post请求,返回请求对象
 func New(url string, params map[string]string, data []byte, duration time.Duration, callback func(data []byte, statusCode int, err error)) (*Request, error) {

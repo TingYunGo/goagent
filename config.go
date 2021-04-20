@@ -408,26 +408,6 @@ func modifyTime(filename string) (time.Time, error) {
 	return info.ModTime(), nil
 }
 
-//func configInt(c *configBase.ConfigBase, key string, defaultValue int) int {
-//	if t, found := c.Value(key); found {
-//		switch r := t.(type) {
-//		case float64:
-//			return int(r)
-//		case float32:
-//			return int(r)
-//		case int32:
-//			return int(r)
-//		case int64:
-//			return int(r)
-//		case uint32:
-//			return int(r)
-//		case uint64:
-//			return int(r)
-//		}
-//	}
-//	return defaultValue
-//}
-
 type apdexActionMap struct {
 	current int
 	apdexT  int

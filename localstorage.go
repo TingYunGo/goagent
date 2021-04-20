@@ -22,7 +22,7 @@ func (u *Unit) init() {
 func (u *Unit) get(gid int64) interface{} {
 	u.lock.RLock()
 	defer u.lock.RUnlock()
-	if iterator := u.items.Find(gid); iterator != u.items.End() {
+	if iterator := u.items.Find(gid); !iterator.IsEnd() {
 		return iterator.Value().Value
 	}
 	return nil
@@ -35,7 +35,7 @@ func (u *Unit) set(gid int64, local interface{}) {
 func (u *Unit) remove(gid int64) interface{} {
 	u.lock.Lock()
 	defer u.lock.Unlock()
-	if iterator := u.items.Find(gid); iterator != u.items.End() {
+	if iterator := u.items.Find(gid); !iterator.IsEnd() {
 		r := iterator.Value().Value
 		u.items.Erase(iterator)
 		return r
