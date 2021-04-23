@@ -129,7 +129,7 @@ func (r *structAppData) Append(action *Action) {
 		var params *protoc.TracerParams = nil
 		if component._type != ComponentDefault {
 			params = &protoc.TracerParams{}
-			params.Operation = component.sql
+			params.Operation = component.op
 			params.Protocol = component.protocol
 			params.Key = component.table
 			params.Instance = component.instance
@@ -161,10 +161,11 @@ func (a *application) GetReportBlock() *structAppData {
 	if a.reportQueue.Size() == 0 {
 		a.reportQueue.PushBack(&structAppData{})
 	}
+	report_max := int(app.configs.local.CIntegers.Read(configLocalIntegerNbsActionReportMax, 5000))
 	data, _ := a.reportQueue.Back().Value()
-	if datablock := data.(*structAppData); len(datablock.traces.Traces) >= 5000 {
+	if datablock := data.(*structAppData); len(datablock.traces.Traces) >= report_max {
 		a.reportQueue.PushBack(&structAppData{})
+		data, _ = a.reportQueue.Back().Value()
 	}
-	data, _ = a.reportQueue.Back().Value()
 	return data.(*structAppData)
 }

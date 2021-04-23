@@ -17,22 +17,23 @@ import (
 )
 
 const (
-	configLocalStringNbsHost            = 1
-	configLocalStringNbsLicenseKey      = 2
-	configLocalStringNbsAppName         = 3
-	configLocalStringNbsLevel           = log.ConfigStringNBSLevel
-	configLocalStringNbsLogFileName     = log.ConfigStringNBSLogFileName
-	configLocalStringMax                = 8
-	configLocalBoolAgentEnable          = 1
-	configLocalBoolSSL                  = 2
-	configLocalBoolAudit                = log.ConfigBoolNBSAudit
-	configLocalBoolMax                  = 8
-	configLocalIntegerNbsPort           = 1
-	configLocalIntegerNbsSaveCount      = 2
-	configLocalIntegerNbsMaxLogSize     = log.ConfigIntegerNBSMaxLogSize
-	configLocalIntegerNbsMaxLogCount    = log.ConfigIntegerNBSMaxLogCount
-	configLocalIntegerNbsActionCacheMax = 5
-	configLocalIntegerMax               = 8
+	configLocalStringNbsHost             = 1
+	configLocalStringNbsLicenseKey       = 2
+	configLocalStringNbsAppName          = 3
+	configLocalStringNbsLevel            = log.ConfigStringNBSLevel
+	configLocalStringNbsLogFileName      = log.ConfigStringNBSLogFileName
+	configLocalStringMax                 = 8
+	configLocalBoolAgentEnable           = 1
+	configLocalBoolSSL                   = 2
+	configLocalBoolAudit                 = log.ConfigBoolNBSAudit
+	configLocalBoolMax                   = 8
+	configLocalIntegerNbsPort            = 1
+	configLocalIntegerNbsSaveCount       = 2
+	configLocalIntegerNbsMaxLogSize      = log.ConfigIntegerNBSMaxLogSize
+	configLocalIntegerNbsMaxLogCount     = log.ConfigIntegerNBSMaxLogCount
+	configLocalIntegerNbsActionCacheMax  = 5
+	configLocalIntegerNbsActionReportMax = 6
+	configLocalIntegerMax                = 8
 
 	configServerStringAppSessionKey     = 1
 	configServerStringTingyunIDSecret   = 2
@@ -106,11 +107,12 @@ var localBoolKeyMap = map[string]int{
 }
 
 var localIntegerKeyMap = map[string]int{
-	"nbs.port":             configLocalIntegerNbsPort,
-	"nbs.savecount":        configLocalIntegerNbsSaveCount,
-	"nbs.max_log_size":     configLocalIntegerNbsMaxLogSize,
-	"nbs.max_log_count":    configLocalIntegerNbsMaxLogCount,
-	"nbs.action_cache_max": configLocalIntegerNbsActionCacheMax,
+	"nbs.port":              configLocalIntegerNbsPort,
+	"nbs.savecount":         configLocalIntegerNbsSaveCount,
+	"nbs.max_log_size":      configLocalIntegerNbsMaxLogSize,
+	"nbs.max_log_count":     configLocalIntegerNbsMaxLogCount,
+	"nbs.action_cache_max":  configLocalIntegerNbsActionCacheMax,
+	"nbs.action_report_max": configLocalIntegerNbsActionReportMax,
 }
 
 var serverStringKeyMap = map[string]int{
