@@ -231,7 +231,7 @@ func (a *Action) CreateSQLComponent(dbType uint8, host string, dbname string, sq
 	c := &Component{
 		action:         a,
 		method:         method,
-		sql:            sql,
+		op:             sql,
 		vender:         getValidString(dbNameMap[nameID], "UnDefDatabase"),
 		instance:       getValidString(host, "NULL") + "/" + getValidString(dbname, "NULL"),
 		callStack:      nil,

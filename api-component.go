@@ -19,7 +19,6 @@ type Component struct {
 	instance       string
 	table          string
 	op             string
-	sql            string
 	callStack      []string
 	errors         []*errInfo
 	time           timeRange
@@ -169,7 +168,7 @@ func (c *Component) AppendSQL(sql string) {
 		(c._type != ComponentExternal && c._type != ComponentDefaultDB && c._type != ComponentMysql && c._type != ComponentPostgreSQL && c._type != ComponentMSSQL && c._type != ComponentSQLite) {
 		return
 	}
-	c.sql = sql
+	c.op = sql
 }
 
 // CreateComponent : 在函数/方法中调用其他函数/方法时,如果认为有必要,调用此方法测量子过程性能
@@ -206,7 +205,6 @@ func (c *Component) destroy() {
 	c.instance = ""
 	c.table = ""
 	c.op = ""
-	c.sql = ""
 	c.callStack = nil
 	c.errors = nil
 	c.action = nil
