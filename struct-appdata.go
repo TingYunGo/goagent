@@ -140,6 +140,7 @@ func (r *structAppData) Append(action *Action) {
 		detail.Tracers = append(detail.Tracers, traceItem)
 	}
 	action.root = nil
+	action.current = nil
 	r.traces.Traces = append(r.traces.Traces, trace)
 }
 

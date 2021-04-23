@@ -36,6 +36,9 @@ func (d *dbinstanceSet) Get(db *sql.DB) *databaseInfo {
 func (d *dbinstanceSet) Set(db *sql.DB, info databaseInfo) {
 	d.lock.Lock()
 	defer d.lock.Unlock()
+	if d.items == nil {
+		d.init()
+	}
 	d.items[db] = info
 }
 func (d *dbinstanceSet) Delete(db *sql.DB) {

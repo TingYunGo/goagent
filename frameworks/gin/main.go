@@ -26,7 +26,8 @@ func preHandler(relativePath, method string) gin.HandlerFunc {
 		if action == nil {
 			return
 		}
-		action.SetName(relativePath, method)
+		action.SetName("Route", method)
+		action.SetName("URI", relativePath)
 	}
 }
 func pushFrontHandler(group *gin.RouterGroup, relativePath string, handlers []gin.HandlerFunc) []gin.HandlerFunc {

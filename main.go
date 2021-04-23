@@ -7,7 +7,7 @@ package tingyun3
 /*
 #cgo LDFLAGS: -L${SRCDIR} -ltingyungosdk
 
-extern void init(void *);
+extern void tingyun_go_init(void *);
 */
 import "C"
 import (
@@ -103,10 +103,12 @@ func (w *writeWrapper) onAnswer(statusCode int) {
 			}
 		}
 	}
-	if len(w.action.trackID) > 0 {
-		if txData := w.action.GetTxData(); len(txData) > 0 {
-			headers := w.w.Header()
-			headers.Set("X-Tingyun-Data", txData)
+	if w.action != nil {
+		if len(w.action.trackID) > 0 {
+			if txData := w.action.GetTxData(); len(txData) > 0 {
+				headers := w.w.Header()
+				headers.Set("X-Tingyun-Data", txData)
+			}
 		}
 	}
 	w.action.SetHTTPStatus(uint16(statusCode), 3)
@@ -147,20 +149,39 @@ func (w *writeWrapper) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 func wrapHandler(pattern string, handler http.Handler) http.Handler {
 	h := handler
 	var methodName string
+	isRouteMode := true
 	className := reflect.TypeOf(handler).String()
 	if className == "http.HandlerFunc" || className == "HandlerFunc" {
 		handlerPC := reflect.ValueOf(handler).Pointer()
 		methodName = runtime.FuncForPC(handlerPC).Name()
 	} else {
+		isRouteMode = false
 		if len(className) > 0 && className[0] == '*' {
 			className = className[1:]
 		}
 		methodName = className + ".ServeHTTP"
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		action, _ := CreateAction("ROUTER", methodName)
-		resWriter := w
+		// fmt.Println("on: ", pattern, ", by: ", methodName)
+		var component *Component = nil
+		action := getAction()
 		if action != nil {
+			component = action.CreateComponent(methodName)
+		}
+		if component == nil {
+			if isRouteMode {
+				action, _ = CreateAction("ROUTER", methodName)
+			} else {
+				action, _ = CreateAction("URI", r.URL.Path)
+				if action != nil {
+					action.method = methodName
+					action.root.method = methodName
+				}
+			}
+		}
+		resWriter := w
+
+		if action != nil && component == nil {
 			action.SetHTTPMethod(strings.ToUpper(r.Method))
 			if trackID := r.Header.Get("X-Tingyun"); len(trackID) > 0 {
 				action.SetTrackID(trackID)
@@ -172,27 +193,28 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 				}
 			}
 			if readServerConfigBool(configServerConfigBoolCaptureParams, false) {
-				action.url = r.URL.RequestURI()
+				action.SetURL(r.URL.RequestURI())
 			}
 			resWriter = createWriteWraper(w, action, rule)
 			setAction(action)
 		}
 		defer func() {
-			if exception := recover(); exception != nil {
+			exception := recover()
+			if exception != nil && component == nil {
 				action.setError(exception, "error", 2)
-				action.Finish()
-				routineLocalRemove()
-				if action != nil {
-					resWriter.(*writeWrapper).reset()
-				}
-				//re throw
-				panic(exception)
+			}
+			if component != nil {
+				component.Finish()
 			} else {
 				action.Finish()
 				routineLocalRemove()
 				if action != nil {
 					resWriter.(*writeWrapper).reset()
 				}
+			}
+			//re throw
+			if exception != nil {
+				panic(exception)
 			}
 		}()
 		h.ServeHTTP(resWriter, r)
@@ -201,6 +223,7 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 
 //go:noinline
 func WrapServerMuxHandle(ptr uintptr, pattern string, handler http.Handler) {
+	// fmt.Println("Wrap: ", pattern, ", By: ", reflect.TypeOf(handler).String())
 	ServerMuxHandle(ptr, pattern, wrapHandler(pattern, handler))
 }
 
@@ -245,11 +268,11 @@ func GetCallerName(layer int) string {
 
 // Register : native method
 func Register(p uintptr) {
-	C.init(unsafe.Pointer(p))
+	C.tingyun_go_init(unsafe.Pointer(p))
 }
 func init() {
-	C.init(unsafe.Pointer(reflect.ValueOf(WrapServerServe).Pointer()))
-	C.init(unsafe.Pointer(reflect.ValueOf(WrapServerMuxHandle).Pointer()))
-	C.init(unsafe.Pointer(reflect.ValueOf(WrapHttpClientDo).Pointer()))
-	C.init(unsafe.Pointer(reflect.ValueOf(GetGID).Pointer()))
+	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WrapServerServe).Pointer()))
+	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WrapServerMuxHandle).Pointer()))
+	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WrapHttpClientDo).Pointer()))
+	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(GetGID).Pointer()))
 }

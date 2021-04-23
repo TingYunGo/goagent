@@ -43,8 +43,9 @@ const (
 
 //Action : 事务对象
 type Action struct {
-	name           string
+	category       string
 	url            string
+	path           string
 	method         string
 	httpMethod     string
 	trackID        string
@@ -56,6 +57,7 @@ type Action struct {
 	customParams   map[string]string
 	time           timeRange
 	root           *Component
+	current        *Component
 	callbacks      []interface{}
 	tracerIDMaker  int32
 	statusCode     uint16
@@ -79,10 +81,10 @@ func (a *Action) CreateExternalComponent(url string, method string) *Component {
 	}
 	c := &Component{
 		action:         a,
-		name:           url,
+		instance:       url,
 		method:         method,
 		protocol:       protocol,
-		tracerParentID: a.root.tracerID,
+		tracerParentID: a.current.tracerID,
 		tracerID:       a.makeTracerID(),
 		exID:           false,
 		callStack:      nil,
@@ -115,12 +117,11 @@ func (a *Action) CreateMQComponent(vender string, isConsumer bool, host, queue s
 
 	c := &Component{
 		action:         a,
-		name:           "",
 		method:         GetCallerName(1),
 		protocol:       "",
 		vender:         vender,
 		instance:       getValidString(host, "NULL") + "/" + getValidString(queue, "NULL"),
-		tracerParentID: a.root.tracerID,
+		tracerParentID: a.current.tracerID,
 		tracerID:       a.makeTracerID(),
 		exID:           false,
 		callStack:      nil,
@@ -146,12 +147,11 @@ func (a *Action) CreateRedisComponent(host, cmd, key, method string) *Component 
 	key = getValidString(key, "NULL")
 	c := &Component{
 		action:         a,
-		name:           "",
 		method:         method,
 		instance:       getValidString(host, "NULL") + "/" + key,
 		table:          key,
 		op:             cmd,
-		tracerParentID: a.root.tracerID,
+		tracerParentID: a.current.tracerID,
 		tracerID:       a.makeTracerID(),
 		exID:           false,
 		callStack:      nil,
@@ -180,14 +180,13 @@ func (a *Action) CreateDBComponent(dbType uint8, host string, dbname string, tab
 	}
 	c := &Component{
 		action:         a,
-		name:           "",
 		method:         method,
 		vender:         getValidString(dbNameMap[nameID], "UnDefDatabase"),
 		instance:       getValidString(host, "NULL") + "/" + getValidString(dbname, "NULL"),
 		table:          getValidString(table, "NULL"),
 		op:             op,
 		callStack:      nil,
-		tracerParentID: a.root.tracerID,
+		tracerParentID: a.current.tracerID,
 		tracerID:       a.makeTracerID(),
 		time:           timeRange{time.Now(), -1},
 		exID:           false,
@@ -204,14 +203,13 @@ func (a *Action) CreateMongoComponent(host, database, collection, op, method str
 	}
 	c := &Component{
 		action:         a,
-		name:           "",
 		method:         method,
 		vender:         getValidString(dbNameMap[ComponentMongo-ComponentDefaultDB], "MongoDB"),
 		instance:       getValidString(host, "NULL") + "/" + getValidString(database, "NULL"),
 		table:          getValidString(collection, "NULL"),
 		op:             op,
 		callStack:      nil,
-		tracerParentID: a.root.tracerID,
+		tracerParentID: a.current.tracerID,
 		tracerID:       a.makeTracerID(),
 		time:           timeRange{time.Now(), -1},
 		exID:           false,
@@ -232,13 +230,12 @@ func (a *Action) CreateSQLComponent(dbType uint8, host string, dbname string, sq
 	}
 	c := &Component{
 		action:         a,
-		name:           "",
 		method:         method,
 		sql:            sql,
 		vender:         getValidString(dbNameMap[nameID], "UnDefDatabase"),
 		instance:       getValidString(host, "NULL") + "/" + getValidString(dbname, "NULL"),
 		callStack:      nil,
-		tracerParentID: a.root.tracerID,
+		tracerParentID: a.current.tracerID,
 		tracerID:       a.makeTracerID(),
 		time:           timeRange{time.Now(), -1},
 		exID:           false,
@@ -257,15 +254,16 @@ func (a *Action) CreateComponent(method string) *Component {
 	}
 	c := &Component{
 		action:         a,
-		name:           "",
 		method:         url.QueryEscape(method),
 		callStack:      nil,
-		tracerParentID: a.root.tracerID,
+		tracerParentID: a.current.tracerID,
 		tracerID:       a.makeTracerID(),
 		time:           timeRange{time.Now(), -1},
 		exID:           false,
 		_type:          ComponentDefault,
 	}
+	c.parent = a.current
+	a.current = c
 	a.cache.Put(c)
 	return c
 }
@@ -363,13 +361,13 @@ func (a *Action) SetName(name string, method string) {
 	if a == nil || a.stateUsed != actionUsing {
 		return
 	}
-	if len(a.url) == 0 {
-		a.url = a.name
+	if name == "URI" {
+		a.path = method
+	} else {
+		a.method = method
+		a.root.method = method
 	}
-	a.name = name
-	a.method = method
-	a.root.method = method
-	a.root.name = name
+	a.category = name
 }
 
 // SetHTTPMethod : 设置 HTTP请求方法名
@@ -385,7 +383,11 @@ func (a *Action) GetName() string {
 	if a == nil {
 		return ""
 	}
-	return formatActionName(a.name, a.method, !strings.Contains(a.trackID, ";n="))
+	path := a.path
+	if a.category != "URI" {
+		path = a.method
+	}
+	return formatActionName(a.category, path, !strings.Contains(a.trackID, ";n="))
 }
 
 // GetURL : 取事务的 URL
@@ -546,8 +548,9 @@ func (a *Action) destroy() {
 	if a == nil || a.stateUsed == actionUnused {
 		return
 	}
-	a.name = ""
+	a.category = ""
 	a.url = ""
+	a.path = ""
 	a.method = ""
 	a.httpMethod = ""
 	a.trackID = ""

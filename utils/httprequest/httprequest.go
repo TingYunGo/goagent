@@ -105,7 +105,9 @@ func New(url string, params map[string]string, data []byte, duration time.Durati
 			if exception := recover(); exception != nil {
 				fmt.Println(exception)
 			}
-			request.Body.Close()
+			if request.Body != nil && request.Body != http.NoBody {
+				request.Body.Close()
+			}
 		}()
 		response, err := client.Do(request)
 		if err != nil {

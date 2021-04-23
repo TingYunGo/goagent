@@ -10,7 +10,7 @@ import (
 // Component : 构成事务的组件过程
 type Component struct {
 	action         *Action
-	name           string
+	parent         *Component
 	method         string
 	classname      string
 	txdata         string
@@ -102,7 +102,16 @@ func (c *Component) Finish() {
 //End : 内部使用, skip为跳过的调用栈数
 func (c *Component) End(skip int) {
 	if c != nil {
+		if c.action == nil {
+			return
+		}
+		if c.parent == nil && c != c.action.root {
+			c.parent = c.action.root
+		}
 		c.time.End()
+		if c._type == ComponentDefault && c.action.current == c && c != c.action.root {
+			c.action.current = c.parent
+		}
 		if len(c.callStack) > 0 {
 			return
 		}
@@ -170,7 +179,7 @@ func (c *Component) CreateComponent(method string) *Component {
 	}
 	r := &Component{
 		action:         c.action,
-		name:           "",
+		parent:         c.action.current,
 		method:         url.QueryEscape(method),
 		callStack:      nil,
 		tracerParentID: c.tracerID,
@@ -179,6 +188,7 @@ func (c *Component) CreateComponent(method string) *Component {
 		exID:           false,
 		_type:          ComponentDefault,
 	}
+	c.action.current = c
 	c.action.cache.Put(r)
 	return r
 }
@@ -187,8 +197,8 @@ func (c *Component) destroy() {
 	if c._type == componentUnused {
 		return
 	}
-	c.name = ""
 	c.method = ""
+	c.parent = nil
 	c.classname = ""
 	c.txdata = ""
 	c.protocol = ""

@@ -87,13 +87,12 @@ func (a *application) init(configfile string) (*application, error) {
 	a.logger.Println(log.LevelInfo, "App Init by ", configfile)
 	return a, nil
 }
-func (a *application) createAction(name string, method string) (*Action, error) {
+func (a *application) createAction(category string, method string) (*Action, error) {
 	if enabled := readServerConfigBool(configServerConfigBoolAgentEnabled, true); !enabled {
 		return nil, errors.New("Agent disabled by server config")
 	}
 	action := &Action{
-		name:           name,
-		method:         method,
+		category:       category,
 		url:            "",
 		trackID:        "",
 		trackEnable:    false,
@@ -104,14 +103,19 @@ func (a *application) createAction(name string, method string) (*Action, error) 
 		stateUsed:      actionUsing,
 		tracerIDMaker:  0,
 		root: &Component{
-			name:           name,
-			method:         method,
 			tracerParentID: -1,
 			exID:           false,
 			callStack:      nil,
 			time:           timeRange{time.Now(), -1},
 			_type:          ComponentDefault,
 		},
+	}
+	action.current = action.root
+	if category == "URI" {
+		action.path = method
+	} else {
+		action.method = method
+		action.root.method = method
 	}
 	action.root.action = action
 	action.root.tracerID = action.makeTracerID()
