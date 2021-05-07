@@ -6,10 +6,13 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/TingYunGo/goagent/libs/tystring"
 )
 
 func round(x float64) int {
@@ -294,4 +297,58 @@ func parseMethod(method string) (string, string) {
 		classRet = classRet + "." + array[i]
 	}
 	return classRet, array[arrayLen-1]
+}
+func getExt(name string, token byte) string {
+	for i := len(name); i > 0; i-- {
+		if name[i-1] == token {
+			return name[i:]
+		}
+	}
+	return name
+}
+func fileExtName(name string) string {
+	for i := len(name); i > 0; i-- {
+		if name[i-1] == '.' {
+			return name[i:]
+		}
+	}
+	return ""
+}
+func isBool(value string) bool {
+	return tystring.CaseCMP(value, "true") == 0 || tystring.CaseCMP(value, "false") == 0
+}
+func isNumber(value string) bool {
+	for i := 0; i < len(value); i++ {
+		v := value[i] - '0'
+		if v < 0 || v > 9 {
+			return false
+		}
+	}
+	return true
+}
+func toBool(value string) (bool, error) {
+	if !isBool(value) {
+		return false, errors.New("not boolean")
+	}
+	return tystring.CaseCMP(value, "true") == 0, nil
+}
+
+func fileExist(filepath string) bool {
+	if _, err := os.Stat(filepath); os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+func readLink(path string) string {
+	if link, err := os.Readlink(path); err != nil {
+		return path
+	} else {
+		if strings.Index(link, "/") == 0 {
+			return link
+		}
+		if pathIndex := strings.LastIndex(path, "/"); pathIndex >= 0 {
+			return string(path[0:pathIndex]) + "/" + link
+		}
+		return link
+	}
 }

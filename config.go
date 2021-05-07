@@ -4,6 +4,7 @@ package tingyun3
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -11,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/TingYunGo/goagent/libs/configfile"
 	"github.com/TingYunGo/goagent/utils/cache_config"
 	log "github.com/TingYunGo/goagent/utils/logger"
 	"github.com/TingYunGo/goagent/utils/service"
@@ -95,7 +97,9 @@ const (
 
 var localStringKeyMap = map[string]int{
 	"nbs.host":          configLocalStringNbsHost,
+	"collectors":        configLocalStringNbsHost,
 	"nbs.license_key":   configLocalStringNbsLicenseKey,
+	"license_key":       configLocalStringNbsLicenseKey,
 	"nbs.app_name":      configLocalStringNbsAppName,
 	"nbs.level":         configLocalStringNbsLevel,
 	"nbs.log_file_name": configLocalStringNbsLogFileName,
@@ -248,17 +252,61 @@ type configurations struct {
 	reported      bool
 }
 
-func parseConfig(filename string, c *cache_config.Configuration) error {
-	bytes, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return err
+func parseConfig(filenames string, c *cache_config.Configuration) error {
+	files := strings.Split(filenames, ":")
+	nameFound := false
+	for _, filename := range files {
+		bytes, err := ioutil.ReadFile(filename)
+		if err != nil {
+			return err
+		}
+		extName := fileExtName(filename)
+		if extName == "json" {
+			jsonData := map[string]interface{}{}
+			if err = json.Unmarshal(bytes, &jsonData); err != nil {
+				return err
+			}
+			for k, v := range jsonData {
+				if k == "nbs.app_name" {
+					nameFound = true
+				}
+				c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, k, v)
+			}
+		} else if extName == "conf" {
+
+			conf := configfile.Parse(bytes)
+			if conf == nil {
+				return errors.New("conf parse failed")
+			}
+			session := conf.Session("")
+			if session != nil {
+				for k, v := range session {
+					if !v.IsArray() {
+						value := v.Get()
+						if isBool(value) {
+							bvalue, _ := toBool(value)
+							c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, k, bvalue)
+						} else if isNumber(value) {
+							nvalue, _ := strconv.Atoi(value)
+							c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, k, nvalue)
+						} else {
+							if k == "nbs.app_name" {
+								nameFound = true
+							} else if k == "collectors" {
+								collectors := strings.Split(value, ",")
+								if len(collectors) > 0 {
+									value = collectors[0]
+								}
+							}
+							c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, k, value)
+						}
+					}
+				}
+			}
+		}
 	}
-	jsonData := map[string]interface{}{}
-	if err = json.Unmarshal(bytes, &jsonData); err != nil {
-		return err
-	}
-	for k, v := range jsonData {
-		c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, k, v)
+	if !nameFound {
+		c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "nbs.app_name", getDefaultAppName())
 	}
 	c.Commit()
 	return nil

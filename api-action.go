@@ -350,7 +350,8 @@ func formatActionName(instance string, method string, isTransaction bool) string
 	if isTransaction {
 		preName = "Transaction/"
 	}
-	return preName + url.QueryEscape(instance) + "/" + url.QueryEscape(method)
+	return preName + instance + "/" + method
+	//	return preName + url.QueryEscape(instance) + "/" + url.QueryEscape(method)
 }
 
 //SetName : 设置HTTP请求的友好名称

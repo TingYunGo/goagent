@@ -8,6 +8,8 @@ package tingyun3
 import (
 	"os"
 
+	"github.com/TingYunGo/goagent/libs/tystring"
+
 	"github.com/TingYunGo/goagent/utils/logger"
 )
 
@@ -59,12 +61,40 @@ func Log() *log.Logger {
 var configDisabled bool = false
 var app *application = nil
 
+var defaultAppName = "GoApp"
+
+func getDefaultAppName() string {
+	return defaultAppName
+}
+func checkOneagent() bool {
+	if tystring.CaseCMP(os.Getenv("TINGYUN_ONEAGENT_GO"), "enable") != 0 {
+		return false
+	}
+	if !fileExist("/opt/tingyun-oneagent/conf/oneagent.conf") {
+		return false
+	}
+	if !fileExist("/opt/tingyun-oneagent/conf/go.conf") {
+		return false
+	}
+	return true
+}
 func init() {
-	//取配置文件
-	//
+	//check user defined
 	configFile := os.Getenv("TINGYUN_GO_APP_CONFIG")
+	//check oneagent defined
+	if len(configFile) == 0 {
+		if checkOneagent() {
+			configFile = "/opt/tingyun-oneagent/conf/oneagent.conf:/opt/tingyun-oneagent/conf/go.conf"
+		}
+	}
+	//default
 	if len(configFile) == 0 {
 		configFile = "/etc/tingyun/go_app_config.json"
+	}
+	if appname := os.Getenv("TINGYUN_GO_APP_NAME"); len(appname) > 0 {
+		defaultAppName = appname
+	} else {
+		defaultAppName = getExt(readLink("/proc/self/exe"), '/')
 	}
 	tingyunAppInit(configFile)
 }
