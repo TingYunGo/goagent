@@ -6,6 +6,7 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"runtime"
 	"strconv"
@@ -351,4 +352,64 @@ func readLink(path string) string {
 		}
 		return link
 	}
+}
+
+//go:nosplit
+func isSpace(t byte) bool {
+	return (t <= 0x20) && (t > 0)
+}
+
+//go:nosplit
+func isHex(ch byte) bool {
+	return ch-'0' < 10 || ch-'a' < 6 || ch-'A' < 6
+}
+func trimSpace(value string) string {
+	begin := 0
+	for ; begin < len(value); begin++ {
+		if !isSpace(value[begin]) {
+			break
+		}
+	}
+	value = value[begin:]
+	end := len(value)
+	if end == 0 {
+		return value
+	}
+	for ; end > 0; end-- {
+		if !isSpace(value[end-1]) {
+			break
+		}
+	}
+	return value[:end]
+}
+
+func getContainerID() string {
+	bytes, _ := ioutil.ReadFile("/proc/self/cgroup")
+	lines := strings.Split(string(bytes), "\n")
+	for _, line := range lines {
+		parts := strings.Split(trimSpace(line), ":")
+		groupPath := ""
+		if len(parts) > 0 {
+			groupPath = parts[len(parts)-1]
+		}
+		parts = strings.Split(groupPath, "/")
+		groupName := ""
+		for _, part := range parts {
+			if v := trimSpace(part); len(v) > 0 {
+				groupName = v
+			}
+		}
+		if fileExtName(groupName) == "scope" {
+			groupName = groupName[0 : len(groupName)-6]
+		}
+		if offset := len(groupName); offset >= 64 {
+			for offset > 0 && isHex(groupName[offset-1]) {
+				offset--
+			}
+			if len(groupName)-offset == 64 {
+				return groupName[offset:]
+			}
+		}
+	}
+	return ""
 }

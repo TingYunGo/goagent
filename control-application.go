@@ -346,7 +346,7 @@ func makeLoginRequest() ([]byte, error) {
 				"audit":             app.configs.local.CBools.Read(configLocalBoolAudit, false),
 				"nbs.max_log_count": app.configs.local.CIntegers.Read(configLocalIntegerNbsMaxLogCount, 3),
 				"nbs.max_log_size":  app.configs.local.CIntegers.Read(configLocalIntegerNbsMaxLogSize, 10),
-				"nbs.ssl":           app.configs.local.CBools.Read(configLocalBoolSSL, true),
+				"nbs.ssl":           app.configs.local.CBools.Read(configLocalBoolSSL, false),
 			},
 			"env": map[string]string{
 				"cmdline":    getPath(),

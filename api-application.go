@@ -6,6 +6,7 @@ package tingyun3
 //面向api使用者的接口实现部分
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/TingYunGo/goagent/libs/tystring"
@@ -78,12 +79,27 @@ func checkOneagent() bool {
 	}
 	return true
 }
+
+var isOneagent = false
+
+func oneagentLogPath() string {
+	if isOneagent {
+		if containerID := getContainerID(); len(containerID) > 0 {
+			return fmt.Sprintf("/opt/tingyun-oneagent/logs/agent/golang-agent-%s-%d.log", containerID, os.Getpid())
+		} else {
+			return fmt.Sprintf("/opt/tingyun-oneagent/logs/agent/golang-agent-%d.log", os.Getpid())
+		}
+	}
+	return ""
+}
+
 func init() {
 	//check user defined
 	configFile := os.Getenv("TINGYUN_GO_APP_CONFIG")
 	//check oneagent defined
 	if len(configFile) == 0 {
 		if checkOneagent() {
+			isOneagent = true
 			configFile = "/opt/tingyun-oneagent/conf/oneagent.conf:/opt/tingyun-oneagent/conf/go.conf"
 		}
 	}

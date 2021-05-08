@@ -97,17 +97,20 @@ const (
 
 var localStringKeyMap = map[string]int{
 	"nbs.host":          configLocalStringNbsHost,
-	"collectors":        configLocalStringNbsHost,
 	"nbs.license_key":   configLocalStringNbsLicenseKey,
-	"license_key":       configLocalStringNbsLicenseKey,
 	"nbs.app_name":      configLocalStringNbsAppName,
 	"nbs.level":         configLocalStringNbsLevel,
 	"nbs.log_file_name": configLocalStringNbsLogFileName,
+	"collectors":        configLocalStringNbsHost,
+	"license_key":       configLocalStringNbsLicenseKey,
+	"agent_log_level":   configLocalStringNbsLevel,
 }
 var localBoolKeyMap = map[string]int{
 	"nbs.agent_enabled": configLocalBoolAgentEnable,
 	"nbs.ssl":           configLocalBoolSSL,
 	"nbs.audit":         configLocalBoolAudit,
+	"audit_mode":        configLocalBoolAudit,
+	"agent_enabled":     configLocalBoolAgentEnable,
 }
 
 var localIntegerKeyMap = map[string]int{
@@ -117,6 +120,8 @@ var localIntegerKeyMap = map[string]int{
 	"nbs.max_log_count":     configLocalIntegerNbsMaxLogCount,
 	"nbs.action_cache_max":  configLocalIntegerNbsActionCacheMax,
 	"nbs.action_report_max": configLocalIntegerNbsActionReportMax,
+	"agent_log_file_count":  configLocalIntegerNbsMaxLogCount,
+	"agent_log_file_size":   configLocalIntegerNbsMaxLogSize,
 }
 
 var serverStringKeyMap = map[string]int{
@@ -292,11 +297,6 @@ func parseConfig(filenames string, c *cache_config.Configuration) error {
 						} else {
 							if k == "nbs.app_name" {
 								nameFound = true
-							} else if k == "collectors" {
-								collectors := strings.Split(value, ",")
-								if len(collectors) > 0 {
-									value = collectors[0]
-								}
 							}
 							c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, k, value)
 						}
@@ -307,6 +307,9 @@ func parseConfig(filenames string, c *cache_config.Configuration) error {
 	}
 	if !nameFound {
 		c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "nbs.app_name", getDefaultAppName())
+	}
+	if oneagentLog := oneagentLogPath(); len(oneagentLog) > 0 {
+		c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "nbs.log_file_name", oneagentLog)
 	}
 	c.Commit()
 	return nil

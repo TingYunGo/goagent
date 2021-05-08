@@ -27,6 +27,7 @@ type serviceDC struct {
 	uploadHost   string
 	inLogin      bool
 	lastAlive    time.Time
+	lastValidDC  int
 }
 
 func (s *serviceDC) ReleaseRequest() {
@@ -137,18 +138,21 @@ func (s *serviceDC) Login(callback func(error, map[string]interface{})) error {
 			break
 		}
 		if e != nil {
+			s.lastValidDC++
 			s.inLogin = false
 			callback(e, nil)
 		}
 	})
 	if err == nil {
 		s.inLogin = true
+	} else {
+		s.lastValidDC++
 	}
 	return err
 }
 func (s *serviceDC) getConfigProtocol() string {
 	protocol := "https"
-	if !s.configs.local.CBools.Read(configLocalBoolSSL, true) {
+	if !s.configs.local.CBools.Read(configLocalBoolSSL, false) {
 		protocol = "http"
 	}
 	return protocol
@@ -221,6 +225,7 @@ func (s *serviceDC) init(config *configurations) {
 	s.request = nil
 	s.inLogin = false
 	s.locked = 0
+	s.lastValidDC = 0
 }
 
 func parseJSON(data []byte, statusCode int, err error) (map[string]interface{}, error) {
@@ -260,7 +265,12 @@ func parseRedirectResult(jsonData map[string]interface{}) (string, error) {
 }
 
 func getRedirectHost(s *serviceDC, protocol string) string {
-	host := s.configs.local.CStrings.Read(configLocalStringNbsHost, "")
+	hosts := strings.Split(s.configs.local.CStrings.Read(configLocalStringNbsHost, ""), ",")
+	if len(hosts) == 0 {
+		return ""
+	}
+	host := hosts[s.lastValidDC%len(hosts)]
+
 	array := strings.Split(host, "://")
 	if len(array) > 1 {
 		host = array[1]
