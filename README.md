@@ -1,75 +1,106 @@
 # goagent
 TingYun APM3.0 - Go
 
-### 嵌码
-1. 抓取gin框架数据
+## 嵌码
+### 自动嵌码
+1. gin框架自动嵌码
 	
-  在工程中添加文件tingyun.go:
+	在工程中引入 "github.com/TingYunGo/goagent/frameworks/gin"
 
-tingyun.go
+	举例: 工程文件夹中添加tingyun.go文件如下
+	tingyun.go:
 ```
 package main
-
 import (
 	_ "github.com/TingYunGo/goagent/frameworks/gin"
 )
 ```
 
-2. 抓取go语言内置http框架数据
+2. go语言内置http框架自动嵌码
 
-在工程中添加文件tingyun.go:
+	在工程中引入 "github.com/TingYunGo/goagent"
 
-tingyun.go
+	举例: 在工程中添加文件tingyun.go文件如下
+	tingyun.go:
 ```
 package main
-
 import (
 	_ "github.com/TingYunGo/goagent"
 )
 ```
 
-2.  抓取数据库性能数据
+3.  数据库自动嵌码
 
-在工程中添加文件tingyun.go
+	在工程中引入 "github.com/TingYunGo/goagent/database"
 
-tingyun.go
+	举例: 在工程中添加文件tingyun.go文件如下
+	tingyun.go:
 ```
 package main
-
 import (
 	_ "github.com/TingYunGo/goagent/database"
 )
 ```
 
-2. 抓取redis性能数据
+4. redis自动嵌码
+	+ 4.1 redigo(github.com/gomodule/redigo)自动嵌码
+	
+	在工程中引入 "github.com/TingYunGo/goagent/nosql/redigo"
 
-在工程中添加文件tingyun.go
-
-tingyun.go (使用redigo驱动)
+	举例: 在工程中添加文件tingyun.go文件如下
+	tingyun.go:
 ```
 package main
-
 import (
 	_ "github.com/TingYunGo/goagent/nosql/redigo"
 )
 ```
-
-或者 (使用go-redis驱动)
+	+ 4.2 go-redis(github.com/go-redis/redis)自动嵌码
+		+ 4.2.1 gopath模式(非gomodule模式)
+		在工程中引入 "github.com/TingYunGo/goagent/nosql/go-redis"
+		举例: 在工程中添加文件tingyun.go文件如下
+		tingyun.go:
 ```
 package main
-
 import (
-	/* go mod 方式 缺省 v6, 或者禁用 go mod 时, 启用这行代码 */
 	_ "github.com/TingYunGo/goagent/nosql/go-redis"
-	
-	/* 启用 go mod 方式, 使用 go-redis/v7 版本时, 启用这行代码 */
+)
+```
+
+		+ 4.2.2 gomodule模式
+			+ 4.2.2.1 go-redis v6(缺省)版本嵌码
+			在工程中引入 "github.com/TingYunGo/goagent/nosql/go-redis"
+			举例: 在工程中添加文件tingyun.go文件如下
+			tingyun.go:
+```
+package main
+import (
+	_ "github.com/TingYunGo/goagent/nosql/go-redis"
+)
+```
+			+ 4.2.2.2 go-redis v7版本嵌码
+			在工程中引入 "github.com/TingYunGo/goagent/nosql/go-redis/v7"
+			举例: 在工程中添加文件tingyun.go文件如下
+			tingyun.go:
+```
+package main
+import (
 	_ "github.com/TingYunGo/goagent/nosql/go-redis/v7"
-	/* 启用 go mod 方式, 使用 go-redis/v8 版本时, 启用这行代码 */
+)
+```
+			+ 4.2.2.3 go-redis v8版本嵌码
+			在工程中引入 "github.com/TingYunGo/goagent/nosql/go-redis/v8"
+			举例: 在工程中添加文件tingyun.go文件如下
+			tingyun.go:
+```
+package main
+import (
 	_ "github.com/TingYunGo/goagent/nosql/go-redis/v8"
 )
 ```
 
-### 配置&运行
+
+## 配置&运行
 已经嵌码的程序需要通过环境变量指定配置文件路径
 ```
 export TINGYUN_GO_APP_CONFIG=`pwd`/tingyun.json
