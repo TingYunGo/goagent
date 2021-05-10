@@ -7,8 +7,9 @@ TingYun APM3.0 - Go
 	
 	在工程中引入 "github.com/TingYunGo/goagent/frameworks/gin"
 
-	举例: 工程文件夹中添加tingyun.go文件如下
-	tingyun.go:
+	举例: 工程文件夹中添加tingyun.go文件如下:
+	
+	tingyun.go
 ```
 package main
 import (
@@ -20,8 +21,9 @@ import (
 
 	在工程中引入 "github.com/TingYunGo/goagent"
 
-	举例: 在工程中添加文件tingyun.go文件如下
-	tingyun.go:
+	举例: 在工程中添加文件tingyun.go文件如下:
+	
+	tingyun.go
 ```
 package main
 import (
@@ -33,8 +35,9 @@ import (
 
 	在工程中引入 "github.com/TingYunGo/goagent/database"
 
-	举例: 在工程中添加文件tingyun.go文件如下
-	tingyun.go:
+	举例: 在工程中添加文件tingyun.go文件如下:
+	
+	tingyun.go
 ```
 package main
 import (
@@ -46,9 +49,10 @@ import (
 	+ 4.1 redigo(github.com/gomodule/redigo)自动嵌码
 	
 	在工程中引入 "github.com/TingYunGo/goagent/nosql/redigo"
-
-	举例: 在工程中添加文件tingyun.go文件如下
-	tingyun.go:
+	
+	举例: 在工程中添加文件tingyun.go文件如下:
+	
+	tingyun.go
 ```
 package main
 import (
@@ -57,9 +61,12 @@ import (
 ```
 	+ 4.2 go-redis(github.com/go-redis/redis)自动嵌码
 		+ 4.2.1 gopath模式(非gomodule模式)
+		
 		在工程中引入 "github.com/TingYunGo/goagent/nosql/go-redis"
-		举例: 在工程中添加文件tingyun.go文件如下
-		tingyun.go:
+		
+		举例: 在工程中添加文件tingyun.go文件如下:
+		
+		tingyun.go
 ```
 package main
 import (
@@ -69,9 +76,12 @@ import (
 
 		+ 4.2.2 gomodule模式
 			+ 4.2.2.1 go-redis v6(缺省)版本嵌码
+			
 			在工程中引入 "github.com/TingYunGo/goagent/nosql/go-redis"
-			举例: 在工程中添加文件tingyun.go文件如下
-			tingyun.go:
+			
+			举例: 在工程中添加文件tingyun.go文件如下:
+			
+			tingyun.go
 ```
 package main
 import (
@@ -79,9 +89,12 @@ import (
 )
 ```
 			+ 4.2.2.2 go-redis v7版本嵌码
+			
 			在工程中引入 "github.com/TingYunGo/goagent/nosql/go-redis/v7"
-			举例: 在工程中添加文件tingyun.go文件如下
-			tingyun.go:
+			
+			举例: 在工程中添加文件tingyun.go文件如下:
+			
+			tingyun.go
 ```
 package main
 import (
@@ -89,9 +102,12 @@ import (
 )
 ```
 			+ 4.2.2.3 go-redis v8版本嵌码
+			
 			在工程中引入 "github.com/TingYunGo/goagent/nosql/go-redis/v8"
-			举例: 在工程中添加文件tingyun.go文件如下
-			tingyun.go:
+			
+			举例: 在工程中添加文件tingyun.go文件如下:
+			
+			tingyun.go
 ```
 package main
 import (
