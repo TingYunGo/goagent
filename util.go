@@ -299,6 +299,8 @@ func parseMethod(method string) (string, string) {
 	}
 	return classRet, array[arrayLen-1]
 }
+
+//go:nosplit
 func getExt(name string, token byte) string {
 	for i := len(name); i > 0; i-- {
 		if name[i-1] == token {
@@ -307,6 +309,8 @@ func getExt(name string, token byte) string {
 	}
 	return name
 }
+
+//go:nosplit
 func fileExtName(name string) string {
 	for i := len(name); i > 0; i-- {
 		if name[i-1] == '.' {

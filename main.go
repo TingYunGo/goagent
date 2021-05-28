@@ -241,6 +241,39 @@ func WrapServerServe(srv *http.Server, l net.Listener) error {
 	return ServerServe(srv, l)
 }
 
+//go:noinline
+func httpNotFound(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(w, r)
+}
+
+//go:noinline
+func WraphttpNotFound(w http.ResponseWriter, r *http.Request) {
+	action := getAction()
+	found := action != nil
+	resWriter := w
+	if action == nil {
+		action, _ = CreateAction("URI", r.URL.Path)
+		if trackID := r.Header.Get("X-Tingyun"); len(trackID) > 0 {
+			action.SetTrackID(trackID)
+		}
+
+		rule := app.configs.dataItemRules.Get()
+		for _, item := range rule.requestHeader {
+			if value := r.Header.Get(item); len(value) > 0 {
+				action.AddRequestParam(item, value)
+			}
+		}
+		if readServerConfigBool(configServerConfigBoolCaptureParams, false) {
+			action.SetURL(r.URL.RequestURI())
+		}
+		resWriter = createWriteWraper(w, action, rule)
+	}
+	httpNotFound(resWriter, r)
+	if action != nil && !found {
+		action.Finish()
+	}
+}
+
 // GetGID return goroutine id
 //go:noinline
 func GetGID() int64 {
@@ -271,6 +304,7 @@ func Register(p uintptr) {
 	C.tingyun_go_init(unsafe.Pointer(p))
 }
 func init() {
+	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WraphttpNotFound).Pointer()))
 	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WrapServerServe).Pointer()))
 	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WrapServerMuxHandle).Pointer()))
 	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WrapHttpClientDo).Pointer()))

@@ -9,6 +9,7 @@ typedef struct {
 extern const WrapItem* TingyunWraps() {
     
     static WrapItem targets[] = {
+        {"net/http.NotFound", ".", "httpNotFound"},
         {"net/http.(*ServeMux).Handle", ".", "ServerMuxHandle"},
         {"net/http.(*Server).Serve", ".", "ServerServe"},
         {"net/http.(*Client).do", ".", "HttpClientDo"},
