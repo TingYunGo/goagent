@@ -342,10 +342,10 @@ func formatActionName(instance string, method string, isTransaction bool) string
 			method = method[classEnd+1:]
 		}
 	}
-	mlen := len(method)
-	if mlen > 1 && method[0:1] == "/" {
-		method = method[1:mlen]
-	}
+	// mlen := len(method)
+	// if mlen > 1 && method[0:1] == "/" {
+	// 	method = method[1:mlen]
+	// }
 	preName := "WebAction/"
 	if isTransaction {
 		preName = "Transaction/"
@@ -364,6 +364,8 @@ func (a *Action) SetName(name string, method string) {
 	}
 	if name == "URI" {
 		a.path = method
+	} else if name == "CLASS" {
+		a.root.classname = method
 	} else {
 		a.method = method
 		a.root.method = method
@@ -377,6 +379,12 @@ func (a *Action) SetHTTPMethod(httpMethod string) {
 		return
 	}
 	a.httpMethod = httpMethod
+}
+func (a *Action) GetMethod() string {
+	if a == nil || a.stateUsed != actionUsing {
+		return ""
+	}
+	return a.httpMethod
 }
 
 // GetName : 取事务名字
