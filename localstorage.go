@@ -4,41 +4,39 @@ package tingyun3
 
 import (
 	"sync"
-
-	odmap "github.com/TingYunGo/goagent/libs/map"
 )
 
 // Unit is The GoRoutine LocalStorage Unit
 type Unit struct {
 	lock  sync.RWMutex
-	items odmap.Map
+	items map[int64]interface{}
 }
 
 func (u *Unit) init() {
-	u.items.Init(func(a, b interface{}) bool {
-		return a.(int64) < b.(int64)
-	})
+	u.items = make(map[int64]interface{})
 }
 func (u *Unit) get(gid int64) interface{} {
 	u.lock.RLock()
 	defer u.lock.RUnlock()
-	if iterator := u.items.Find(gid); !iterator.IsEnd() {
-		return iterator.Value().Value
+	if v, found := u.items[gid]; found {
+		return v
 	}
 	return nil
 }
 func (u *Unit) set(gid int64, local interface{}) {
 	u.lock.Lock()
 	defer u.lock.Unlock()
-	u.items.Set(gid, local)
+	if u.items == nil {
+		u.init()
+	}
+	u.items[gid] = local
 }
 func (u *Unit) remove(gid int64) interface{} {
 	u.lock.Lock()
 	defer u.lock.Unlock()
-	if iterator := u.items.Find(gid); !iterator.IsEnd() {
-		r := iterator.Value().Value
-		u.items.Erase(iterator)
-		return r
+	if v, found := u.items[gid]; found {
+		delete(u.items, gid)
+		return v
 	}
 	return nil
 }
