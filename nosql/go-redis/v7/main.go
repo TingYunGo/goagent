@@ -14,7 +14,7 @@ import (
 
 	"github.com/TingYunGo/goagent"
 
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v7"
 )
 
 var skipTokens = []string{
@@ -53,7 +53,7 @@ func (h *hook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Cont
 func (h *hook) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
 	if c := tingyun3.LocalDelete(9); c != nil {
 		if info, ok := c.(*processContext); ok {
-			handleGoRedis(h.host, cmd.Args(), info.begin)
+			handleGoRedis(h.host, cmd.Args(), info.begin, cmd.Err())
 		}
 	}
 	return nil
@@ -69,7 +69,7 @@ func (h *hook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (c
 func (h *hook) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
 	if c := tingyun3.LocalDelete(9); c != nil {
 		if info, ok := c.(*processContext); ok {
-			handleGoRedis(h.host, cmds[0].Args(), info.begin)
+			handleGoRedis(h.host, cmds[0].Args(), info.begin, nil)
 		}
 	}
 	return nil
@@ -88,7 +88,7 @@ var objectSkipList = []string{
 	"SELECT",
 }
 
-func handleGoRedis(host string, args []interface{}, begin time.Time) {
+func handleGoRedis(host string, args []interface{}, begin time.Time, err error) {
 	action := tingyun3.GetAction()
 	if action == nil {
 		return
@@ -101,6 +101,9 @@ func handleGoRedis(host string, args []interface{}, begin time.Time) {
 	}
 	component := action.CreateRedisComponent(host, cmd, object, callerName)
 	component.FixBegin(begin)
+	if err != nil {
+		component.SetError(err, callerName, 3)
+	}
 	component.End(1)
 }
 
@@ -144,7 +147,7 @@ func WrapbaseClientprocess(c *baseClient, ctx context.Context, cmd redis.Cmder) 
 	err := baseClientprocess(c, ctx, cmd)
 	if req == nil {
 		tingyun3.LocalDelete(9)
-		handleGoRedis(c.opt.Addr, cmd.Args(), begin)
+		handleGoRedis(c.opt.Addr, cmd.Args(), begin, err)
 	}
 	return err
 }
@@ -165,7 +168,7 @@ func WrapbaseClientprocessPipeline(c *baseClient, ctx context.Context, cmds []re
 	e := baseClientprocessPipeline(c, ctx, cmds)
 	if req == nil {
 		tingyun3.LocalDelete(9)
-		handleGoRedis(c.opt.Addr, cmds[0].Args(), begin)
+		handleGoRedis(c.opt.Addr, cmds[0].Args(), begin, e)
 	}
 	return e
 }
