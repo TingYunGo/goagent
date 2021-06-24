@@ -190,7 +190,7 @@ func WrapbaseClientProcess(c *baseClientV6, cmd redis.Cmder) error {
 	err := baseClientProcess(c, cmd)
 	if req == nil {
 		tingyun3.LocalDelete(9)
-		handleGoRedis(c.opt.Addr, cmd.Args(), begin)
+		handleGoRedis(c.opt.Addr, cmd.Args(), begin, err)
 	}
 	return err
 }
