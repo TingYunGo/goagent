@@ -136,7 +136,7 @@ func coreRedigoDoWithTimeout(begin time.Time, c uintptr, readTimeout time.Durati
 	}
 	component := action.CreateRedisComponent(host, cmd, object, callerName)
 	component.FixBegin(begin)
-	if r == nil && err != nil {
+	if err != nil {
 		component.SetError(err, callerName, 3)
 	}
 	component.End(1)
