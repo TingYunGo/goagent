@@ -61,6 +61,9 @@ extern const WrapItem* TingyunWraps() {
         {"github.com/astaxie/beego/server/web.(*ControllerRegister).Handler", "/frameworks/beego/path/astaxie.", "beegoHandler"},
         {"github.com/astaxie/beego/server/web.(*ControllerRegister).AddAutoPrefix", "/frameworks/beego/path/astaxie.", "beegoAddAutoPrefix"},
         {"github.com/astaxie/beego/server/web.(*ControllerRegister).addWithMethodParams", "/frameworks/beego/path/astaxie.", "beegoaddWithMethodParams"},
+        
+        {"github.com/kataras/iris/v12/core/router.(*APIBuilder).CreateRoutes", "/frameworks/iris/v12.", "irisCreateRoutes"},
+        {"github.com/kataras/iris/v12/mvc.(*ControllerActivator).handleMany",  "/frameworks/iris/v12.", "irishandleMany"},
 
         {"github.com/gomodule/redigo/redis.DialContext", "/nosql/redigo.", "RedigoDialContext"},
         {"github.com/gomodule/redigo/redis.(*conn).Close", "/nosql/redigo.", "RedigoConnClose"},

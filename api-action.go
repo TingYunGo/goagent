@@ -393,10 +393,18 @@ func (a *Action) GetName() string {
 		return ""
 	}
 	path := a.path
-	if a.category != "URI" {
+	category := a.category
+	if a.category == "CLASS" {
+		if len(a.method) > 0 {
+			category = a.root.classname
+			path = a.method
+		} else {
+			path = a.root.classname
+		}
+	} else if a.category != "URI" {
 		path = a.method
 	}
-	return formatActionName(a.category, path, !strings.Contains(a.trackID, ";n="))
+	return formatActionName(category, path, !strings.Contains(a.trackID, ";n="))
 }
 
 // GetURL : 取事务的 URL
