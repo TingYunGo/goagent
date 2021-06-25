@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
-	"time"
-
 	"github.com/TingYunGo/goagent/libs/tystring"
 
 	"github.com/TingYunGo/goagent"
