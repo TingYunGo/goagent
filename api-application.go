@@ -92,7 +92,9 @@ func oneagentLogPath() string {
 	}
 	return ""
 }
-
+func envGetAppName() string {
+	return os.Getenv("TINGYUN_GO_APP_NAME")
+}
 func init() {
 	//check user defined
 	configFile := os.Getenv("TINGYUN_GO_APP_CONFIG")
@@ -107,7 +109,7 @@ func init() {
 	if len(configFile) == 0 {
 		configFile = "/etc/tingyun/go_app_config.json"
 	}
-	if appname := os.Getenv("TINGYUN_GO_APP_NAME"); len(appname) > 0 {
+	if appname := envGetAppName(); len(appname) > 0 {
 		defaultAppName = appname
 	} else {
 		defaultAppName = getExt(readLink("/proc/self/exe"), '/')

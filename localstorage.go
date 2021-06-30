@@ -72,6 +72,11 @@ func routineLocalRemove() interface{} {
 	return storages[gid%localStorageNodes].remove(gid)
 }
 
+// Clear Routine Local Storage
+func LocalClear() {
+	routineLocalRemove()
+}
+
 // RoutineLocal : 事务线程局部存储对象
 type RoutineLocal struct {
 	action    *Action

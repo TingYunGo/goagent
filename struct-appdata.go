@@ -84,6 +84,7 @@ func (r *structAppData) Append(action *Action) {
 		trace.Method = protoc.HttpMethod_UNKNOWN
 	}
 	trace.Url = action.url
+	trace.Ip = action.clientIP
 	//trace.NoSample: 当前是否启用采样
 	//
 	detail := trace.Detail
@@ -135,6 +136,12 @@ func (r *structAppData) Append(action *Action) {
 			params.Instance = component.instance
 			params.Vendor = component.getVender()
 			params.TxData = component.txdata
+			if component._type == ComponentExternal {
+				params.ExternalId = component.unicID()
+				params.Instance = parseHost(component.instance)
+			} else {
+				params.Instance = component.instance
+			}
 			traceItem.Params = params
 		}
 		detail.Tracers = append(detail.Tracers, traceItem)

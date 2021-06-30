@@ -28,6 +28,7 @@ const (
 	configLocalBoolAgentEnable           = 1
 	configLocalBoolSSL                   = 2
 	configLocalBoolAudit                 = log.ConfigBoolNBSAudit
+	configLocalBoolWebsocketEnabled      = 4
 	configLocalBoolMax                   = 8
 	configLocalIntegerNbsPort            = 1
 	configLocalIntegerNbsSaveCount       = 2
@@ -104,11 +105,13 @@ var localStringKeyMap = map[string]int{
 	"collectors":        configLocalStringNbsHost,
 	"license_key":       configLocalStringNbsLicenseKey,
 	"agent_log_level":   configLocalStringNbsLevel,
+	"agent_log_file":    configLocalStringNbsLogFileName,
 }
 var localBoolKeyMap = map[string]int{
 	"nbs.agent_enabled": configLocalBoolAgentEnable,
 	"nbs.ssl":           configLocalBoolSSL,
 	"nbs.audit":         configLocalBoolAudit,
+	"websocket_enabled": configLocalBoolWebsocketEnabled,
 	"audit_mode":        configLocalBoolAudit,
 	"agent_enabled":     configLocalBoolAgentEnable,
 }
@@ -258,6 +261,12 @@ type configurations struct {
 }
 
 func parseConfig(filenames string, c *cache_config.Configuration) error {
+	//set default value
+	c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "audit_mode", false)
+	c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "agent_enabled", true)
+	c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "websocket_enabled", false)
+	c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "agent_log_level", "info")
+
 	files := strings.Split(filenames, ":")
 	nameFound := false
 	for _, filename := range files {
@@ -305,7 +314,34 @@ func parseConfig(filenames string, c *cache_config.Configuration) error {
 			}
 		}
 	}
-	if !nameFound {
+
+	if agent_enabled := os.Getenv("agent_enabled"); len(agent_enabled) > 0 {
+		enabled := caseCMP(agent_enabled, "false") != 0
+		c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "agent_enabled", enabled)
+	}
+	if audit_mode := os.Getenv("audit_mode"); len(audit_mode) > 0 {
+		enabled := caseCMP(audit_mode, "false") != 0
+		c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "audit_mode", enabled)
+	}
+	if websocket_enabled := os.Getenv("websocket_enabled"); len(websocket_enabled) > 0 {
+		enabled := caseCMP(websocket_enabled, "false") != 0
+		c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "websocket_enabled", enabled)
+	}
+	if agent_log_level := os.Getenv("agent_log_level"); len(agent_log_level) > 0 {
+		c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "agent_log_level", agent_log_level)
+	}
+	if agent_log_file := os.Getenv("agent_log_file"); len(agent_log_file) > 0 {
+		c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "agent_log_file", agent_log_file)
+	}
+	if license_key := os.Getenv("license_key"); len(license_key) > 0 {
+		c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "license_key", license_key)
+	}
+	if collectors := os.Getenv("collectors"); len(collectors) > 0 {
+		c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "collectors", collectors)
+	}
+	if env_app_name := envGetAppName(); len(env_app_name) > 0 {
+		c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "nbs.app_name", env_app_name)
+	} else if !nameFound {
 		c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "nbs.app_name", getDefaultAppName())
 	}
 	if oneagentLog := oneagentLogPath(); len(oneagentLog) > 0 {

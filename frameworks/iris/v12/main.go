@@ -6,14 +6,18 @@ package irisframe
 
 import (
 	"fmt"
+	"net"
 	"reflect"
 	"runtime"
+
 	"github.com/TingYunGo/goagent/libs/tystring"
 
 	"github.com/TingYunGo/goagent"
 	"github.com/kataras/iris/v12/context"
 	"github.com/kataras/iris/v12/core/router"
 	"github.com/kataras/iris/v12/mvc"
+	"github.com/kataras/iris/v12/websocket"
+	"github.com/kataras/neffos"
 )
 
 const (
@@ -49,7 +53,7 @@ func wrapHandler(handler context.Handler, path string) context.Handler {
 			action := tingyun3.GetAction()
 			if action != nil {
 				if len(info.name) == 0 && len(info.method) > 0 {
-					action.SetName("ROUTE", info.name)
+					action.SetName("ROUTE", info.method)
 				} else if len(info.name) > 0 {
 					action.SetName("Method", info.method)
 					action.SetName("CLASS", info.name)
@@ -90,7 +94,125 @@ func WrapirishandleMany(c *mvc.ControllerActivator, method, path, funcName strin
 	return irishandleMany(c, method, path, funcName, override, middleware...)
 }
 
+//go:noinline
+func routerFileServer(directory string, opts ...router.DirOptions) context.Handler {
+	fmt.Println(directory, opts)
+	return nil
+}
+
+//go:noinline
+func WraprouterFileServer(directory string, opts ...router.DirOptions) context.Handler {
+	handler := routerFileServer(directory, opts...)
+	return func(ctx context.Context) {
+		if tingyun3.LocalGet(irisRoutineLocalIndex) == nil {
+			action := tingyun3.GetAction()
+			if action != nil {
+				action.SetName("URI", ctx.Request().URL.Path)
+			}
+			tingyun3.LocalSet(irisRoutineLocalIndex, 1)
+			defer tingyun3.LocalDelete(irisRoutineLocalIndex)
+		}
+		handler(ctx)
+	}
+}
+
+//github.com/kataras/neffos.(*Conn).handleMessage
+//go:noinline
+func neffosConnhandleMessage(c *neffos.Conn, msg neffos.Message) error {
+	fmt.Println(c, msg)
+	return nil
+}
+
+func readBoolean(name string, defaultValue bool) bool {
+	retvalue := defaultValue
+	if value, found := tingyun3.ConfigRead(name); found {
+		if v, ok := value.(bool); ok {
+			retvalue = v
+		}
+	}
+	return retvalue
+}
+
+//go:noinline
+func WrapneffosConnhandleMessage(c *neffos.Conn, msg neffos.Message) error {
+	action := tingyun3.GetAction()
+	preaction := action
+	if preaction == nil {
+		r := c.Socket().Request()
+		if readBoolean("websocket_enabled", false) {
+			if action, _ = tingyun3.CreateAction("URI", r.URL.Path); action != nil {
+				tingyun3.SetAction(action)
+				if host, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
+					action.SetName("CLIENTIP", host)
+				}
+			}
+		}
+	}
+
+	defer func() {
+		if preaction == nil && action != nil {
+			action.Finish()
+			tingyun3.LocalClear()
+		}
+	}()
+	return neffosConnhandleMessage(c, msg)
+}
+
+//go:noinline
+func websocketUpgrade(ctx context.Context, idGen websocket.IDGenerator, s *neffos.Server) *neffos.Conn {
+	fmt.Println(ctx, idGen, s)
+	return nil
+}
+
+//go:noinline
+func WrapwebsocketUpgrade(ctx context.Context, idGen websocket.IDGenerator, s *neffos.Server) *neffos.Conn {
+
+	action := tingyun3.GetAction()
+	if action != nil {
+		action.SetName("websocket", "Upgrade")
+	}
+	r := websocketUpgrade(ctx, idGen, s)
+	return r
+}
+
+//go:noinline
+func neffosmakeEventFromMethod(v reflect.Value, method reflect.Method, eventMatcher neffos.EventMatcherFunc) (eventName string, cb neffos.MessageHandlerFunc) {
+	fmt.Println(v, method, eventMatcher)
+	return "", nil
+}
+
+//go:noinline
+func WrapneffosmakeEventFromMethod(v reflect.Value, method reflect.Method, eventMatcher neffos.EventMatcherFunc) (eventName string, cb neffos.MessageHandlerFunc) {
+	name, handler := neffosmakeEventFromMethod(v, method, eventMatcher)
+	if handler == nil {
+		return name, handler
+	}
+	className := v.Type().String()
+	methodName := method.Name
+	if tystring.SubString(className, 0, 1) == "*" {
+		className = tystring.SubString(className, 1, len(className))
+	}
+	eventName = name
+	cb = func(nsconn *neffos.NSConn, msg neffos.Message) error {
+		action := tingyun3.GetAction()
+		if action != nil {
+			if len(name) > 0 {
+				action.SetName("Method", methodName)
+			}
+			if len(className) > 0 {
+				action.SetName("CLASS", className)
+			}
+		}
+		return handler(nsconn, msg)
+	}
+	return
+}
+
 func init() {
 	tingyun3.Register(reflect.ValueOf(WrapirisCreateRoutes).Pointer())
+	tingyun3.Register(reflect.ValueOf(WraprouterFileServer).Pointer())
+	tingyun3.Register(reflect.ValueOf(WrapwebsocketUpgrade).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapirishandleMany).Pointer())
+	tingyun3.Register(reflect.ValueOf(WrapneffosConnhandleMessage).Pointer())
+	tingyun3.Register(reflect.ValueOf(WrapneffosmakeEventFromMethod).Pointer())
 }

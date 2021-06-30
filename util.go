@@ -417,3 +417,31 @@ func getContainerID() string {
 	}
 	return ""
 }
+func parseIP(addr string) string {
+	for id := len(addr); id > 0; id-- {
+		if addr[id-1] == ':' {
+			addr = tystring.SubString(addr, 0, id-1)
+			break
+		}
+	}
+	return addr
+}
+func caseCMP(a, b string) int {
+	return tystring.CaseCMP(a, b)
+}
+func parseHost(url string) string {
+	for id := 0; id < len(url); id++ {
+		if !tystring.IsAlpha(url[id]) {
+			if tystring.SubString(url, id, 3) == "://" {
+				url = tystring.SubString(url, id+3, len(url))
+			}
+			break
+		}
+	}
+	for id := 0; id < len(url); id++ {
+		if url[id] == '/' {
+			return tystring.SubString(url, 0, id)
+		}
+	}
+	return url
+}

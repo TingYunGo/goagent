@@ -179,6 +179,7 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 				}
 			}
 		}
+		action.SetName("CLIENTIP", parseIP(r.RemoteAddr))
 		resWriter := w
 
 		if action != nil && component == nil {
@@ -193,7 +194,11 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 				}
 			}
 			if readServerConfigBool(configServerConfigBoolCaptureParams, false) {
-				action.SetURL(r.URL.RequestURI())
+				protocol := "http"
+				if r.TLS != nil {
+					protocol = "https"
+				}
+				action.SetURL(protocol + "://" + r.Host + r.RequestURI)
 			}
 			resWriter = createWriteWraper(w, action, rule)
 			setAction(action)
@@ -264,7 +269,12 @@ func WraphttpNotFound(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if readServerConfigBool(configServerConfigBoolCaptureParams, false) {
-			action.SetURL(r.URL.RequestURI())
+			protocol := "http"
+			if r.TLS != nil {
+				protocol = "https"
+			}
+			action.SetName("CLIENTIP", parseIP(r.RemoteAddr))
+			action.SetURL(protocol + "://" + r.Host + r.RequestURI)
 		}
 		resWriter = createWriteWraper(w, action, rule)
 	}

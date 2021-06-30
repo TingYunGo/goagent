@@ -48,6 +48,7 @@ type Action struct {
 	path           string
 	method         string
 	httpMethod     string
+	clientIP       string
 	trackID        string
 	actionID       string
 	cache          pool.SerialReadPool
@@ -362,7 +363,10 @@ func (a *Action) SetName(name string, method string) {
 	if a == nil || a.stateUsed != actionUsing {
 		return
 	}
-	if name == "URI" {
+	if name == "CLIENTIP" {
+		a.clientIP = method
+		return
+	} else if name == "URI" {
 		a.path = method
 	} else if name == "CLASS" {
 		a.root.classname = method
@@ -570,6 +574,7 @@ func (a *Action) destroy() {
 	a.path = ""
 	a.method = ""
 	a.httpMethod = ""
+	a.clientIP = ""
 	a.trackID = ""
 	a.actionID = ""
 	for component := a.cache.Get(); component != nil; component = a.cache.Get() {
