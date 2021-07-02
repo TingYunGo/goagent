@@ -44,7 +44,7 @@ func wrapHandler(handler context.Handler, path string) context.Handler {
 		handlerPC := reflect.ValueOf(handler).Pointer()
 		info.method = runtime.FuncForPC(handlerPC).Name()
 	}
-	token := "git.codemonky.net/TingYunGo/goagent"
+	token := "github.com/TingYunGo/goagent"
 	if tystring.SubString(info.method, 0, len(token)) == token {
 		return handler
 	}

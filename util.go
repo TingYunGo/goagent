@@ -445,3 +445,19 @@ func parseHost(url string) string {
 	}
 	return url
 }
+func parseURI(url string) string {
+	for id := 0; id < len(url); id++ {
+		if !tystring.IsAlpha(url[id]) {
+			if tystring.SubString(url, id, 3) == "://" {
+				url = tystring.SubString(url, id+3, len(url))
+			}
+			break
+		}
+	}
+	for id := 0; id < len(url); id++ {
+		if url[id] == '/' {
+			return tystring.SubString(url, id, len(url))
+		}
+	}
+	return ""
+}

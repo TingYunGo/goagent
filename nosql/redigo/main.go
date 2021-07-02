@@ -82,6 +82,21 @@ func getCallName(skip int) (callerName string) {
 var dbs dbinstanceSet
 
 //go:noinline
+func redigoDial(network, address string, options ...redigo.DialOption) (redigo.Conn, error) {
+	fmt.Println(network, address, options)
+	return nil, nil
+}
+
+//go:noinline
+func WrapredigoDial(network, address string, options ...redigo.DialOption) (redigo.Conn, error) {
+	c, e := redigoDial(network, address, options...)
+	if c != nil {
+		dbs.Set(interfaceToptr(c), address)
+	}
+	return c, e
+}
+
+//go:noinline
 func RedigoDialContext(ctx context.Context, network, address string, options ...redigo.DialOption) (redigo.Conn, error) {
 	fmt.Println("network:", network, ", address:", address)
 	return nil, nil
@@ -125,7 +140,7 @@ func coreRedigoDoWithTimeout(begin time.Time, c uintptr, readTimeout time.Durati
 	}
 	host := dbs.get(c)
 	if host == "" {
-		return
+		host = "UNKNOWN"
 	}
 	callerName := getCallName(3)
 	object := ""
@@ -159,6 +174,7 @@ func WrapRedigoDoWithTimeout(c uintptr, readTimeout time.Duration, cmd string, a
 func init() {
 	dbs.init()
 	tingyun3.Register(reflect.ValueOf(WrapRedigoDialContext).Pointer())
+	tingyun3.Register(reflect.ValueOf(WrapredigoDial).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapRedigoConnClose).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapRedigoDoWithTimeout).Pointer())
 }

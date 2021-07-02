@@ -70,6 +70,7 @@ extern const WrapItem* TingyunWraps() {
         {"github.com/kataras/neffos.makeEventFromMethod",  "/frameworks/iris/v12.", "neffosmakeEventFromMethod"},
 
         {"github.com/gomodule/redigo/redis.DialContext", "/nosql/redigo.", "RedigoDialContext"},
+        {"github.com/gomodule/redigo/redis.Dial", "/nosql/redigo.", "redigoDial"},
         {"github.com/gomodule/redigo/redis.(*conn).Close", "/nosql/redigo.", "RedigoConnClose"},
         {"github.com/gomodule/redigo/redis.(*conn).DoWithTimeout", "/nosql/redigo.", "RedigoDoWithTimeout"},
 
