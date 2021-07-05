@@ -69,6 +69,14 @@ extern const WrapItem* TingyunWraps() {
         {"github.com/kataras/neffos.(*Conn).handleMessage",  "/frameworks/iris/v12.", "neffosConnhandleMessage"},
         {"github.com/kataras/neffos.makeEventFromMethod",  "/frameworks/iris/v12.", "neffosmakeEventFromMethod"},
 
+        {"github.com/kataras/iris/v12/core/router.(*APIBuilder).CreateRoutes", "/frameworks/iris/v12/2.", "irisCreateRoutes"},
+        {"github.com/kataras/iris/v12/websocket.Upgrade", "/frameworks/iris/v12/2.", "websocketUpgrade"},
+        {"github.com/kataras/iris/v12/mvc.(*ControllerActivator).handleMany",  "/frameworks/iris/v12/2.", "irishandleMany"},
+
+        {"github.com/kataras/neffos.(*Conn).handleMessage",  "/frameworks/iris/v12/2.", "neffosConnhandleMessage"},
+        {"github.com/kataras/neffos.Events.fireEvent",  "/frameworks/iris/v12/2.", "neffosfireEvent"},
+        {"github.com/kataras/neffos.makeEventFromMethod",  "/frameworks/iris/v12/2.", "neffosmakeEventFromMethod"},
+
         {"github.com/gomodule/redigo/redis.DialContext", "/nosql/redigo.", "RedigoDialContext"},
         {"github.com/gomodule/redigo/redis.Dial", "/nosql/redigo.", "redigoDial"},
         {"github.com/gomodule/redigo/redis.(*conn).Close", "/nosql/redigo.", "RedigoConnClose"},
