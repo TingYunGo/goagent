@@ -10,9 +10,9 @@ import (
 	"reflect"
 	"runtime"
 
-	"git.codemonky.net/TingYunGo/goagent/libs/tystring"
+	"github.com/TingYunGo/goagent/libs/tystring"
 
-	"git.codemonky.net/TingYunGo/goagent"
+	"github.com/TingYunGo/goagent"
 	"github.com/kataras/iris/v12/context"
 	"github.com/kataras/iris/v12/core/router"
 	"github.com/kataras/iris/v12/mvc"
