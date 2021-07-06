@@ -20,6 +20,7 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	_ "time"
 	"unsafe"
 )
 
@@ -226,6 +227,13 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 	})
 }
 
+type httpListenAddress struct {
+	Addr string
+	tls  bool
+}
+
+var httpListenAddr httpListenAddress
+
 //go:noinline
 func WrapServerMuxHandle(ptr uintptr, pattern string, handler http.Handler) {
 	// fmt.Println("Wrap: ", pattern, ", By: ", reflect.TypeOf(handler).String())
@@ -240,10 +248,20 @@ func ServerServe(srv *http.Server, l net.Listener) error {
 
 //go:noinline
 func WrapServerServe(srv *http.Server, l net.Listener) error {
+
+	pre := httpListenAddr
+	httpListenAddr = httpListenAddress{
+		Addr: srv.Addr,
+		tls:  srv.TLSConfig != nil,
+	}
+	app.logger.Println(LevelDebug, "http.Server.Serve:", httpListenAddr.Addr)
+
 	if srv.Handler != nil {
 		srv.Handler = wrapHandler("", srv.Handler)
 	}
-	return ServerServe(srv, l)
+	e := ServerServe(srv, l)
+	httpListenAddr = pre
+	return e
 }
 
 //go:noinline
