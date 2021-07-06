@@ -293,6 +293,8 @@ func (a *application) upload() {
 }
 
 func (a *application) loop(running func() bool) {
+	init_delay := app.configs.local.CIntegers.Read(configLocalIntegerAgentInitDelay, 1)
+	time.Sleep(time.Second * time.Duration(init_delay))
 	lastParsed := 1
 	sleepDuration := time.Millisecond
 	for running() {
@@ -331,11 +333,25 @@ func makeLoginRequest() ([]byte, error) {
 		path, _ := filepath.Abs(file)
 		return path
 	}
-
+	oneagentUUID := ""
+	if os.Getenv("TINGYUN_ONEAGENT_GO") == "enable" {
+		oneagentUUID = trimSpace(fileCat("/opt/tingyun-oneagent/conf/oneagent.uuid"))
+	}
+	app.logger.Println(LevelDebug, "Login:", httpListenAddr.Addr)
+	port, _ := parsePort(httpListenAddr.Addr)
+	envInfo := map[string]string{}
+	for _, item := range os.Environ() {
+		if k, v := parseEnv(item); len(k) > 0 && len(v) > 0 {
+			envInfo[k] = v
+		}
+	}
 	return json.Marshal(map[string]interface{}{
 		"host":         getHost(),
 		"appName":      app.configs.local.CStrings.Read(configLocalStringNbsAppName, "TingYunDefault"),
 		"language":     "Go",
+		"oneAgentUuid": oneagentUUID,
+		"port":         port,
+		"agentTime":    time.Now().Unix(),
 		"agentVersion": TINGYUN_GO_AGENT_VERSION,
 		"pid":          os.Getpid(),
 		"firstRun":     firstRun,
@@ -348,13 +364,20 @@ func makeLoginRequest() ([]byte, error) {
 				"nbs.max_log_size":  app.configs.local.CIntegers.Read(configLocalIntegerNbsMaxLogSize, 10),
 				"nbs.ssl":           app.configs.local.CBools.Read(configLocalBoolSSL, false),
 			},
-			"env": map[string]string{
+			"env": envInfo,
+			"system": map[string]string{
 				"cmdline":    getPath(),
 				"OS":         runtime.GOOS,
 				"ARCH":       runtime.GOARCH,
 				"Compiler":   runtime.Compiler,
 				"Go-Version": runtime.Version(),
 				"GOROOT":     runtime.GOROOT(),
+			},
+			"meta": map[string]interface{}{
+				"readonly":      true,
+				"pid":           os.Getpid(),
+				"agentVersion":  TINGYUN_GO_AGENT_VERSION,
+				"tingyun.debug": false,
 			},
 		},
 	})
