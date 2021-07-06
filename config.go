@@ -36,6 +36,7 @@ const (
 	configLocalIntegerNbsMaxLogCount     = log.ConfigIntegerNBSMaxLogCount
 	configLocalIntegerNbsActionCacheMax  = 5
 	configLocalIntegerNbsActionReportMax = 6
+	configLocalIntegerAgentInitDelay     = 7
 	configLocalIntegerMax                = 8
 
 	configServerStringAppSessionKey     = 1
@@ -125,6 +126,7 @@ var localIntegerKeyMap = map[string]int{
 	"nbs.action_report_max": configLocalIntegerNbsActionReportMax,
 	"agent_log_file_count":  configLocalIntegerNbsMaxLogCount,
 	"agent_log_file_size":   configLocalIntegerNbsMaxLogSize,
+	"agent_init_delay":      configLocalIntegerAgentInitDelay,
 }
 
 var serverStringKeyMap = map[string]int{
@@ -266,6 +268,7 @@ func parseConfig(filenames string, c *cache_config.Configuration) error {
 	c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "agent_enabled", true)
 	c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "websocket_enabled", false)
 	c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "agent_log_level", "info")
+	c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "agent_init_delay", 1)
 
 	files := strings.Split(filenames, ":")
 	nameFound := false
@@ -315,6 +318,11 @@ func parseConfig(filenames string, c *cache_config.Configuration) error {
 		}
 	}
 
+	if agent_init_delay := os.Getenv("agent_init_delay"); len(agent_init_delay) > 0 {
+		if init_delay, err := strconv.Atoi(agent_init_delay); err == nil && init_delay > 0 && init_delay < 1000 {
+			c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "agent_init_delay", init_delay)
+		}
+	}
 	if agent_enabled := os.Getenv("agent_enabled"); len(agent_enabled) > 0 {
 		enabled := caseCMP(agent_enabled, "false") != 0
 		c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, "agent_enabled", enabled)
