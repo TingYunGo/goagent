@@ -386,7 +386,13 @@ func trimSpace(value string) string {
 	}
 	return value[:end]
 }
-
+func fileCat(filename string) string {
+	bytes, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return ""
+	}
+	return string(bytes)
+}
 func getContainerID() string {
 	bytes, _ := ioutil.ReadFile("/proc/self/cgroup")
 	lines := strings.Split(string(bytes), "\n")
@@ -425,6 +431,33 @@ func parseIP(addr string) string {
 		}
 	}
 	return addr
+}
+func parseEnv(envline string) (string, string) {
+	for id := 0; id < len(envline); id++ {
+		if envline[id] == '=' {
+			return tystring.SubString(envline, 0, id), tystring.SubString(envline, id+1, len(envline))
+		}
+	}
+	return envline, ""
+}
+func parsePort(addr string) (uint16, error) {
+	for id := len(addr); id > 0; id-- {
+		if addr[id-1] == ':' {
+			addr = tystring.SubString(addr, id, len(addr))
+			break
+		}
+	}
+	if len(addr) == 0 {
+		return 0, errors.New("no port listen")
+	}
+	v, e := strconv.Atoi(addr)
+	if e != nil {
+		return 0, e
+	}
+	if v > 65535 || v < 0 {
+		return 0, errors.New("port out of bound")
+	}
+	return uint16(v), nil
 }
 func caseCMP(a, b string) int {
 	return tystring.CaseCMP(a, b)
