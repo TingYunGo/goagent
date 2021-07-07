@@ -582,5 +582,8 @@ collectors  # collector服务器地址,多个地址以逗号分隔
 ```bash
 agent_init_delay  # 探针延时初始化时间,整数,单位秒, 缺省值1.  说明: 如果探针初始化过早,可能在应用开始listen之前初始化, 这种情况下探针抓不到应用listen的端口. 增加初始化延时以解决此问题.
 ```
+```bash
+TINGYUN_GO_APP_NAME  # 应用名称
+```
 
 
