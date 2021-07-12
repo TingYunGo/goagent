@@ -93,7 +93,7 @@ func (r *structAppData) Append(action *Action) {
 		detail = trace.Detail
 	}
 	detail.Custom = action.customParams
-	detail.QueryStringParameters = parseURI(action.url)
+	detail.QueryStringParameters = parseQueryString(parseURI(action.url))
 	detail.RequestHeader = action.requestParams
 	detail.ResponseHeader = action.responseParams
 	for action.errors.Size() > 0 {

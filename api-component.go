@@ -130,6 +130,9 @@ func (c *Component) CreateTrackID() string {
 	if app == nil || c == nil || c.action == nil || c._type != ComponentExternal {
 		return ""
 	}
+	if !readLocalConfigBool(configLocalBoolTransactionEnabled, true) {
+		return ""
+	}
 	if !readServerConfigBool(configServerConfigBoolActionTracerEnabled, false) {
 		return ""
 	}
@@ -153,6 +156,9 @@ func (c *Component) CreateTrackID() string {
 //参数: 被调用端返回的事务的性能数据
 func (c *Component) SetTxData(txData string) {
 	if app == nil || c == nil || c.action == nil || c._type != ComponentExternal {
+		return
+	}
+	if !readLocalConfigBool(configLocalBoolTransactionEnabled, true) {
 		return
 	}
 	if readServerConfigBool(configServerConfigBoolActionTracerEnabled, false) {

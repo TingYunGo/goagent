@@ -494,3 +494,11 @@ func parseURI(url string) string {
 	}
 	return ""
 }
+func parseQueryString(uri string) string {
+	for id := 0; id < len(uri); id++ {
+		if uri[id] == '?' {
+			return tystring.SubString(uri, id+1, len(uri))
+		}
+	}
+	return ""
+}

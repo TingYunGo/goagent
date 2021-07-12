@@ -300,6 +300,9 @@ func (a *Action) GetTxData() string {
 	if a == nil || a.stateUsed != actionUsing || len(a.trackID) == 0 {
 		return ""
 	}
+	if !readLocalConfigBool(configLocalBoolTransactionEnabled, true) {
+		return ""
+	}
 	if !readServerConfigBool(configServerConfigBoolActionTracerEnabled, false) {
 		return ""
 	}
@@ -329,6 +332,9 @@ func (a *Action) GetTxData() string {
 //参数: 跨应用追踪id
 func (a *Action) SetTrackID(id string) {
 	if a == nil || a.stateUsed != actionUsing {
+		return
+	}
+	if !readLocalConfigBool(configLocalBoolTransactionEnabled, true) {
 		return
 	}
 	if readServerConfigBool(configServerConfigBoolActionTracerEnabled, false) {

@@ -29,6 +29,7 @@ const (
 	configLocalBoolSSL                   = 2
 	configLocalBoolAudit                 = log.ConfigBoolNBSAudit
 	configLocalBoolWebsocketEnabled      = 4
+	configLocalBoolTransactionEnabled    = 5
 	configLocalBoolMax                   = 8
 	configLocalIntegerNbsPort            = 1
 	configLocalIntegerNbsSaveCount       = 2
@@ -109,12 +110,13 @@ var localStringKeyMap = map[string]int{
 	"agent_log_file":    configLocalStringNbsLogFileName,
 }
 var localBoolKeyMap = map[string]int{
-	"nbs.agent_enabled": configLocalBoolAgentEnable,
-	"nbs.ssl":           configLocalBoolSSL,
-	"nbs.audit":         configLocalBoolAudit,
-	"websocket_enabled": configLocalBoolWebsocketEnabled,
-	"audit_mode":        configLocalBoolAudit,
-	"agent_enabled":     configLocalBoolAgentEnable,
+	"nbs.agent_enabled":   configLocalBoolAgentEnable,
+	"nbs.ssl":             configLocalBoolSSL,
+	"nbs.audit":           configLocalBoolAudit,
+	"websocket_enabled":   configLocalBoolWebsocketEnabled,
+	"audit_mode":          configLocalBoolAudit,
+	"agent_enabled":       configLocalBoolAgentEnable,
+	"transaction_enabled": configLocalBoolTransactionEnabled,
 }
 
 var localIntegerKeyMap = map[string]int{
