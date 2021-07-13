@@ -253,7 +253,9 @@ func WrapServerServe(srv *http.Server, l net.Listener) error {
 		Addr: srv.Addr,
 		tls:  srv.TLSConfig != nil,
 	}
-	app.logger.Println(LevelDebug, "http.Server.Serve:", httpListenAddr.Addr)
+	if app != nil {
+		app.logger.Println(LevelDebug, "http.Server.Serve:", httpListenAddr.Addr)
+	}
 
 	if srv.Handler != nil {
 		srv.Handler = wrapHandler("", srv.Handler)
@@ -274,26 +276,28 @@ func WraphttpNotFound(w http.ResponseWriter, r *http.Request) {
 	found := action != nil
 	resWriter := w
 	if action == nil {
-		action, _ = CreateAction("URI", r.URL.Path)
-		if trackID := r.Header.Get("X-Tingyun"); len(trackID) > 0 {
-			action.SetTrackID(trackID)
-		}
+		if action, _ = CreateAction("URI", r.URL.Path); action != nil {
 
-		rule := app.configs.dataItemRules.Get()
-		for _, item := range rule.requestHeader {
-			if value := r.Header.Get(item); len(value) > 0 {
-				action.AddRequestParam(item, value)
+			if trackID := r.Header.Get("X-Tingyun"); len(trackID) > 0 {
+				action.SetTrackID(trackID)
 			}
-		}
-		if readServerConfigBool(configServerConfigBoolCaptureParams, false) {
-			protocol := "http"
-			if r.TLS != nil {
-				protocol = "https"
+
+			rule := app.configs.dataItemRules.Get()
+			for _, item := range rule.requestHeader {
+				if value := r.Header.Get(item); len(value) > 0 {
+					action.AddRequestParam(item, value)
+				}
 			}
-			action.SetName("CLIENTIP", parseIP(r.RemoteAddr))
-			action.SetURL(protocol + "://" + r.Host + r.RequestURI)
+			if readServerConfigBool(configServerConfigBoolCaptureParams, false) {
+				protocol := "http"
+				if r.TLS != nil {
+					protocol = "https"
+				}
+				action.SetName("CLIENTIP", parseIP(r.RemoteAddr))
+				action.SetURL(protocol + "://" + r.Host + r.RequestURI)
+			}
+			resWriter = createWriteWraper(w, action, rule)
 		}
-		resWriter = createWriteWraper(w, action, rule)
 	}
 	httpNotFound(resWriter, r)
 	if action != nil && !found {
