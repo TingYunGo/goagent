@@ -97,6 +97,11 @@ func (c *Component) SetError(e interface{}, errType string, skipStack int) {
 func (c *Component) Finish() {
 	c.End(1)
 }
+func (c *Component) SetMethod(method string) {
+	if c != nil {
+		c.method = method
+	}
+}
 
 //End : 内部使用, skip为跳过的调用栈数
 func (c *Component) End(skip int) {

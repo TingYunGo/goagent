@@ -173,6 +173,29 @@ func WrapbaseClientprocessPipeline(c *baseClient, ctx context.Context, cmds []re
 	return e
 }
 
+type pipelineProcessor func(context.Context, uintptr, []redis.Cmder) (bool, error)
+
+//go:noinline
+func baseClientgeneralProcessPipeline(c *baseClient, ctx context.Context, cmds []redis.Cmder, p pipelineProcessor) error {
+	fmt.Println(c, ctx, cmds, p)
+	return nil
+}
+
+//go:noinline
+func WrapbaseClientgeneralProcessPipeline(c *baseClient, ctx context.Context, cmds []redis.Cmder, p pipelineProcessor) error {
+	begin := time.Now()
+	req := tingyun3.LocalGet(9)
+	if req == nil {
+		tingyun3.LocalSet(9, 1)
+	}
+	e := baseClientgeneralProcessPipeline(c, ctx, cmds, p)
+	if req == nil {
+		tingyun3.LocalDelete(9)
+		handleGoRedis(c.opt.Addr, cmds[0].Args(), begin, e)
+	}
+	return e
+}
+
 type instanceSet struct {
 	lock  sync.RWMutex
 	items map[*redis.Client]string
@@ -206,4 +229,5 @@ func init() {
 	dbs.init()
 	tingyun3.Register(reflect.ValueOf(WrapbaseClientprocess).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapbaseClientprocessPipeline).Pointer())
+	tingyun3.Register(reflect.ValueOf(WrapbaseClientgeneralProcessPipeline).Pointer())
 }

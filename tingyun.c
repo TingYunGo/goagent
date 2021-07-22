@@ -87,8 +87,10 @@ extern const WrapItem* TingyunWraps() {
         {"github.com/go-redis/redis.(*baseClient).processPipeline", "/nosql/go-redis.", "baseClientprocessPipeline"},
         {"github.com/go-redis/redis/v7.(*baseClient).process", "/nosql/go-redis/v7.", "baseClientprocess"},
         {"github.com/go-redis/redis/v7.(*baseClient).processPipeline", "/nosql/go-redis/v7.", "baseClientprocessPipeline"},
+        {"github.com/go-redis/redis/v7.(*baseClient).generalProcessPipeline", "/nosql/go-redis/v7.", "baseClientgeneralProcessPipeline"},
         {"github.com/go-redis/redis/v8.(*baseClient).process", "/nosql/go-redis/v8.", "baseClientprocess"},
         {"github.com/go-redis/redis/v8.(*baseClient).processPipeline", "/nosql/go-redis/v8.", "baseClientprocessPipeline"},
+        {"github.com/go-redis/redis/v8.(*baseClient).generalProcessPipeline", "/nosql/go-redis/v8.", "baseClientgeneralProcessPipeline"},
 
         {"go.mongodb.org/mongo-driver/mongo.(*Collection).BulkWrite", "/nosql/mongodb.", "mongodbBulkWrite"},
         {"go.mongodb.org/mongo-driver/mongo.(*Collection).InsertOne", "/nosql/mongodb.", "mongodbInsertOne"},
