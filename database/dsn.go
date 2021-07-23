@@ -4,7 +4,6 @@ package database
 
 import (
 	"fmt"
-	"net/url"
 	nurl "net/url"
 	"strings"
 	"unicode"
@@ -174,7 +173,7 @@ func parseDSN(vender, dsn string) (host, db string) {
 		return parseMyDSN(dsn)
 	}
 	if tystring.CaseCMP(vender[0:min(len(vender), 6)], "sqlite") == 0 {
-		return "file", url.PathEscape(dsn)
+		return "file", dsn
 	}
 	u, err := nurl.Parse(dsn)
 	if err == nil {
