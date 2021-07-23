@@ -2,4 +2,4 @@
 
 package tingyun3
 
-const TINGYUN_GO_AGENT_VERSION = "v0.6.7"
+const TINGYUN_GO_AGENT_VERSION = "v1.0.0"
