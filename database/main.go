@@ -197,6 +197,7 @@ func coreWrapQueryContext(begin time.Time, db *sql.DB, query string, r *sql.Rows
 		component.End(1)
 		return
 	}
+	component.End(1)
 	if dbctx == nil {
 		dbctx = (&databaseContext{}).init()
 		tingyun3.LocalSet(1, dbctx)
