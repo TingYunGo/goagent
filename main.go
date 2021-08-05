@@ -21,6 +21,8 @@ import (
 	"runtime"
 	"strings"
 	"unsafe"
+
+	"github.com/TingYunGo/goagent/libs/tystring"
 )
 
 //go:noinline
@@ -61,7 +63,10 @@ func WrapHttpClientDo(ptr uintptr, req *http.Request) (*http.Response, error) {
 				component.SetTxData(txdata)
 			}
 		}
-		component.Finish()
+		component.FixStackEnd(1, func(funcName string) bool {
+			token := "net/http"
+			return tystring.SubString(funcName, 0, len(token)) == token
+		})
 	}
 	return res, err
 }
