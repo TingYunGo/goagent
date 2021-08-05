@@ -154,7 +154,10 @@ func coreRedigoDoWithTimeout(begin time.Time, c uintptr, readTimeout time.Durati
 	if err != nil {
 		component.SetError(err, callerName, 3)
 	}
-	component.End(1)
+	component.FixStackEnd(2, func(funcName string) bool {
+		token := "github.com/gomodule/redigo/"
+		return tystring.SubString(funcName, 0, len(token)) == token
+	})
 	return
 }
 

@@ -104,7 +104,15 @@ func (c *Component) SetMethod(method string) {
 }
 
 //End : 内部使用, skip为跳过的调用栈数
+//go:noinline
 func (c *Component) End(skip int) {
+	c.FixStackEnd(skip+1, func(a string) bool {
+		return false
+	})
+}
+
+//End : 内部使用, skip为跳过的调用栈数
+func (c *Component) FixStackEnd(skip int, checkRemovedFunction func(string) bool) {
 	if c != nil {
 		if c.action == nil {
 			return
@@ -122,7 +130,7 @@ func (c *Component) End(skip int) {
 		if readServerConfigBool(configServerConfigBoolActionTracerStackTraceEnabled, true) {
 			//超阈值取callstack
 			if c.time.duration >= time.Duration(readServerConfigInt(configServerConfigIntegerActionTracerStacktraceThreshold, 500))*time.Millisecond {
-				c.callStack = callStack(skip + 1)
+				c.callStack = validCallStack(skip+1, checkRemovedFunction)
 			}
 		}
 	}

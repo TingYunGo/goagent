@@ -159,7 +159,7 @@ func methodLeave(prehandle interface{}, e error, coll *mongo.Collection, action 
 	if e != nil {
 		component.SetError(e, "mongo.Collection", 2)
 	}
-	component.End(1)
+	component.End(2)
 }
 
 //go:noinline

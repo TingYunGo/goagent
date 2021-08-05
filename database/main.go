@@ -140,7 +140,7 @@ func coreWrapPrepareContext(begin time.Time, db *sql.DB, query string, stmt *sql
 	component.FixBegin(begin)
 	if stmt == nil || e != nil {
 		component.SetError(e, callerName, 3)
-		component.End(1)
+		component.End(2)
 		return
 	}
 	if dbctx == nil {
@@ -167,10 +167,10 @@ func coreWrapExecContext(begin time.Time, db *sql.DB, query string, r sql.Result
 	component.FixBegin(begin)
 	if r == nil && e != nil {
 		component.SetError(e, callerName, 3)
-		component.End(1)
+		component.End(2)
 		return
 	}
-	component.End(1)
+	component.End(2)
 }
 func coreWrapQueryContext(begin time.Time, db *sql.DB, query string, r *sql.Rows, e error) {
 	action := tingyun3.GetAction()
@@ -194,10 +194,10 @@ func coreWrapQueryContext(begin time.Time, db *sql.DB, query string, r *sql.Rows
 	component.FixBegin(begin)
 	if r == nil && e != nil {
 		component.SetError(e, callerName, 3)
-		component.End(1)
+		component.End(2)
 		return
 	}
-	component.End(1)
+	component.End(2)
 	if dbctx == nil {
 		dbctx = (&databaseContext{}).init()
 		tingyun3.LocalSet(1, dbctx)
@@ -244,7 +244,7 @@ func DBQueryContext(db *sql.DB, ctx context.Context, query string, args ...inter
 func getCallName(skip int) (callerName string) {
 	skip++
 	callerName = tingyun3.GetCallerName(skip)
-	for callerName[0:13] == "database/sql." {
+	for tystring.SubString(callerName, 0, 13) == "database/sql." {
 		skip++
 		callerName = tingyun3.GetCallerName(skip)
 	}

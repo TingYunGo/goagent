@@ -68,6 +68,39 @@ func callStack(skip int) []string {
 	}
 	return slice
 }
+func validCallStack(skip int, removed func(string) bool) []string {
+	var slice []string
+	slice = make([]string, 0, 15)
+	opc := uintptr(0)
+	lineRemoved := true
+	for i := skip + 1; ; i++ {
+		pc, file, line, ok := runtime.Caller(i)
+		if !ok {
+			break
+		}
+		if opc == pc {
+			continue
+		}
+		fname := getnameByAddr(pc)
+		if lineRemoved {
+			if lineRemoved = removed(fname); lineRemoved {
+				continue
+			}
+		}
+		index := strings.Index(fname, "/tingyun/")
+		if index > 0 {
+			continue
+		}
+		opc = pc
+		//截断源文件名
+		index = strings.Index(file, "/src/")
+		if index > 0 {
+			file = file[index+5 : len(file)]
+		}
+		slice = append(slice, fmt.Sprintf("%s(%s:%d)", fname, file, line))
+	}
+	return slice
+}
 func getnameByAddr(p interface{}) string {
 	ptr, _ := strconv.ParseInt(fmt.Sprintf("%x", p), 16, 64)
 	return runtime.FuncForPC(uintptr(ptr)).Name()
