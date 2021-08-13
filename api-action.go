@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -498,7 +499,25 @@ func (a *Action) Finish() {
 	if a.statusCode == 0 {
 		a.statusCode = 200
 	}
+	if traceDisabled {
+		a.destroy()
+		return
+	}
 	appendAction(a)
+}
+
+var traceDisabled bool = false
+
+func init() {
+	//丢弃trace
+	//export TINGYUN_GO_DEBUG=TRACE_DISABLED:OTHER
+	splitStrings(os.Getenv("TINGYUN_GO_DEBUG"), func(item string) bool {
+		if item != "TRACE_DISABLED" {
+			return false
+		}
+		traceDisabled = true
+		return true
+	}, func(t byte) bool { return t == ':' })
 }
 
 //SetStatusCode : 正常返回0

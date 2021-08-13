@@ -164,13 +164,15 @@ func (r *structAppData) destroy() {
 	}
 	r.traces.Reset()
 }
-func (a *application) GetReportBlock() *structAppData {
+func (a *application) GetReportBlock(reportMax, saveCount int) *structAppData {
 	if a.reportQueue.Size() == 0 {
 		a.reportQueue.PushBack(&structAppData{})
 	}
-	report_max := int(app.configs.local.CIntegers.Read(configLocalIntegerNbsActionReportMax, 5000))
 	data, _ := a.reportQueue.Back().Value()
-	if datablock := data.(*structAppData); len(datablock.traces.Traces) >= report_max {
+	if datablock := data.(*structAppData); len(datablock.traces.Traces) >= reportMax {
+		if a.reportQueue.Size() > saveCount {
+			return nil
+		}
 		a.reportQueue.PushBack(&structAppData{})
 		data, _ = a.reportQueue.Back().Value()
 	}

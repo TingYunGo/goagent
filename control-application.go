@@ -34,13 +34,22 @@ const (
 //actionPool里的请求归纳处理
 func (a *application) parseActions(parseMax int) int {
 	actionParsed := 0
+	report_max := int(app.configs.local.CIntegers.Read(configLocalIntegerNbsActionReportMax, 5000))
+	saveCount := int(a.configs.local.CIntegers.Read(configLocalIntegerNbsSaveCount, 10))
+	if saveCount < 1 {
+		saveCount = 1
+	}
+
 	for a.actionPool.Size() > 0 && actionParsed < parseMax {
-		if action := a.actionPool.Get(); action != nil {
+		if item := a.actionPool.Get(); item != nil {
+			action := item.(*Action)
 			actionParsed++
 			if a.configs.HasLogin() {
-				a.GetReportBlock().Append(action.(*Action))
+				if reportSet := a.GetReportBlock(report_max, saveCount); reportSet != nil {
+					reportSet.Append(action)
+				}
 			}
-			action.(*Action).destroy()
+			action.destroy()
 		} else {
 			break
 		}

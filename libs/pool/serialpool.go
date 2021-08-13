@@ -9,10 +9,11 @@ import (
 //SerialReadPool 无锁消息池，多写,有序单读(按写入时间排序)。适用于多个消息发送者,单个消息接收者模式
 type SerialReadPool struct {
 	//由于atomic.AddUint64 在非8字节对齐的地址上会崩溃，所以这两个id必须放在开始位置
-	writeID uint64
-	readID  uint64
-	cache   map[uint64]interface{}
-	p       Pool
+	writeID    uint64
+	readID     uint64
+	cache      map[uint64]interface{}
+	p          Pool
+	cacheCount int32
 }
 type msg struct {
 	id uint64
@@ -30,16 +31,18 @@ func (p *SerialReadPool) Init() *SerialReadPool {
 	p.readID = 1
 	p.cache = make(map[uint64]interface{})
 	p.p.Init()
+	p.cacheCount = 0
 	return p
 }
 
 //Size : Count of message in pool
 func (p *SerialReadPool) Size() int32 {
-	return p.p.Size() + int32(len(p.cache))
+	return p.p.Size() + p.cacheCount
 }
 func (p *SerialReadPool) cacheGet() interface{} {
 	if r, exist := p.cache[p.readID]; exist {
 		delete(p.cache, p.readID)
+		atomic.AddInt32(&p.cacheCount, -1)
 		p.readID++
 		return r
 	}
@@ -65,6 +68,7 @@ func (p *SerialReadPool) Get() interface{} {
 			return r
 		}
 		//不是最早的那个message，扔到cache里
+		atomic.AddInt32(&p.cacheCount, 1)
 		p.cache[id] = r
 	}
 }

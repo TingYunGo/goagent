@@ -134,8 +134,8 @@ func (a *application) createAction(category string, method string) (*Action, err
 }
 
 type application struct {
-	configs     configurations "配置选项集合"
-	actionPool  pool.Pool      "完成事务消息池"
+	configs     configurations      "配置选项集合"
+	actionPool  pool.SerialReadPool "完成事务消息池"
 	logger      *log.Logger
 	svc         service.Service
 	server      serviceDC
