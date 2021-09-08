@@ -97,7 +97,7 @@ func DBOpen(driverName, dataSourceName string) (*sql.DB, error) {
 
 //go:noinline
 func WrapDBOpen(driverName, dataSourceName string) (*sql.DB, error) {
-	db, err := DBOpen(driverName, dataSourceName)
+	db, err := sql.Open(driverName, dataSourceName)
 	if db != nil {
 		info := databaseInfo{}
 		info.init(driverName, dataSourceName)
@@ -115,7 +115,7 @@ func DBClose(db *sql.DB) error {
 //go:noinline
 func WrapDBClose(db *sql.DB) error {
 	dbs.Delete(db)
-	return DBClose(db)
+	return db.Close()
 }
 
 func coreWrapPrepareContext(begin time.Time, db *sql.DB, query string, stmt *sql.Stmt, e error) {
@@ -214,7 +214,7 @@ func DBPrepareContext(db *sql.DB, ctx context.Context, query string) (*sql.Stmt,
 //go:noinline
 func WrapDBPrepareContext(db *sql.DB, ctx context.Context, query string) (*sql.Stmt, error) {
 	begin := time.Now()
-	stmt, e := DBPrepareContext(db, ctx, query)
+	stmt, e := db.PrepareContext(ctx, query)
 	coreWrapPrepareContext(begin, db, query, stmt, e)
 	return stmt, e
 }
@@ -229,7 +229,7 @@ func DBExecContext(db *sql.DB, ctx context.Context, query string, args ...interf
 func WrapDBExecContext(db *sql.DB, ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
 
 	begin := time.Now()
-	r, e := DBExecContext(db, ctx, query, args...)
+	r, e := db.ExecContext(ctx, query, args...)
 	coreWrapExecContext(begin, db, query, r, e)
 	return r, e
 }
@@ -254,7 +254,7 @@ func getCallName(skip int) (callerName string) {
 //go:noinline
 func WrapDBQueryContext(db *sql.DB, ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
 	begin := time.Now()
-	r, e := DBQueryContext(db, ctx, query, args...)
+	r, e := db.QueryContext(ctx, query, args...)
 	coreWrapQueryContext(begin, db, query, r, e)
 	return r, e
 }
@@ -268,7 +268,7 @@ func ConnExecContext(c *sql.Conn, ctx context.Context, query string, args ...int
 //go:noinline
 func WrapConnExecContext(c *sql.Conn, ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
 	begin := time.Now()
-	r, e := ConnExecContext(c, ctx, query, args...)
+	r, e := c.ExecContext(ctx, query, args...)
 	coreWrapExecContext(begin, getdb_byconn(c), query, r, e)
 	return r, e
 }
@@ -293,7 +293,7 @@ func getdb_byconn(c *sql.Conn) *sql.DB {
 //go:noinline
 func WrapConnQueryContext(c *sql.Conn, ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
 	begin := time.Now()
-	r, e := ConnQueryContext(c, ctx, query, args...)
+	r, e := c.QueryContext(ctx, query, args...)
 	coreWrapQueryContext(begin, getdb_byconn(c), query, r, e)
 	return r, e
 }
@@ -307,7 +307,7 @@ func ConnPrepareContext(c *sql.Conn, ctx context.Context, query string) (*sql.St
 //go:noinline
 func WrapConnPrepareContext(c *sql.Conn, ctx context.Context, query string) (*sql.Stmt, error) {
 	begin := time.Now()
-	stmt, e := ConnPrepareContext(c, ctx, query)
+	stmt, e := c.PrepareContext(ctx, query)
 	coreWrapPrepareContext(begin, getdb_byconn(c), query, stmt, e)
 	return stmt, e
 }
@@ -329,7 +329,7 @@ func TxPrepareContext(tx *sql.Tx, ctx context.Context, query string) (*sql.Stmt,
 //go:noinline
 func WrapTxPrepareContext(tx *sql.Tx, ctx context.Context, query string) (*sql.Stmt, error) {
 	begin := time.Now()
-	stmt, e := TxPrepareContext(tx, ctx, query)
+	stmt, e := tx.PrepareContext(ctx, query)
 	coreWrapPrepareContext(begin, getdbByTx(tx), query, stmt, e)
 	return stmt, e
 }
@@ -343,7 +343,7 @@ func TxExecContext(tx *sql.Tx, ctx context.Context, query string, args ...interf
 //go:noinline
 func WrapTxExecContext(tx *sql.Tx, ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
 	begin := time.Now()
-	r, e := TxExecContext(tx, ctx, query, args...)
+	r, e := tx.ExecContext(ctx, query, args...)
 	coreWrapExecContext(begin, getdbByTx(tx), query, r, e)
 	return r, e
 }
@@ -357,7 +357,7 @@ func TxQueryContext(tx *sql.Tx, ctx context.Context, query string, args ...inter
 //go:noinline
 func WrapTxQueryContext(tx *sql.Tx, ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
 	begin := time.Now()
-	r, e := TxQueryContext(tx, ctx, query, args...)
+	r, e := tx.QueryContext(ctx, query, args...)
 	coreWrapQueryContext(begin, getdbByTx(tx), query, r, e)
 	return r, e
 }
@@ -370,7 +370,7 @@ func StmtQueryContext(s *sql.Stmt, ctx context.Context, args ...interface{}) (*s
 
 //go:noinline
 func WrapStmtQueryContext(s *sql.Stmt, ctx context.Context, args ...interface{}) (*sql.Rows, error) {
-	r, e := StmtQueryContext(s, ctx, args...)
+	r, e := s.QueryContext(ctx, args...)
 	if c := tingyun3.LocalGet(1); c != nil {
 		dbctx := c.(*databaseContext)
 		component, found := dbctx.stmts[s]
@@ -400,7 +400,7 @@ func StmtClose(s *sql.Stmt) error {
 
 //go:noinline
 func WrapStmtClose(s *sql.Stmt) error {
-	err := StmtClose(s)
+	err := s.Close()
 
 	if c := tingyun3.LocalGet(1); c != nil {
 		dbctx := c.(*databaseContext)
@@ -424,7 +424,7 @@ func StmtExecContext(s *sql.Stmt, ctx context.Context, args ...interface{}) (sql
 
 //go:noinline
 func WrapStmtExecContext(s *sql.Stmt, ctx context.Context, args ...interface{}) (sql.Result, error) {
-	r, e := StmtExecContext(s, ctx, args...)
+	r, e := s.ExecContext(ctx, args...)
 
 	if c := tingyun3.LocalGet(1); c != nil {
 		dbctx := c.(*databaseContext)
@@ -443,7 +443,7 @@ func RowsClose(rs *sql.Rows) error {
 
 //go:noinline
 func WrapRowsClose(rs *sql.Rows) error {
-	err := RowsClose(rs)
+	err := rs.Close()
 	if c := tingyun3.LocalGet(1); c != nil {
 		dbctx := c.(*databaseContext)
 		if c, found := dbctx.records[rs]; found {

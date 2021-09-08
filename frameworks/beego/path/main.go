@@ -5,7 +5,6 @@
 package beegoframe
 
 import (
-	"fmt"
 	"net/http"
 	"reflect"
 	"runtime"
@@ -27,9 +26,11 @@ type handlerInfo struct {
 	isFunc bool
 }
 
+var tempVar = 0x1234567890
+
 //go:noinline
 func beegoAddMethod(p *beego.ControllerRegister, method, pattern string, f beego.FilterFunc) {
-	fmt.Println(p, method, pattern, f)
+	tempVar += 10
 }
 
 var methodMap = map[string]string{
@@ -58,7 +59,7 @@ func WrapbeegoAddMethod(p *beego.ControllerRegister, method, pattern string, f b
 
 //go:noinline
 func beegoHandler(p *beego.ControllerRegister, pattern string, h http.Handler, options ...interface{}) {
-	fmt.Println(p, pattern, h, options)
+	tempVar += 10
 }
 
 //go:noinline
@@ -82,7 +83,7 @@ func WrapbeegoHandler(p *beego.ControllerRegister, pattern string, h http.Handle
 
 //go:noinline
 func beegoaddWithMethodParams(p *beego.ControllerRegister, pattern string, c beego.ControllerInterface, methodParams []*param.MethodParam, mappingMethods ...string) {
-	fmt.Println(p, pattern, c, methodParams, mappingMethods)
+	tempVar += 10
 }
 
 //go:noinline
@@ -99,7 +100,7 @@ func WrapbeegoaddWithMethodParams(p *beego.ControllerRegister, pattern string, c
 
 //go:noinline
 func beegoAddAutoPrefix(p *beego.ControllerRegister, prefix string, c beego.ControllerInterface) {
-	fmt.Println(p, prefix, c)
+	tempVar += 10
 }
 
 //go:noinline
@@ -118,7 +119,7 @@ var routeMap map[string]bool = nil
 
 //go:noinline
 func beegoaddToRouter(p *beego.ControllerRegister, method, pattern string, r *beego.ControllerInfo) {
-	fmt.Println(p, method, pattern, r)
+	tempVar += 10
 }
 
 //go:noinline

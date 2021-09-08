@@ -26,18 +26,52 @@ import (
 )
 
 //go:noinline
-func ServerMuxHandle(ptr uintptr, pattern string, handler http.Handler) {
+func ServerMuxHandle(ptr *http.ServeMux, pattern string, handler http.Handler) {
 	fmt.Println(pattern, handler)
 }
 
 //go:noinline
-func HttpClientDo(ptr uintptr, req *http.Request) (*http.Response, error) {
-	fmt.Println(ptr, req)
+func HttpClientDo(ptr *http.Client, req *http.Request) (*http.Response, error) {
 	return nil, nil
 }
 
 //go:noinline
-func WrapHttpClientDo(ptr uintptr, req *http.Request) (*http.Response, error) {
+func replaceHttpClientDo(ptr *http.Client, req *http.Request) (*http.Response, error) {
+	var component *Component = nil
+	if action := getAction(); action != nil {
+		_, pc := GetCallerPC(3)
+		methodName := runtime.FuncForPC(pc).Name()
+		component = action.CreateExternalComponent(req.URL.String(), methodName)
+		if trackID := component.CreateTrackID(); len(trackID) > 0 {
+			req.Header.Add("X-Tingyun", trackID)
+		}
+	}
+	defer func() {
+		if exception := recover(); exception != nil {
+			component.setError(exception, "error")
+			component.Finish()
+			panic(exception)
+		}
+	}()
+	res, err := HttpClientDo(ptr, req)
+	if component != nil {
+		if err != nil {
+			component.setError(err, "httpClient")
+		} else if res != nil {
+			if txdata := res.Header.Get("X-Tingyun-Data"); len(txdata) > 0 {
+				component.SetTxData(txdata)
+			}
+		}
+		component.FixStackEnd(1, func(funcName string) bool {
+			token := "net/http"
+			return tystring.SubString(funcName, 0, len(token)) == token
+		})
+	}
+	return res, err
+}
+
+//go:noinline
+func WrapHttpClientDo(ptr *http.Client, req *http.Request) (*http.Response, error) {
 	var component *Component = nil
 	if action := getAction(); action != nil {
 		_, pc := GetCallerPC(3)
@@ -167,7 +201,6 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 		methodName = className + ".ServeHTTP"
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// fmt.Println("on: ", pattern, ", by: ", methodName)
 		var component *Component = nil
 		action := getAction()
 		if action != nil {
@@ -238,20 +271,32 @@ type httpListenAddress struct {
 
 var httpListenAddr httpListenAddress
 
+//(mux *ServeMux) Handler(r *Request) (h Handler, pattern string)
+func replaceServerMuxHandler(ptr *http.ServeMux, r *http.Request) (h http.Handler, pattern string) {
+	hres, pattern := ptr.Handler(r)
+	className := reflect.TypeOf(hres).String()
+	if className == "http.HandlerFunc" || className == "HandlerFunc" {
+		handlerPC := reflect.ValueOf(hres).Pointer()
+		if runtime.FuncForPC(handlerPC).Name() == "net/http.NotFound" {
+			return http.HandlerFunc(replaceHttpNotFound), pattern
+		}
+	}
+	return hres, pattern
+}
+
 //go:noinline
-func WrapServerMuxHandle(ptr uintptr, pattern string, handler http.Handler) {
+func replaceServerMuxHandle(ptr *http.ServeMux, pattern string, handler http.Handler) {
+	ptr.Handle(pattern, wrapHandler(pattern, handler))
+}
+
+//go:noinline
+func WrapServerMuxHandle(ptr *http.ServeMux, pattern string, handler http.Handler) {
 	// fmt.Println("Wrap: ", pattern, ", By: ", reflect.TypeOf(handler).String())
 	ServerMuxHandle(ptr, pattern, wrapHandler(pattern, handler))
 }
 
 //go:noinline
-func ServerServe(srv *http.Server, l net.Listener) error {
-	fmt.Println(srv, l)
-	return nil
-}
-
-//go:noinline
-func WrapServerServe(srv *http.Server, l net.Listener) error {
+func replaceHttpServerServe(srv *http.Server, l net.Listener) error {
 
 	pre := httpListenAddr
 	httpListenAddr = httpListenAddress{
@@ -265,9 +310,45 @@ func WrapServerServe(srv *http.Server, l net.Listener) error {
 	if srv.Handler != nil {
 		srv.Handler = wrapHandler("", srv.Handler)
 	}
-	e := ServerServe(srv, l)
+	e := srv.Serve(l)
 	httpListenAddr = pre
 	return e
+
+}
+
+//go:noinline
+func replaceHttpNotFound(w http.ResponseWriter, r *http.Request) {
+	action := getAction()
+	found := action != nil
+	resWriter := w
+	if action == nil {
+		if action, _ = CreateAction("URI", r.URL.Path); action != nil {
+
+			if trackID := r.Header.Get("X-Tingyun"); len(trackID) > 0 {
+				action.SetTrackID(trackID)
+			}
+
+			rule := app.configs.dataItemRules.Get()
+			for _, item := range rule.requestHeader {
+				if value := r.Header.Get(item); len(value) > 0 {
+					action.AddRequestParam(item, value)
+				}
+			}
+			if readServerConfigBool(configServerConfigBoolCaptureParams, false) {
+				protocol := "http"
+				if r.TLS != nil {
+					protocol = "https"
+				}
+				action.SetName("CLIENTIP", parseIP(r.RemoteAddr))
+				action.SetURL(protocol + "://" + r.Host + r.RequestURI)
+			}
+			resWriter = createWriteWraper(w, action, rule)
+		}
+	}
+	http.NotFound(resWriter, r)
+	if action != nil && !found {
+		action.Finish()
+	}
 }
 
 //go:noinline
@@ -310,10 +391,19 @@ func WraphttpNotFound(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+var idPointer *pidStruct = nil
+
 // GetGID return goroutine id
 //go:noinline
 func GetGID() int64 {
-	fmt.Println(1)
+	return *idPointer.idpointer + idPointer.idindex + idPointer.arg1 + idPointer.arg2 + idPointer.arg3 + idPointer.arg4 + idPointer.arg5 + idPointer.arg6 + idPointer.arg7 +
+		idPointer.arg8 + idPointer.arg9 + idPointer.arg10 + idPointer.arg11 + idPointer.arg12 + idPointer.arg13 + idPointer.arg14 + idPointer.arg15
+}
+
+//go:noinline
+func setGID(p *pidStruct) int64 {
+	idPointer = p
+	fmt.Println(1, p)
 	return 0
 }
 
@@ -339,10 +429,43 @@ func GetCallerName(layer int) string {
 func Register(p uintptr) {
 	C.tingyun_go_init(unsafe.Pointer(p))
 }
+
+type ClientDoFunc func(*http.Client, *http.Request) (*http.Response, error)
+
+type pidStruct struct {
+	idpointer *int64
+	idindex   int64
+	arg1      int64
+	arg2      int64
+	arg3      int64
+	arg4      int64
+	arg5      int64
+	arg6      int64
+	arg7      int64
+	arg8      int64
+	arg9      int64
+	arg10     int64
+	arg11     int64
+	arg12     int64
+	arg13     int64
+	arg14     int64
+	arg15     int64
+}
+
+//go:noinline
+func setRoutineID(p *pidStruct) {
+	idPointer = p
+}
+
 func init() {
+	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(replaceHttpClientDo).Pointer()))
+	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(replaceHttpNotFound).Pointer()))
+	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(replaceHttpServerServe).Pointer()))
+	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(replaceServerMuxHandle).Pointer()))
+	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(replaceServerMuxHandler).Pointer()))
 	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WraphttpNotFound).Pointer()))
-	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WrapServerServe).Pointer()))
 	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WrapServerMuxHandle).Pointer()))
 	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WrapHttpClientDo).Pointer()))
 	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(GetGID).Pointer()))
+	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(setGID).Pointer()))
 }

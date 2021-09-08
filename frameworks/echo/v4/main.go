@@ -5,7 +5,6 @@
 package echoframe
 
 import (
-	"fmt"
 	"reflect"
 	"runtime"
 
@@ -34,13 +33,12 @@ func wrapHandler(method, route string, handler echo.HandlerFunc) echo.HandlerFun
 }
 
 //go:noinline
-func echoEchoAdd(ptr uintptr, method, path string, handler echo.HandlerFunc, middleware ...echo.MiddlewareFunc) *echo.Route {
-	fmt.Println(ptr, method, path, handler, middleware)
+func echoEchoAdd(ptr *echo.Echo, method, path string, handler echo.HandlerFunc, middleware ...echo.MiddlewareFunc) *echo.Route {
 	return nil
 }
 
 //go:noinline
-func WrapechoEchoAdd(ptr uintptr, method, path string, handler echo.HandlerFunc, middleware ...echo.MiddlewareFunc) *echo.Route {
+func WrapechoEchoAdd(ptr *echo.Echo, method, path string, handler echo.HandlerFunc, middleware ...echo.MiddlewareFunc) *echo.Route {
 	tingyun3.LocalSet(9+8, "handled")
 	wrapper := wrapHandler(method, path, handler)
 	r := echoEchoAdd(ptr, method, path, wrapper, middleware...)
@@ -49,13 +47,12 @@ func WrapechoEchoAdd(ptr uintptr, method, path string, handler echo.HandlerFunc,
 }
 
 //go:noinline
-func echoEchoadd(ptr uintptr, host, method, path string, handler echo.HandlerFunc, middleware ...echo.MiddlewareFunc) *echo.Route {
-	fmt.Println(ptr, method, path, handler, middleware)
+func echoEchoadd(ptr *echo.Echo, host, method, path string, handler echo.HandlerFunc, middleware ...echo.MiddlewareFunc) *echo.Route {
 	return nil
 }
 
 //go:noinline
-func WrapechoEchoadd(ptr uintptr, host, method, path string, handler echo.HandlerFunc, middleware ...echo.MiddlewareFunc) *echo.Route {
+func WrapechoEchoadd(ptr *echo.Echo, host, method, path string, handler echo.HandlerFunc, middleware ...echo.MiddlewareFunc) *echo.Route {
 	tingyun3.LocalSet(9+8, "handled")
 	wrapper := wrapHandler(method, path, handler)
 	r := echoEchoadd(ptr, host, method, path, wrapper, middleware...)
@@ -63,13 +60,15 @@ func WrapechoEchoadd(ptr uintptr, host, method, path string, handler echo.Handle
 	return r
 }
 
+var tempVar = 0x1234567890
+
 //go:noinline
-func echoRouterAdd(ptr uintptr, method, path string, h echo.HandlerFunc) {
-	fmt.Println(ptr, method, path, h)
+func echoRouterAdd(ptr *echo.Router, method, path string, h echo.HandlerFunc) {
+	tempVar += 10
 }
 
 //go:noinline
-func WrapechoRouterAdd(ptr uintptr, method, path string, h echo.HandlerFunc) {
+func WrapechoRouterAdd(ptr *echo.Router, method, path string, h echo.HandlerFunc) {
 	if tingyun3.LocalGet(9+8) == nil && h != nil {
 		h = wrapHandler(method, path, h)
 	}

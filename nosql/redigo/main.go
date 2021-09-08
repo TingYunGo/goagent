@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"sync"
 	"time"
+	"unsafe"
 
 	redigo "github.com/gomodule/redigo/redis"
 
@@ -112,14 +113,14 @@ func WrapRedigoDialContext(ctx context.Context, network, address string, options
 }
 
 //go:noinline
-func RedigoConnClose(conn uintptr) error {
+func RedigoConnClose(conn unsafe.Pointer) error {
 	fmt.Println("conn:", conn)
 	return nil
 }
 
 //go:noinline
-func WrapRedigoConnClose(conn uintptr) error {
-	dbs.remove(conn)
+func WrapRedigoConnClose(conn unsafe.Pointer) error {
+	dbs.remove(uintptr(conn))
 	e := RedigoConnClose(conn)
 	return e
 }
@@ -133,12 +134,12 @@ var objectSkipList = []string{
 	"SELECT",
 }
 
-func coreRedigoDoWithTimeout(begin time.Time, c uintptr, readTimeout time.Duration, cmd string, args []interface{}, r interface{}, err error) {
+func coreRedigoDoWithTimeout(begin time.Time, c unsafe.Pointer, readTimeout time.Duration, cmd string, args []interface{}, r interface{}, err error) {
 	action := tingyun3.GetAction()
 	if action == nil {
 		return
 	}
-	host := dbs.get(c)
+	host := dbs.get(uintptr(c))
 	if host == "" {
 		host = "UNKNOWN"
 	}
@@ -162,13 +163,13 @@ func coreRedigoDoWithTimeout(begin time.Time, c uintptr, readTimeout time.Durati
 }
 
 //go:noinline
-func RedigoDoWithTimeout(c uintptr, readTimeout time.Duration, cmd string, args ...interface{}) (interface{}, error) {
+func RedigoDoWithTimeout(c unsafe.Pointer, readTimeout time.Duration, cmd string, args ...interface{}) (interface{}, error) {
 	fmt.Println(cmd)
 	return nil, nil
 }
 
 //go:noinline
-func WrapRedigoDoWithTimeout(c uintptr, readTimeout time.Duration, cmd string, args ...interface{}) (interface{}, error) {
+func WrapRedigoDoWithTimeout(c unsafe.Pointer, readTimeout time.Duration, cmd string, args ...interface{}) (interface{}, error) {
 	begin := time.Now()
 	res, err := RedigoDoWithTimeout(c, readTimeout, cmd, args...)
 	coreRedigoDoWithTimeout(begin, c, readTimeout, cmd, args, res, err)
