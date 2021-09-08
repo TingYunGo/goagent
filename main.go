@@ -7,7 +7,8 @@ package tingyun3
 /*
 #cgo LDFLAGS: -L${SRCDIR} -ltingyungosdk
 
-extern void tingyun_go_init(void *);
+extern int tingyun_go_init(void *);
+
 */
 import "C"
 import (
