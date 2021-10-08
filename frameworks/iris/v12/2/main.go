@@ -135,8 +135,6 @@ func WrapneffosConnhandleMessage(c *neffos.Conn, msg neffos.Message) error {
 					action.SetName("CLIENTIP", host)
 				}
 			}
-		} else {
-			fmt.Println("websocket not enabled\n")
 		}
 	}
 
@@ -159,11 +157,8 @@ func websocketUpgrade(ctx *context.Context, idGen websocket.IDGenerator, s *neff
 func WrapwebsocketUpgrade(ctx *context.Context, idGen websocket.IDGenerator, s *neffos.Server) *neffos.Conn {
 
 	action := tingyun3.GetAction()
-	fmt.Println("on websocket upgrade")
 	if action != nil {
 		action.SetName("websocket", "Upgrade")
-	} else {
-		fmt.Println("no action")
 	}
 	r := websocketUpgrade(ctx, idGen, s)
 	return r
