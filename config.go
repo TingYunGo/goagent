@@ -99,21 +99,25 @@ const (
 )
 
 var localStringKeyMap = map[string]int{
-	"nbs.host":          configLocalStringNbsHost,
-	"nbs.license_key":   configLocalStringNbsLicenseKey,
-	"nbs.app_name":      configLocalStringNbsAppName,
-	"nbs.level":         configLocalStringNbsLevel,
-	"nbs.log_file_name": configLocalStringNbsLogFileName,
-	"collectors":        configLocalStringNbsHost,
-	"license_key":       configLocalStringNbsLicenseKey,
-	"agent_log_level":   configLocalStringNbsLevel,
-	"agent_log_file":    configLocalStringNbsLogFileName,
+	"nbs.host":            configLocalStringNbsHost,
+	"nbs.license_key":     configLocalStringNbsLicenseKey,
+	"nbs.app_name":        configLocalStringNbsAppName,
+	"nbs.level":           configLocalStringNbsLevel,
+	"nbs.log_file_name":   configLocalStringNbsLogFileName,
+	"app_name":            configLocalStringNbsAppName,
+	"collectors":          configLocalStringNbsHost,
+	"collector.address":   configLocalStringNbsHost,
+	"collector.addresses": configLocalStringNbsHost,
+	"license_key":         configLocalStringNbsLicenseKey,
+	"agent_log_level":     configLocalStringNbsLevel,
+	"agent_log_file":      configLocalStringNbsLogFileName,
 }
 var localBoolKeyMap = map[string]int{
 	"nbs.agent_enabled":   configLocalBoolAgentEnable,
 	"nbs.ssl":             configLocalBoolSSL,
 	"nbs.audit":           configLocalBoolAudit,
 	"websocket_enabled":   configLocalBoolWebsocketEnabled,
+	"ssl":                 configLocalBoolSSL,
 	"audit_mode":          configLocalBoolAudit,
 	"agent_enabled":       configLocalBoolAgentEnable,
 	"transaction_enabled": configLocalBoolTransactionEnabled,
@@ -126,6 +130,10 @@ var localIntegerKeyMap = map[string]int{
 	"nbs.max_log_count":     configLocalIntegerNbsMaxLogCount,
 	"nbs.action_cache_max":  configLocalIntegerNbsActionCacheMax,
 	"nbs.action_report_max": configLocalIntegerNbsActionReportMax,
+	"collector.port":        configLocalIntegerNbsPort,
+	"action_cache_max":      configLocalIntegerNbsActionCacheMax,
+	"action_report_max":     configLocalIntegerNbsActionReportMax,
+	"report_queue_count":    configLocalIntegerNbsSaveCount,
 	"agent_log_file_count":  configLocalIntegerNbsMaxLogCount,
 	"agent_log_file_size":   configLocalIntegerNbsMaxLogSize,
 	"agent_init_delay":      configLocalIntegerAgentInitDelay,
@@ -286,7 +294,7 @@ func parseConfig(filenames string, c *cache_config.Configuration) error {
 				return err
 			}
 			for k, v := range jsonData {
-				if k == "nbs.app_name" {
+				if k == "nbs.app_name" || k == "app_name" {
 					nameFound = true
 				}
 				c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, k, v)
@@ -309,7 +317,7 @@ func parseConfig(filenames string, c *cache_config.Configuration) error {
 							nvalue, _ := strconv.Atoi(value)
 							c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, k, nvalue)
 						} else {
-							if k == "nbs.app_name" {
+							if k == "nbs.app_name" || k == "app_name" {
 								nameFound = true
 							}
 							c.Update(localStringKeyMap, localBoolKeyMap, localIntegerKeyMap, k, value)
