@@ -392,7 +392,7 @@ func WraphttpNotFound(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-var idPointer *pidStruct = nil
+var idPointer *pidStruct = &pidStruct{}
 
 // GetGID return goroutine id
 //go:noinline
