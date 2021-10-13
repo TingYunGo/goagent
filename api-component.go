@@ -195,6 +195,9 @@ func (c *Component) CreateComponent(method string) *Component {
 	if c == nil || c.action == nil || c._type != ComponentDefault {
 		return nil
 	}
+	if !c.action.checkComponent() {
+		return nil
+	}
 	r := &Component{
 		action:         c.action,
 		parent:         c.action.current,

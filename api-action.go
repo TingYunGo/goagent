@@ -67,12 +67,22 @@ type Action struct {
 	trackEnable    bool
 }
 
+func (a *Action) checkComponent() bool {
+	if a == nil {
+		return false
+	}
+	return a.cache.Size() < int32(app.configs.local.CIntegers.Read(configLocalIntegerComponentMax, 3000))
+}
+
 //CreateExternalComponent : 创建Web Service性能分解组件
 //参数:
 //    url    : 调用Web Service的url,格式: http(s)://host/uri, 例如 http://www.baidu.com/
 //    method : 发起这个Web Service调用的类名.方法名, 例如 http.Get
 func (a *Action) CreateExternalComponent(url string, method string) *Component {
 	if app == nil || a == nil || a.stateUsed != actionUsing {
+		return nil
+	}
+	if !a.checkComponent() {
 		return nil
 	}
 	protocol := ""
@@ -112,6 +122,9 @@ func (a *Action) CreateMQComponent(vender string, isConsumer bool, host, queue s
 	if app == nil || a == nil || a.stateUsed != actionUsing {
 		return nil
 	}
+	if !a.checkComponent() {
+		return nil
+	}
 	var mqType uint8 = ComponentMQP
 	if isConsumer {
 		mqType = ComponentMQC
@@ -146,6 +159,9 @@ func (a *Action) CreateRedisComponent(host, cmd, key, method string) *Component 
 	if app == nil || a == nil || a.stateUsed != actionUsing {
 		return nil
 	}
+	if !a.checkComponent() {
+		return nil
+	}
 	key = getValidString(key, "NULL")
 	c := &Component{
 		action:         a,
@@ -176,6 +192,9 @@ func (a *Action) CreateDBComponent(dbType uint8, host string, dbname string, tab
 	if app == nil || a == nil || a.stateUsed != actionUsing {
 		return nil
 	}
+	if !a.checkComponent() {
+		return nil
+	}
 	nameID := dbType - ComponentDefaultDB
 	if nameID < 0 || nameID >= 32 {
 		return nil
@@ -203,6 +222,9 @@ func (a *Action) CreateMongoComponent(host, database, collection, op, method str
 	if app == nil || a == nil || a.stateUsed != actionUsing {
 		return nil
 	}
+	if !a.checkComponent() {
+		return nil
+	}
 	c := &Component{
 		action:         a,
 		method:         method,
@@ -224,6 +246,9 @@ func (a *Action) CreateMongoComponent(host, database, collection, op, method str
 //CreateSQLComponent : 以 SQL语句创建一个数据库组件
 func (a *Action) CreateSQLComponent(dbType uint8, host string, dbname string, sql string, method string) *Component {
 	if app == nil || a == nil || a.stateUsed != actionUsing {
+		return nil
+	}
+	if !a.checkComponent() {
 		return nil
 	}
 	nameID := dbType - ComponentDefaultDB
@@ -252,6 +277,9 @@ func (a *Action) CreateSQLComponent(dbType uint8, host string, dbname string, sq
 //    method : 类名.方法名, 例如 main.user.login
 func (a *Action) CreateComponent(method string) *Component {
 	if app == nil || a == nil || a.stateUsed != actionUsing {
+		return nil
+	}
+	if !a.checkComponent() {
 		return nil
 	}
 	c := &Component{

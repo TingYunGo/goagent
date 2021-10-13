@@ -36,7 +36,6 @@ extern const ReplaceItem* TingyunReplaceItems() {
         {"database/sql.(*Stmt).Close", "/database.WrapStmtClose", "", 0},
         {"database/sql.(*Rows).Close", "/database.WrapRowsClose", "", 0},
 
-        {"github.com/gin-gonic/gin.(*RouterGroup).handle", "/frameworks/gin.WrapRouterGrouphandle", "", "/frameworks/gin.RouterGrouphandle"},
 
         {"github.com/labstack/echo.(*Echo).add", "/frameworks/echo.WrapechoEchoadd", "", "/frameworks/echo.echoEchoadd"},
         {"github.com/labstack/echo.(*Echo).Add", "/frameworks/echo.WrapechoEchoAdd", "","/frameworks/echo.echoEchoAdd"},
@@ -127,6 +126,7 @@ extern const ReplaceItem* TingyunReplaceItems() {
 extern const WrapItem* TingyunWraps() {
     
     static WrapItem targets[] = {
+       {"github.com/gin-gonic/gin.(*RouterGroup).handle", "/frameworks/gin.", "RouterGrouphandle"},
         
        {"github.com/kataras/iris/v12/core/router.(*APIBuilder).CreateRoutes", "/frameworks/iris/v12.", "irisCreateRoutes"},
        {"github.com/kataras/iris/v12/core/router.FileServer", "/frameworks/iris/v12.", "routerFileServer"},

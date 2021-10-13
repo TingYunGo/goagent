@@ -38,7 +38,8 @@ const (
 	configLocalIntegerNbsActionCacheMax  = 5
 	configLocalIntegerNbsActionReportMax = 6
 	configLocalIntegerAgentInitDelay     = 7
-	configLocalIntegerMax                = 8
+	configLocalIntegerComponentMax       = 8
+	configLocalIntegerMax                = 16
 
 	configServerStringAppSessionKey     = 1
 	configServerStringTingyunIDSecret   = 2
@@ -137,6 +138,7 @@ var localIntegerKeyMap = map[string]int{
 	"agent_log_file_count":  configLocalIntegerNbsMaxLogCount,
 	"agent_log_file_size":   configLocalIntegerNbsMaxLogSize,
 	"agent_init_delay":      configLocalIntegerAgentInitDelay,
+	"agent_component_max":   configLocalIntegerComponentMax,
 }
 
 var serverStringKeyMap = map[string]int{
