@@ -204,10 +204,12 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var component *Component = nil
 		action := getAction()
+		preAction := false
 		if action != nil {
+			preAction = true
 			component = action.CreateComponent(methodName)
 		}
-		if component == nil {
+		if !preAction {
 			if isRouteMode {
 				action, _ = CreateAction("ROUTER", methodName)
 			} else {
@@ -221,7 +223,7 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 		action.SetName("CLIENTIP", parseIP(r.RemoteAddr))
 		resWriter := w
 
-		if action != nil && component == nil {
+		if action != nil && !preAction {
 			action.SetHTTPMethod(strings.ToUpper(r.Method))
 			if trackID := r.Header.Get("X-Tingyun"); len(trackID) > 0 {
 				action.SetTrackID(trackID)
@@ -244,7 +246,7 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 		}
 		defer func() {
 			exception := recover()
-			if exception != nil && component == nil {
+			if exception != nil && !preAction {
 				action.setError(exception, "error", 2)
 			}
 			if component != nil {

@@ -187,7 +187,7 @@ func (c *Component) AppendSQL(sql string) {
 		(c._type != ComponentExternal && c._type != ComponentDefaultDB && c._type != ComponentMysql && c._type != ComponentPostgreSQL && c._type != ComponentMSSQL && c._type != ComponentSQLite) {
 		return
 	}
-	c.op = sql
+	c.op = fixSQL(sql)
 }
 
 // CreateComponent : 在函数/方法中调用其他函数/方法时,如果认为有必要,调用此方法测量子过程性能

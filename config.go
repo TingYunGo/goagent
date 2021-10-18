@@ -24,6 +24,7 @@ const (
 	configLocalStringNbsAppName          = 3
 	configLocalStringNbsLevel            = log.ConfigStringNBSLevel
 	configLocalStringNbsLogFileName      = log.ConfigStringNBSLogFileName
+	configLocalStringAppUUID             = 6
 	configLocalStringMax                 = 8
 	configLocalBoolAgentEnable           = 1
 	configLocalBoolSSL                   = 2
@@ -39,6 +40,7 @@ const (
 	configLocalIntegerNbsActionReportMax = 6
 	configLocalIntegerAgentInitDelay     = 7
 	configLocalIntegerComponentMax       = 8
+	configLocalIntegerMaxSQLSize         = 9
 	configLocalIntegerMax                = 16
 
 	configServerStringAppSessionKey     = 1
@@ -112,6 +114,7 @@ var localStringKeyMap = map[string]int{
 	"license_key":         configLocalStringNbsLicenseKey,
 	"agent_log_level":     configLocalStringNbsLevel,
 	"agent_log_file":      configLocalStringNbsLogFileName,
+	"UUID":                configLocalStringAppUUID,
 }
 var localBoolKeyMap = map[string]int{
 	"nbs.agent_enabled":   configLocalBoolAgentEnable,
@@ -139,6 +142,7 @@ var localIntegerKeyMap = map[string]int{
 	"agent_log_file_size":   configLocalIntegerNbsMaxLogSize,
 	"agent_init_delay":      configLocalIntegerAgentInitDelay,
 	"agent_component_max":   configLocalIntegerComponentMax,
+	"agent_sql_size_max":    configLocalIntegerMaxSQLSize,
 }
 
 var serverStringKeyMap = map[string]int{

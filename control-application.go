@@ -387,6 +387,7 @@ func makeLoginRequest() ([]byte, error) {
 				"pid":           os.Getpid(),
 				"agentVersion":  TINGYUN_GO_AGENT_VERSION,
 				"tingyun.debug": false,
+				"UUID":          app.configs.local.CStrings.Read(configLocalStringAppUUID, ""),
 			},
 		},
 	})

@@ -73,6 +73,13 @@ func (a *Action) checkComponent() bool {
 	}
 	return a.cache.Size() < int32(app.configs.local.CIntegers.Read(configLocalIntegerComponentMax, 3000))
 }
+func fixSQL(sql string) string {
+	maxSize := int(app.configs.local.CIntegers.Read(configLocalIntegerMaxSQLSize, 5000))
+	if len(sql) > maxSize {
+		sql = sql[0:maxSize]
+	}
+	return sql
+}
 
 //CreateExternalComponent : 创建Web Service性能分解组件
 //参数:
@@ -205,7 +212,7 @@ func (a *Action) CreateDBComponent(dbType uint8, host string, dbname string, tab
 		vender:         getValidString(dbNameMap[nameID], "UnDefDatabase"),
 		instance:       getValidString(host, "NULL") + "/" + getValidString(dbname, "NULL"),
 		table:          getValidString(table, "NULL"),
-		op:             op,
+		op:             fixSQL(op),
 		callStack:      nil,
 		tracerParentID: a.current.tracerID,
 		tracerID:       a.makeTracerID(),
@@ -258,7 +265,7 @@ func (a *Action) CreateSQLComponent(dbType uint8, host string, dbname string, sq
 	c := &Component{
 		action:         a,
 		method:         method,
-		op:             sql,
+		op:             fixSQL(sql),
 		vender:         getValidString(dbNameMap[nameID], "UnDefDatabase"),
 		instance:       getValidString(host, "NULL") + "/" + getValidString(dbname, "NULL"),
 		callStack:      nil,
