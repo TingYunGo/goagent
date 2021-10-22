@@ -62,7 +62,7 @@
     module http_example
     go 1.12
     require (
-    	github.com/TingYunGo/goagent v0.7.7
+    	github.com/TingYunGo/goagent v0.7.8
         github.com/golang/protobuf v1.5.2 // indirect
     )
     ```
@@ -76,7 +76,7 @@
       ```bash 
       go mod tidy
       ```
-      此命令将检查并下载第三方依赖包，并校验依赖包的hash值。
+      这个命令将自动检查当前应用的依赖并下载所有依赖包，并且校验依赖包的hash值,写入到go.sum文件。
 
 #### **Go语言应用如何编译?**
    进入应用源码路径,执行 go build 命令，即生成应用的可执行文件。
