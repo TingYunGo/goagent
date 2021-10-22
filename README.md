@@ -373,7 +373,7 @@ agent_sql_size_max = 5000
 ## 自动嵌码演示范例
   使用听云 goagent嵌码,请参考部分范例程序 [听云 goagent演示](https://github.com/TingYunGo/goagent_examples)
 ## 自定义嵌码(听云 goagent API)
-  自定义嵌码部分请参考阅读 [听云 goagent API](https://github.com/TingYunGo/goagent_examples/blob/main/api.md)
+  自定义嵌码部分请参考阅读 [听云 goagent API](https://github.com/TingYunGo/goagent/blob/master/api.md)
 
 ## Code License
 听云 goagent 使用 [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) 协议发布.
