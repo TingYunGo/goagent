@@ -2,13 +2,14 @@
 **TingYun APM3.0 - GoAgent**
 
 ## 简介
-  听云 goagent  能为您的 Go 语言应用程序提供运行时状态监控功能。<br/>
-  它能帮助您追踪事务请求，外部调用，数据调用，nosql调用(redis, mongodb等) 以及自定义过程的性能分析和错误分析。
+  听云 goagent  能为您的 Go 语言应用程序提供运行时状态监控功能。
+  
+  它能帮助您追踪事务请求，外部调用，数据调用，nosql调用(redis, mongodb等) 以及自定义过程的性能数据和错误等运行状态信息。
 
-  下面这部分简单介绍Go语言的特点,如果您熟悉Go语言,请直接跳转到 [听云 goagent 嵌码](#tingyun_goagent) 阅读
+  为方便理解,下面这部分简单介绍Go语言的特点,如果您熟悉Go语言,请转到 [听云 goagent 嵌码](#tingyun_goagent) 开始阅读。
 
 ### Go 语言简介
-   与c/c++类似, Go 语言是编译类型的语言。
+   与c和c++语言类似, Go 语言是编译类型的语言。
 
 #### **Go语言程序如何运行?**
    Go语言源程序经过Go编译器编译,生成独立的二进制ELF(linux)/EXE(windows) 格式的可执行文件，运行时不再需要Go源程序参与。
@@ -171,7 +172,7 @@
 | github.com/beego/beego <br/> beego框架v1: GOMOD模式  | github.com/TingYunGo/goagent/frameworks/beego | beego v1.12.0 ~ beego v1.12.3 |
 | github.com/beego/beego/v2 <br/> beego框架v2: GOMOD模式  | github.com/TingYunGo/goagent/frameworks/beego/v2 | beego v2.0.0 ~ beego v2.0.1 |
 | github.com/labstack/echo <br/>echo 框架 GOPATH模式 | github.com/TingYunGo/goagent/frameworks/echo | echo v3.3.10 ~ echo v4.6.1 |
-| github.com/labstack/echo/v4 <br/>echo 框架 V4 GOMOD模式 | github.com/TingYunGo/goagent/frameworks/echo/v4 | echo v3.3.10 ~ echo v4.6.1 |
+| github.com/labstack/echo/v4 <br/>echo 框架 V4 GOMOD模式 | github.com/TingYunGo/goagent/frameworks/echo/v4 | echo v4.0.0 ~ echo v4.6.1 |
 | github.com/kataras/iris/v12 <br/> iris 框架 v12.1.x | github.com/TingYunGo/goagent/frameworks/iris/v12 | iris v12.1.0 ~ iris v12.1.8 |
 | github.com/kataras/iris/v12 <br/>iris 框架 v12.2  | github.com/TingYunGo/goagent/frameworks/iris/v12/2 | iris v12.2.0-alpha ~ iris v12.2.0-alpha3 |
 
