@@ -233,7 +233,7 @@
    ```
 
 * 步骤4. 执行 go mod tidy, 编译:
-  在项目go.mod文件下,执行:
+  在项目的go.mod文件所在的文件夹下,执行:
 
   ```bash
   $ go mod tidy
