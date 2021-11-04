@@ -121,7 +121,7 @@ func (r *structAppData) Append(action *Action) {
 		traceItem.Backtrace = component.callStack
 		for i := 0; i < len(component.errors); i++ {
 			exception := &protoc.TracerException{}
-			exception.Error = true
+			exception.Error = component.errors[i].isError
 			exception.Msg = fmt.Sprint(component.errors[i].e)
 			exception.Name = component.errors[i].eType
 			exception.Stack = component.errors[i].stack

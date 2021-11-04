@@ -18,6 +18,7 @@ type errInfo struct {
 	e          interface{}
 	stack      []string
 	eType      string
+	isError    bool
 }
 
 func (i *errInfo) Destroy() {

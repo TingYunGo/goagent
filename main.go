@@ -49,7 +49,7 @@ func replaceHttpClientDo(ptr *http.Client, req *http.Request) (*http.Response, e
 	}
 	defer func() {
 		if exception := recover(); exception != nil {
-			component.setError(exception, "error")
+			component.setError(exception, "error", true)
 			component.Finish()
 			panic(exception)
 		}
@@ -57,7 +57,7 @@ func replaceHttpClientDo(ptr *http.Client, req *http.Request) (*http.Response, e
 	res, err := HttpClientDo(ptr, req)
 	if component != nil {
 		if err != nil {
-			component.setError(err, "httpClient")
+			component.setError(err, "httpClient", false)
 		} else if res != nil {
 			if txdata := res.Header.Get("X-Tingyun-Data"); len(txdata) > 0 {
 				component.SetTxData(txdata)
@@ -84,7 +84,7 @@ func WrapHttpClientDo(ptr *http.Client, req *http.Request) (*http.Response, erro
 	}
 	defer func() {
 		if exception := recover(); exception != nil {
-			component.setError(exception, "error")
+			component.setError(exception, "error", true)
 			component.Finish()
 			panic(exception)
 		}
@@ -92,7 +92,7 @@ func WrapHttpClientDo(ptr *http.Client, req *http.Request) (*http.Response, erro
 	res, err := HttpClientDo(ptr, req)
 	if component != nil {
 		if err != nil {
-			component.setError(err, "httpClient")
+			component.setError(err, "httpClient", false)
 		} else if res != nil {
 			if txdata := res.Header.Get("X-Tingyun-Data"); len(txdata) > 0 {
 				component.SetTxData(txdata)
@@ -247,7 +247,7 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 		defer func() {
 			exception := recover()
 			if exception != nil && !preAction {
-				action.setError(exception, "error", 2)
+				action.setError(exception, "error", 2, true)
 			}
 			if component != nil {
 				component.Finish()

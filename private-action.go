@@ -10,12 +10,12 @@ import (
 	"github.com/TingYunGo/goagent/libs/tystring"
 )
 
-func (a *Action) setError(e interface{}, errType string, skipStack int) {
+func (a *Action) setError(e interface{}, errType string, skipStack int, isError bool) {
 	if a == nil || a.stateUsed != actionUsing {
 		return
 	} //errorTrace 聚合,以 callstack + message
 	errTime := time.Now()
-	a.errors.Put(&errInfo{errTime, e, callStack(skipStack), errType})
+	a.errors.Put(&errInfo{errTime, e, callStack(skipStack), errType, isError})
 }
 func (a *Action) makeTracerID() int32 {
 	return atomic.AddInt32(&a.tracerIDMaker, 1)

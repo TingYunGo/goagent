@@ -157,7 +157,7 @@ func methodLeave(prehandle interface{}, e error, coll *mongo.Collection, action 
 	component := action.CreateMongoComponent(getMongoHostName(coll), coll.Database().Name(), coll.Name(), invokeName, callerName)
 	component.FixBegin(begin)
 	if e != nil {
-		component.SetError(e, "mongo.Collection", 2)
+		component.SetException(e, "mongo.Collection", 2)
 	}
 	component.End(2)
 }

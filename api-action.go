@@ -511,7 +511,15 @@ func (a *Action) SetError(e interface{}) {
 	if a == nil || a.stateUsed != actionUsing {
 		return
 	}
-	a.setError(e, "RUNTIME_ERROR", 1)
+	a.setError(e, "ActionError", 1, true)
+}
+
+//SetException : 事务发生错误或异常时调用,记录事务的运行时错误信息
+func (a *Action) SetException(e interface{}) {
+	if a == nil || a.stateUsed != actionUsing {
+		return
+	}
+	a.setError(e, "ActionException", 1, false)
 }
 
 //Finish : 事务结束时调用
@@ -575,7 +583,7 @@ func (a *Action) SetStatusCode(code uint16) int {
 				}
 			}
 		}
-		a.setError(errors.New(fmt.Sprint("status code ", code)), "HTTP_ERROR", 1)
+		a.setError(errors.New(fmt.Sprint("status code ", code)), "HTTP_ERROR", 1, true)
 		return 3
 	}
 	return 0
@@ -598,7 +606,7 @@ func (a *Action) SetHTTPStatus(code uint16, skip int) int {
 				}
 			}
 		}
-		a.setError(errors.New(fmt.Sprint("status code ", code)), "HTTP_ERROR", skip+1)
+		a.setError(errors.New(fmt.Sprint("status code ", code)), "HTTP_ERROR", skip+1, true)
 		return 3
 	}
 	return 0

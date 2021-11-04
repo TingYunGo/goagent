@@ -70,12 +70,12 @@ func (c *Component) GetAction() *Action {
 	}
 	return c.action
 }
-func (c *Component) setError(e interface{}, errType string) {
+func (c *Component) setError(e interface{}, errType string, isError bool) {
 	if c == nil {
 		return
 	} //errorTrace 聚合,以 callstack + message
 	errTime := time.Now()
-	c.errors = append(c.errors, &errInfo{errTime, e, callStack(1), errType})
+	c.errors = append(c.errors, &errInfo{errTime, e, callStack(1), errType, isError})
 }
 
 // SetError : 组件错误捕获
@@ -87,7 +87,19 @@ func (c *Component) SetError(e interface{}, errType string, skipStack int) {
 		return
 	} //errorTrace 聚合,以 callstack + message
 	errTime := time.Now()
-	c.errors = append(c.errors, &errInfo{errTime, e, callStack(skipStack + 1), errType})
+	c.errors = append(c.errors, &errInfo{errTime, e, callStack(skipStack + 1), errType, true})
+}
+
+// SetException : 组件异常捕获
+func (c *Component) SetException(e interface{}, errType string, skipStack int) {
+	if skipStack < 0 {
+		skipStack = 0
+	}
+	if c == nil {
+		return
+	} //errorTrace 聚合,以 callstack + message
+	errTime := time.Now()
+	c.errors = append(c.errors, &errInfo{errTime, e, callStack(skipStack + 1), errType, false})
 }
 
 // Finish : 停止组件计时

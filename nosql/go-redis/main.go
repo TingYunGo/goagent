@@ -102,7 +102,7 @@ func handleGoRedis(host string, args []interface{}, begin time.Time, err error, 
 	component := action.CreateRedisComponent(host, cmd, object, callerName)
 	component.FixBegin(begin)
 	if err != nil {
-		component.SetError(err, callerName, 3)
+		component.SetException(err, callerName, 3)
 	}
 	component.FixStackEnd(skip, func(funcname string) bool {
 		token := "github.com/go-redis/redis/"

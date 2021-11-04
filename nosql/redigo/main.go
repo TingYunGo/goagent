@@ -153,7 +153,7 @@ func coreRedigoDoWithTimeout(begin time.Time, c unsafe.Pointer, readTimeout time
 	component := action.CreateRedisComponent(host, cmd, object, callerName)
 	component.FixBegin(begin)
 	if err != nil {
-		component.SetError(err, callerName, 3)
+		component.SetException(err, callerName, 3)
 	}
 	component.FixStackEnd(2, func(funcName string) bool {
 		token := "github.com/gomodule/redigo/"

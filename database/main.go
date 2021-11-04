@@ -139,7 +139,7 @@ func coreWrapPrepareContext(begin time.Time, db *sql.DB, query string, stmt *sql
 	component := action.CreateSQLComponent(getTingyunDBType(info.vender), info.host, info.dbname, query, callerName)
 	component.FixBegin(begin)
 	if stmt == nil || e != nil {
-		component.SetError(e, callerName, 3)
+		component.SetException(e, callerName, 3)
 		component.End(2)
 		return
 	}
@@ -166,7 +166,7 @@ func coreWrapExecContext(begin time.Time, db *sql.DB, query string, r sql.Result
 	component := action.CreateSQLComponent(getTingyunDBType(info.vender), info.host, info.dbname, query, callerName)
 	component.FixBegin(begin)
 	if r == nil && e != nil {
-		component.SetError(e, callerName, 3)
+		component.SetException(e, callerName, 3)
 		component.End(2)
 		return
 	}
@@ -193,7 +193,7 @@ func coreWrapQueryContext(begin time.Time, db *sql.DB, query string, r *sql.Rows
 	component := action.CreateSQLComponent(getTingyunDBType(info.vender), info.host, info.dbname, query, callerName)
 	component.FixBegin(begin)
 	if r == nil && e != nil {
-		component.SetError(e, callerName, 3)
+		component.SetException(e, callerName, 3)
 		component.End(2)
 		return
 	}
@@ -380,7 +380,7 @@ func WrapStmtQueryContext(s *sql.Stmt, ctx context.Context, args ...interface{})
 		delete(dbctx.stmts, s)
 		if r == nil && e != nil {
 			callerName := getCallName(2)
-			component.SetError(e, callerName, 2)
+			component.SetException(e, callerName, 2)
 			if dbctx.empty() {
 				dbctx.clear()
 				tingyun3.LocalDelete(1)
