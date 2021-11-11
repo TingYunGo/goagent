@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 
@@ -176,6 +177,29 @@ func WrapbaseClientprocessPipeline(c *baseClient, ctx context.Context, cmds []re
 	return e
 }
 
+type pipelineProcessor func(context.Context, uintptr, []redis.Cmder) (bool, error)
+
+//go:noinline
+func baseClientgeneralProcessPipeline(c *baseClient, ctx context.Context, cmds []redis.Cmder, p pipelineProcessor) error {
+	fmt.Println(c, ctx, cmds, p)
+	return nil
+}
+
+//go:noinline
+func WrapbaseClientgeneralProcessPipeline(c *baseClient, ctx context.Context, cmds []redis.Cmder, p pipelineProcessor) error {
+	begin := time.Now()
+	req := tingyun3.LocalGet(9)
+	if req == nil {
+		tingyun3.LocalSet(9, 1)
+	}
+	e := baseClientgeneralProcessPipeline(c, ctx, cmds, p)
+	if req == nil {
+		tingyun3.LocalDelete(9)
+		handleGoRedis(c.opt.Addr, cmds[0].Args(), begin, e, 2)
+	}
+	return e
+}
+
 //go:noinline
 func baseClientProcess(c *baseClientV6, cmd redis.Cmder) error {
 	fmt.Println(cmd.Name())
@@ -198,6 +222,137 @@ func WrapbaseClientProcess(c *baseClientV6, cmd redis.Cmder) error {
 	return err
 }
 
+//  ------------------------------------------------------------------------------  //
+//  2021.11.11 更新hook方式
+
+//go:noinline
+func redisClientWrapProcess(c *redis.Client, fn func(func(redis.Cmder) error) func(redis.Cmder) error) {
+	fn(func(cmd redis.Cmder) error {
+		fmt.Println(c, cmd)
+		return nil
+	})
+}
+
+//go:noinline
+func WrapredisClientWrapProcess(c *redis.Client, fn func(func(redis.Cmder) error) func(redis.Cmder) error) {
+	redisClientWrapProcess(c, fn)
+}
+
+//go:noinline
+func redisClientWrapProcessPipeline(c *redis.Client, fn func(oldProcess func([]redis.Cmder) error) func([]redis.Cmder) error) {
+	fn(func(cmds []redis.Cmder) error {
+		fmt.Println(c, cmds)
+		return nil
+	})
+}
+
+//go:noinline
+func WrapredisClientWrapProcessPipeline(c *redis.Client, fn func(oldProcess func([]redis.Cmder) error) func([]redis.Cmder) error) {
+	redisClientWrapProcessPipeline(c, fn)
+}
+
+//go:noinline
+func redisClusterClientWrapProcess(c *redis.ClusterClient, fn func(func(redis.Cmder) error) func(redis.Cmder) error) {
+	fn(func(cmd redis.Cmder) error {
+		fmt.Println(c, cmd)
+		return nil
+	})
+}
+
+//go:noinline
+func WrapredisClusterClientWrapProcess(c *redis.ClusterClient, fn func(func(redis.Cmder) error) func(redis.Cmder) error) {
+	redisClusterClientWrapProcess(c, fn)
+}
+
+//go:noinline
+func redisClusterClientWrapProcessPipeline(c *redis.ClusterClient, fn func(oldProcess func([]redis.Cmder) error) func([]redis.Cmder) error) {
+	fn(func(cmds []redis.Cmder) error {
+		fmt.Println(c, cmds)
+		return nil
+	})
+}
+
+//go:noinline
+func WrapredisClusterClientWrapProcessPipeline(c *redis.ClusterClient, fn func(oldProcess func([]redis.Cmder) error) func([]redis.Cmder) error) {
+	redisClusterClientWrapProcessPipeline(c, fn)
+}
+
+//go:noinline
+func redisNewClient(opt *redis.Options) *redis.Client {
+	fmt.Println(opt)
+	return nil
+}
+
+//go:noinline
+func WrapredisNewClient(opt *redis.Options) *redis.Client {
+	r := redisNewClient(opt)
+	if r == nil {
+		return nil
+	}
+	addr := opt.Addr
+	redisClientWrapProcess(r, func(raw func(redis.Cmder) error) func(redis.Cmder) error {
+		return getProcessWrapper("redis.Client.process", addr, raw)
+	})
+	redisClientWrapProcessPipeline(r, func(raw func([]redis.Cmder) error) func([]redis.Cmder) error {
+		return getProcessPipelineWrapper("redisClient.Pipline", addr, raw)
+	})
+	return r
+}
+
+func getProcessWrapper(entry, addr string, raw func(redis.Cmder) error) func(redis.Cmder) error {
+	return func(cmd redis.Cmder) error {
+		begin := time.Now()
+		req := tingyun3.LocalGet(9)
+		if req == nil {
+			tingyun3.LocalSet(9, 1)
+		}
+		err := raw(cmd)
+		if req == nil {
+			tingyun3.LocalDelete(9)
+			handleGoRedis(addr, cmd.Args(), begin, err, 2)
+		}
+		return err
+	}
+}
+func getProcessPipelineWrapper(entry string, addr string, raw func([]redis.Cmder) error) func([]redis.Cmder) error {
+	return func(cmds []redis.Cmder) error {
+		begin := time.Now()
+		req := tingyun3.LocalGet(9)
+		if req == nil && len(cmds) > 0 {
+			tingyun3.LocalSet(9, 1)
+		}
+		err := raw(cmds)
+		if req == nil && len(cmds) > 0 {
+			tingyun3.LocalDelete(9)
+			handleGoRedis(addr, cmds[0].Args(), begin, err, 2)
+		}
+		return err
+	}
+}
+
+//go:noinline
+func redisNewClusterClient(opt *redis.ClusterOptions) *redis.ClusterClient {
+	fmt.Println(opt)
+	return nil
+}
+
+//go:noinline
+func WrapredisNewClusterClient(opt *redis.ClusterOptions) *redis.ClusterClient {
+	r := redisNewClusterClient(opt)
+	if r == nil {
+		return r
+	}
+	addr := strings.Join(opt.Addrs, ",")
+	redisClusterClientWrapProcess(r, func(raw func(redis.Cmder) error) func(redis.Cmder) error {
+		return getProcessWrapper("redis.ClusterClient.process", addr, raw)
+	})
+	redisClusterClientWrapProcessPipeline(r, func(raw func([]redis.Cmder) error) func([]redis.Cmder) error {
+		return getProcessPipelineWrapper("redisClusterClient.Pipline", addr, raw)
+	})
+	return r
+}
+
+//  ------------------------------------------------------------------------------  //
 type instanceSet struct {
 	lock  sync.RWMutex
 	items map[*redis.Client]string
@@ -232,4 +387,13 @@ func init() {
 	tingyun3.Register(reflect.ValueOf(WrapbaseClientprocess).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapbaseClientProcess).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapbaseClientprocessPipeline).Pointer())
+	tingyun3.Register(reflect.ValueOf(WrapbaseClientgeneralProcessPipeline).Pointer())
+
+	tingyun3.Register(reflect.ValueOf(WrapredisNewClient).Pointer())
+	tingyun3.Register(reflect.ValueOf(WrapredisNewClusterClient).Pointer())
+
+	tingyun3.Register(reflect.ValueOf(WrapredisClientWrapProcess).Pointer())
+	tingyun3.Register(reflect.ValueOf(WrapredisClientWrapProcessPipeline).Pointer())
+	tingyun3.Register(reflect.ValueOf(WrapredisClusterClientWrapProcess).Pointer())
+	tingyun3.Register(reflect.ValueOf(WrapredisClusterClientWrapProcessPipeline).Pointer())
 }

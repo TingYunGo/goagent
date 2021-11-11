@@ -89,6 +89,16 @@ extern const ReplaceItem* TingyunReplaceItems() {
         {"github.com/go-redis/redis.(*baseClient).process", "/nosql/go-redis.WrapbaseClientprocess", "","/nosql/go-redis.baseClientprocess"},
         {"github.com/go-redis/redis.(*baseClient).Process", "/nosql/go-redis.WrapbaseClientProcess", "","/nosql/go-redis.baseClientProcess"},
         {"github.com/go-redis/redis.(*baseClient).processPipeline", "/nosql/go-redis.WrapbaseClientprocessPipeline", "","/nosql/go-redis.baseClientprocessPipeline"},
+        {"github.com/go-redis/redis.(*baseClient).generalProcessPipeline", "/nosql/go-redis.WrapbaseClientgeneralProcessPipeline", "","/nosql/go-redis.baseClientgeneralProcessPipeline"},
+
+        {"github.com/go-redis/redis.NewClient", "/nosql/go-redis.WrapredisNewClient", "","/nosql/go-redis.redisNewClient"},
+        {"github.com/go-redis/redis.NewClusterClient", "/nosql/go-redis.WrapredisNewClusterClient", "","/nosql/go-redis.redisNewClusterClient"},
+
+        {"github.com/go-redis/redis.(*Client).WrapProcess", "/nosql/go-redis.WrapredisClientWrapProcess", "","/nosql/go-redis.redisClientWrapProcess"},
+        {"github.com/go-redis/redis.(*Client).WrapProcessPipeline", "/nosql/go-redis.WrapredisClientWrapProcessPipeline", "","/nosql/go-redis.redisClientWrapProcessPipeline"},
+        {"github.com/go-redis/redis.(*ClusterClient).WrapProcess", "/nosql/go-redis.WrapredisClusterClientWrapProcess", "","/nosql/go-redis.redisClusterClientWrapProcess"},
+        {"github.com/go-redis/redis.(*ClusterClient).WrapProcessPipeline", "/nosql/go-redis.WrapredisClusterClientWrapProcessPipeline", "","/nosql/go-redis.redisClusterClientWrapProcessPipeline"},
+
         {"github.com/go-redis/redis/v7.(*baseClient).process", "/nosql/go-redis/v7.WrapbaseClientprocess", "","/nosql/go-redis/v7.baseClientprocess"},
         {"github.com/go-redis/redis/v7.(*baseClient).processPipeline", "/nosql/go-redis/v7.WrapbaseClientprocessPipeline", "","/nosql/go-redis/v7.baseClientprocessPipeline"},
         {"github.com/go-redis/redis/v7.(*baseClient).generalProcessPipeline", "/nosql/go-redis/v7.WrapbaseClientgeneralProcessPipeline", "","/nosql/go-redis/v7.baseClientgeneralProcessPipeline"},
