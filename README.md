@@ -184,8 +184,8 @@
 |-----|---------------------------|---------|
 | database/sql <br/> 数据库 | github.com/TingYunGo/goagent/database | go1.9 ~ go1.17.x<br/>驱动列表:<br/>mssql: github.com/denisenkom/go-mssqldb v0.9.0 ~ v0.11.0 <br/>mysql: github.com/go-sql-driver/mysql v1.0.0 ~ v1.6.0 <br/> postgresql: github.com/lib/pq v1.0.0 ~ v1.10.3 <br> sqlite: github.com/mattn/go-sqlite3 v1.0.0 ~ v1.14.8 |
 | github.com/gomodule/redigo <br/> redis: redigo | github.com/TingYunGo/goagent/nosql/redigo | v1.7.0 ~ v1.8.5 |
-| github.com/go-redis/redis <br/> redis: go-redis, GOPATH模式 | github.com/TingYunGo/goagent/nosql/go-redis | v6.0.0 ~ v8.11.4 |
-| github.com/go-redis/redis <br/> redis: go-redis default, GOMOD模式 | github.com/TingYunGo/goagent/nosql/go-redis | v6.0.0 ~ v8.11.4 |
+| github.com/go-redis/redis <br/> redis: go-redis, GOPATH模式 | github.com/TingYunGo/goagent/nosql/go-redis | v6.10.0 ~ v8.11.4 |
+| github.com/go-redis/redis <br/> redis: go-redis default, GOMOD模式 | github.com/TingYunGo/goagent/nosql/go-redis | v6.10.0 ~ v8.11.4 |
 | github.com/go-redis/redis/v7 <br/> redis: go-redis v7, GOMOD模式 | github.com/TingYunGo/goagent/nosql/go-redis/v7 | v7.0.0 ~ v7.4.1 |
 | github.com/go-redis/redis/v8 <br/> redis: go-redis v8, GOMOD模式 | github.com/TingYunGo/goagent/nosql/go-redis/v8 | v8.0.0 ~ v8.11.4 |
 | Go.mongodb.org/mongo-driver/mongo <br/> mongodb | github.com/TingYunGo/goagent/nosql/mongodb | v1.1.0 ~ v1.7.3 |
