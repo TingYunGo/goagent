@@ -46,6 +46,8 @@ func (c *Component) getVender() string {
 		return "MSSQL"
 	case ComponentSQLite:
 		return "SQLite"
+	case ComponentOracle:
+		return "Oracle"
 	case ComponentMongo:
 		return "MongoDB"
 	case ComponentRedis:

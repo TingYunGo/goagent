@@ -157,6 +157,12 @@ func (i *databaseInfo) init(vender, dsn string) {
 		}
 	}
 	i.host, i.dbname = parseDSN(i.vender, i.dsn)
+	if len(i.host) == 0 {
+		if id := strings.Index(dsn, "@"); id != -1 {
+			i.dsn = dsn[id+1:]
+		}
+		i.host, i.dbname = parseMyDSN(i.dsn)
+	}
 }
 func trimDBName(name string) string {
 	begin := 0
@@ -168,11 +174,56 @@ func trimDBName(name string) string {
 	}
 	return name[begin:]
 }
+func StrSplit(source string, issep func(byte) bool, handler func(string) bool) {
+	if handler == nil || issep == nil {
+		return
+	}
+	begin := -1
+	for i := 0; i < len(source); i++ {
+		if issep(source[i]) {
+			if begin > -1 {
+				if handler(source[begin:i]) {
+					return
+				}
+				begin = -1
+			}
+		} else {
+			if begin == -1 {
+				begin = i
+			}
+		}
+	}
+	if begin > -1 && begin < len(source) {
+		handler(source[begin:])
+	}
+	return
+}
+func matchVendor(vender, matcher string) bool {
+	return tystring.CaseCMP(vender[0:min(len(vender), len(matcher))], matcher) == 0
+}
 func parseDSN(vender, dsn string) (host, db string) {
-	if tystring.CaseCMP(vender[0:min(len(vender), 5)], "mysql") == 0 {
+	if matchVendor(vender, "godror") {
+		connString := ""
+		StrSplit(dsn, func(ch byte) bool {
+			return ch == ' '
+		}, func(part string) bool {
+			if tystring.SubString(part, 0, 14) == "connectString=" {
+				connString = part[14:]
+				return true
+			}
+			return false
+		})
+		if len(connString) > 0 && connString[0:1] == "\"" {
+			connString = tystring.SubString(connString, 1, len(connString)-2)
+		}
+		if len(connString) > 0 {
+			return parseMyDSN(connString)
+		}
+	}
+	if matchVendor(vender, "mysql") {
 		return parseMyDSN(dsn)
 	}
-	if tystring.CaseCMP(vender[0:min(len(vender), 6)], "sqlite") == 0 {
+	if matchVendor(vender, "sqlite") {
 		return "file", dsn
 	}
 	u, err := nurl.Parse(dsn)
@@ -189,7 +240,7 @@ func parseDSN(vender, dsn string) (host, db string) {
 		return u.Host, trimDBName(dbname)
 	}
 
-	if tystring.CaseCMP(vender[0:min(len(vender), 7)], "postgre") == 0 {
+	if matchVendor(vender, "postgre") {
 		values := map[string]string{}
 		if parsePostgreOpts(dsn, values) == nil {
 			if h, found := values["host"]; found {

@@ -77,14 +77,16 @@ func (ctx *databaseContext) clear() {
 	}
 }
 func getTingyunDBType(name string) uint8 {
-	if tystring.CaseCMP(tystring.SubString(name, 0, 5), "mysql") == 0 {
+	if matchVendor(name, "mysql") {
 		return tingyun3.ComponentMysql
-	} else if tystring.CaseCMP(tystring.SubString(name, 0, 7), "postgre") == 0 {
+	} else if matchVendor(name, "postgre") {
 		return tingyun3.ComponentPostgreSQL
-	} else if tystring.CaseCMP(tystring.SubString(name, 0, 9), "sqlserver") == 0 {
+	} else if matchVendor(name, "sqlserver") {
 		return tingyun3.ComponentMSSQL
-	} else if tystring.CaseCMP(tystring.SubString(name, 0, 6), "sqlite") == 0 {
+	} else if matchVendor(name, "sqlite") {
 		return tingyun3.ComponentSQLite
+	} else if matchVendor(name, "oci") || matchVendor(name, "godror") {
+		return tingyun3.ComponentOracle
 	}
 	return tingyun3.ComponentDefaultDB
 }

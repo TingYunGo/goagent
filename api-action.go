@@ -25,6 +25,7 @@ const (
 	ComponentPostgreSQL = 34
 	ComponentMSSQL      = 35
 	ComponentSQLite     = 36
+	ComponentOracle     = 37
 	ComponentMongo      = 48
 	ComponentMemCache   = 49
 	ComponentRedis      = 50
@@ -34,7 +35,7 @@ const (
 	componentUnused     = 255
 )
 
-var dbNameMap = [32]string{0: "Database", 1: "MySQL", 2: "PostgreSql", 3: "MSSQL", 4: "SQLite", 16: "MongoDB", 17: "MemCache", 18: "Redis"}
+var dbNameMap = [32]string{0: "Database", 1: "MySQL", 2: "PostgreSql", 3: "MSSQL", 4: "SQLite", 5: "Oracle", 16: "MongoDB", 17: "MemCache", 18: "Redis"}
 
 const (
 	actionUsing    = 1

@@ -31,6 +31,8 @@ func mapTraceType(t uint8) protoc.TracerType {
 		return protoc.TracerType_Database
 	case ComponentSQLite:
 		return protoc.TracerType_Database
+	case ComponentOracle:
+		return protoc.TracerType_Database
 	case ComponentMemCache:
 		return protoc.TracerType_Memcached
 	case ComponentMongo:
