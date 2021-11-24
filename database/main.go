@@ -565,8 +565,6 @@ func DBqueryDC(db *sql.DB, ctx, txctx context.Context, dc *driverConn, releaseCo
 
 //go:noinline
 func WrapDBqueryDC(db *sql.DB, ctx, txctx context.Context, dc *driverConn, releaseConn func(error), query string, args []interface{}) (*sql.Rows, error) {
-	fmt.Println("WrapDBqueryDC:")
-	showStack()
 	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
 
 	begin, enter := recursiveChecker.enter()
@@ -591,8 +589,6 @@ func DBexecDC(db *sql.DB, ctx context.Context, dc *driverConn, release func(erro
 
 //go:noinline
 func WrapDBexecDC(db *sql.DB, ctx context.Context, dc *driverConn, release func(error), query string, args []interface{}) (res sql.Result, err error) {
-	fmt.Println("WrapDBexecDC:")
-	showStack()
 	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
 
 	begin, enter := recursiveChecker.enter()
@@ -623,8 +619,6 @@ func DBprepareDC(db *sql.DB, ctx context.Context, dc *driverConn, release func(e
 
 //go:noinline
 func WrapDBprepareDC(db *sql.DB, ctx context.Context, dc *driverConn, release func(error), cg stmtConnGrabber, query string) (*sql.Stmt, error) {
-	fmt.Println("WrapDBprepareDC:")
-	showStack()
 	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
 
 	begin, enter := recursiveChecker.enter()
