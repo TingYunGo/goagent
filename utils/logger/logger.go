@@ -73,6 +73,12 @@ func (l *Logger) Print(level int, a ...interface{}) {
 	}
 	l.Append(fmt.Sprintf("%s (pid:%d) %s :", time.Now().Format("2006-01-02 15:04:05.000"), l.pid, levelMap[level&LevelMask]) + fmt.Sprint(a...))
 }
+func (l *Logger) Enabled(level int) bool {
+	if l == nil || !l.levelEnable(level) {
+		return false
+	}
+	return true
+}
 
 //功能参考fmt.Println
 func (l *Logger) Println(level int, a ...interface{}) {

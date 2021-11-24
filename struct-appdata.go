@@ -3,7 +3,6 @@
 package tingyun3
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -124,7 +123,7 @@ func (r *structAppData) Append(action *Action) {
 		for i := 0; i < len(component.errors); i++ {
 			exception := &protoc.TracerException{}
 			exception.Error = component.errors[i].isError
-			exception.Msg = fmt.Sprint(component.errors[i].e)
+			exception.Msg = component.errors[i].e
 			exception.Name = component.errors[i].eType
 			exception.Stack = component.errors[i].stack
 			traceItem.Exception = append(traceItem.Exception, exception)

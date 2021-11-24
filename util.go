@@ -40,7 +40,15 @@ func binarySearch(p []float64, value float64) int {
 	}
 	return -1 - Begin
 }
-
+func patchSize(src string, maxSize int) string {
+	if len(src) > maxSize {
+		src = src[0:maxSize]
+	}
+	return src
+}
+func toString(e interface{}) string {
+	return fmt.Sprint(e)
+}
 func callStack(skip int) []string {
 	var slice []string
 	slice = make([]string, 0, 15)

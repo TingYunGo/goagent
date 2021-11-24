@@ -283,6 +283,14 @@ func (a *application) upload() {
 		if len(traceData.traces.Traces) == 0 {
 			return
 		}
+		a.logger.Println(LevelDebug, "Start Upload")
+		if a.logger.Enabled(LevelDebug) {
+			if b, err := json.Marshal(traceData.traces); err == nil {
+				a.logger.Append("\t")
+				a.logger.Append(string(b))
+				a.logger.Append("\n")
+			}
+		}
 		b, _ := traceData.Serialize()
 		traceData.destroy()
 		var err error

@@ -274,7 +274,7 @@ type httpListenAddress struct {
 
 var httpListenAddr httpListenAddress
 
-//(mux *ServeMux) Handler(r *Request) (h Handler, pattern string)
+//go:noinline
 func replaceServerMuxHandler(ptr *http.ServeMux, r *http.Request) (h http.Handler, pattern string) {
 	hres, pattern := ptr.Handler(r)
 	className := reflect.TypeOf(hres).String()

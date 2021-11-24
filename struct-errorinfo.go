@@ -15,13 +15,13 @@ import (
 */
 type errInfo struct {
 	happenTime time.Time
-	e          interface{}
+	e          string
 	stack      []string
 	eType      string
 	isError    bool
 }
 
 func (i *errInfo) Destroy() {
-	i.e = nil
+	i.e = ""
 	i.stack = []string{}
 }

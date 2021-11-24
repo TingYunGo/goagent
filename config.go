@@ -31,6 +31,7 @@ const (
 	configLocalBoolAudit                 = log.ConfigBoolNBSAudit
 	configLocalBoolWebsocketEnabled      = 4
 	configLocalBoolTransactionEnabled    = 5
+	configLocalBoolGormEnabled           = 6
 	configLocalBoolMax                   = 8
 	configLocalIntegerNbsPort            = 1
 	configLocalIntegerNbsSaveCount       = 2
@@ -125,6 +126,7 @@ var localBoolKeyMap = map[string]int{
 	"audit_mode":          configLocalBoolAudit,
 	"agent_enabled":       configLocalBoolAgentEnable,
 	"transaction_enabled": configLocalBoolTransactionEnabled,
+	"GORM_ENABLED":        configLocalBoolGormEnabled,
 }
 
 var localIntegerKeyMap = map[string]int{

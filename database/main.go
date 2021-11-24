@@ -9,6 +9,7 @@ import (
 	"database/sql"
 	"fmt"
 	"reflect"
+	"runtime"
 	"sync"
 	"time"
 	"unsafe"
@@ -99,7 +100,7 @@ func DBOpen(driverName, dataSourceName string) (*sql.DB, error) {
 
 //go:noinline
 func WrapDBOpen(driverName, dataSourceName string) (*sql.DB, error) {
-	db, err := sql.Open(driverName, dataSourceName)
+	db, err := DBOpen(driverName, dataSourceName)
 	if db != nil {
 		info := databaseInfo{}
 		info.init(driverName, dataSourceName)
@@ -215,9 +216,18 @@ func DBPrepareContext(db *sql.DB, ctx context.Context, query string) (*sql.Stmt,
 
 //go:noinline
 func WrapDBPrepareContext(db *sql.DB, ctx context.Context, query string) (*sql.Stmt, error) {
-	begin := time.Now()
-	stmt, e := db.PrepareContext(ctx, query)
-	coreWrapPrepareContext(begin, db, query, stmt, e)
+	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+	begin, enter := recursiveChecker.enter()
+	defer func() {
+		recursiveChecker.leave()
+		if exception := recover(); exception != nil {
+			panic(exception)
+		}
+	}()
+	stmt, e := DBPrepareContext(db, ctx, query)
+	if enter {
+		coreWrapPrepareContext(begin, db, query, stmt, e)
+	}
 	return stmt, e
 }
 
@@ -230,9 +240,20 @@ func DBExecContext(db *sql.DB, ctx context.Context, query string, args ...interf
 //go:noinline
 func WrapDBExecContext(db *sql.DB, ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
 
-	begin := time.Now()
-	r, e := db.ExecContext(ctx, query, args...)
-	coreWrapExecContext(begin, db, query, r, e)
+	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+
+	begin, enter := recursiveChecker.enter()
+	defer func() {
+		recursiveChecker.leave()
+		if exception := recover(); exception != nil {
+			panic(exception)
+		}
+	}()
+
+	r, e := DBExecContext(db, ctx, query, args...)
+	if enter {
+		coreWrapExecContext(begin, db, query, r, e)
+	}
 	return r, e
 }
 
@@ -246,7 +267,7 @@ func DBQueryContext(db *sql.DB, ctx context.Context, query string, args ...inter
 func getCallName(skip int) (callerName string) {
 	skip++
 	callerName = tingyun3.GetCallerName(skip)
-	for tystring.SubString(callerName, 0, 13) == "database/sql." {
+	for isNativeMethod(callerName) {
 		skip++
 		callerName = tingyun3.GetCallerName(skip)
 	}
@@ -255,9 +276,19 @@ func getCallName(skip int) (callerName string) {
 
 //go:noinline
 func WrapDBQueryContext(db *sql.DB, ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-	begin := time.Now()
-	r, e := db.QueryContext(ctx, query, args...)
-	coreWrapQueryContext(begin, db, query, r, e)
+	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+
+	begin, enter := recursiveChecker.enter()
+	defer func() {
+		recursiveChecker.leave()
+		if exception := recover(); exception != nil {
+			panic(exception)
+		}
+	}()
+	r, e := DBQueryContext(db, ctx, query, args...)
+	if enter {
+		coreWrapQueryContext(begin, db, query, r, e)
+	}
 	return r, e
 }
 
@@ -269,9 +300,19 @@ func ConnExecContext(c *sql.Conn, ctx context.Context, query string, args ...int
 
 //go:noinline
 func WrapConnExecContext(c *sql.Conn, ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-	begin := time.Now()
-	r, e := c.ExecContext(ctx, query, args...)
-	coreWrapExecContext(begin, getdb_byconn(c), query, r, e)
+	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+
+	begin, enter := recursiveChecker.enter()
+	defer func() {
+		recursiveChecker.leave()
+		if exception := recover(); exception != nil {
+			panic(exception)
+		}
+	}()
+	r, e := ConnExecContext(c, ctx, query, args...)
+	if enter {
+		coreWrapExecContext(begin, getdb_byconn(c), query, r, e)
+	}
 	return r, e
 }
 
@@ -294,9 +335,19 @@ func getdb_byconn(c *sql.Conn) *sql.DB {
 
 //go:noinline
 func WrapConnQueryContext(c *sql.Conn, ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-	begin := time.Now()
-	r, e := c.QueryContext(ctx, query, args...)
-	coreWrapQueryContext(begin, getdb_byconn(c), query, r, e)
+	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+
+	begin, enter := recursiveChecker.enter()
+	defer func() {
+		recursiveChecker.leave()
+		if exception := recover(); exception != nil {
+			panic(exception)
+		}
+	}()
+	r, e := ConnQueryContext(c, ctx, query, args...)
+	if enter {
+		coreWrapQueryContext(begin, getdb_byconn(c), query, r, e)
+	}
 	return r, e
 }
 
@@ -308,9 +359,19 @@ func ConnPrepareContext(c *sql.Conn, ctx context.Context, query string) (*sql.St
 
 //go:noinline
 func WrapConnPrepareContext(c *sql.Conn, ctx context.Context, query string) (*sql.Stmt, error) {
-	begin := time.Now()
-	stmt, e := c.PrepareContext(ctx, query)
-	coreWrapPrepareContext(begin, getdb_byconn(c), query, stmt, e)
+	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+
+	begin, enter := recursiveChecker.enter()
+	defer func() {
+		recursiveChecker.leave()
+		if exception := recover(); exception != nil {
+			panic(exception)
+		}
+	}()
+	stmt, e := ConnPrepareContext(c, ctx, query)
+	if enter {
+		coreWrapPrepareContext(begin, getdb_byconn(c), query, stmt, e)
+	}
 	return stmt, e
 }
 
@@ -330,9 +391,19 @@ func TxPrepareContext(tx *sql.Tx, ctx context.Context, query string) (*sql.Stmt,
 
 //go:noinline
 func WrapTxPrepareContext(tx *sql.Tx, ctx context.Context, query string) (*sql.Stmt, error) {
-	begin := time.Now()
-	stmt, e := tx.PrepareContext(ctx, query)
-	coreWrapPrepareContext(begin, getdbByTx(tx), query, stmt, e)
+	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+
+	begin, enter := recursiveChecker.enter()
+	defer func() {
+		recursiveChecker.leave()
+		if exception := recover(); exception != nil {
+			panic(exception)
+		}
+	}()
+	stmt, e := TxPrepareContext(tx, ctx, query)
+	if enter {
+		coreWrapPrepareContext(begin, getdbByTx(tx), query, stmt, e)
+	}
 	return stmt, e
 }
 
@@ -344,9 +415,19 @@ func TxExecContext(tx *sql.Tx, ctx context.Context, query string, args ...interf
 
 //go:noinline
 func WrapTxExecContext(tx *sql.Tx, ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-	begin := time.Now()
-	r, e := tx.ExecContext(ctx, query, args...)
-	coreWrapExecContext(begin, getdbByTx(tx), query, r, e)
+	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+
+	begin, enter := recursiveChecker.enter()
+	defer func() {
+		recursiveChecker.leave()
+		if exception := recover(); exception != nil {
+			panic(exception)
+		}
+	}()
+	r, e := TxExecContext(tx, ctx, query, args...)
+	if enter {
+		coreWrapExecContext(begin, getdbByTx(tx), query, r, e)
+	}
 	return r, e
 }
 
@@ -358,9 +439,19 @@ func TxQueryContext(tx *sql.Tx, ctx context.Context, query string, args ...inter
 
 //go:noinline
 func WrapTxQueryContext(tx *sql.Tx, ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-	begin := time.Now()
-	r, e := tx.QueryContext(ctx, query, args...)
-	coreWrapQueryContext(begin, getdbByTx(tx), query, r, e)
+	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+
+	begin, enter := recursiveChecker.enter()
+	defer func() {
+		recursiveChecker.leave()
+		if exception := recover(); exception != nil {
+			panic(exception)
+		}
+	}()
+	r, e := TxQueryContext(tx, ctx, query, args...)
+	if enter {
+		coreWrapQueryContext(begin, getdbByTx(tx), query, r, e)
+	}
 	return r, e
 }
 
@@ -372,7 +463,7 @@ func StmtQueryContext(s *sql.Stmt, ctx context.Context, args ...interface{}) (*s
 
 //go:noinline
 func WrapStmtQueryContext(s *sql.Stmt, ctx context.Context, args ...interface{}) (*sql.Rows, error) {
-	r, e := s.QueryContext(ctx, args...)
+	r, e := StmtQueryContext(s, ctx, args...)
 	if c := tingyun3.LocalGet(1); c != nil {
 		dbctx := c.(*databaseContext)
 		component, found := dbctx.stmts[s]
@@ -402,7 +493,7 @@ func StmtClose(s *sql.Stmt) error {
 
 //go:noinline
 func WrapStmtClose(s *sql.Stmt) error {
-	err := s.Close()
+	err := StmtClose(s)
 
 	if c := tingyun3.LocalGet(1); c != nil {
 		dbctx := c.(*databaseContext)
@@ -426,7 +517,7 @@ func StmtExecContext(s *sql.Stmt, ctx context.Context, args ...interface{}) (sql
 
 //go:noinline
 func WrapStmtExecContext(s *sql.Stmt, ctx context.Context, args ...interface{}) (sql.Result, error) {
-	r, e := s.ExecContext(ctx, args...)
+	r, e := StmtExecContext(s, ctx, args...)
 
 	if c := tingyun3.LocalGet(1); c != nil {
 		dbctx := c.(*databaseContext)
@@ -445,7 +536,7 @@ func RowsClose(rs *sql.Rows) error {
 
 //go:noinline
 func WrapRowsClose(rs *sql.Rows) error {
-	err := rs.Close()
+	err := RowsClose(rs)
 	if c := tingyun3.LocalGet(1); c != nil {
 		dbctx := c.(*databaseContext)
 		if c, found := dbctx.records[rs]; found {
@@ -459,6 +550,164 @@ func WrapRowsClose(rs *sql.Rows) error {
 	return err
 }
 
+type driverConn struct {
+	db        *sql.DB
+	createdAt time.Time
+}
+
+//database/sql.(*DB).queryDC
+
+//go:noinline
+func DBqueryDC(db *sql.DB, ctx, txctx context.Context, dc *driverConn, releaseConn func(error), query string, args []interface{}) (*sql.Rows, error) {
+	fmt.Println(query)
+	return nil, nil
+}
+
+//go:noinline
+func WrapDBqueryDC(db *sql.DB, ctx, txctx context.Context, dc *driverConn, releaseConn func(error), query string, args []interface{}) (*sql.Rows, error) {
+	fmt.Println("WrapDBqueryDC:")
+	showStack()
+	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+
+	begin, enter := recursiveChecker.enter()
+	defer func() {
+		recursiveChecker.leave()
+		if exception := recover(); exception != nil {
+			panic(exception)
+		}
+	}()
+	r, e := DBqueryDC(db, ctx, txctx, dc, releaseConn, query, args)
+	if enter {
+		coreWrapQueryContext(begin, db, query, r, e)
+	}
+	return r, e
+}
+
+//go:noinline
+func DBexecDC(db *sql.DB, ctx context.Context, dc *driverConn, release func(error), query string, args []interface{}) (res sql.Result, err error) {
+	fmt.Println(query)
+	return nil, nil
+}
+
+//go:noinline
+func WrapDBexecDC(db *sql.DB, ctx context.Context, dc *driverConn, release func(error), query string, args []interface{}) (res sql.Result, err error) {
+	fmt.Println("WrapDBexecDC:")
+	showStack()
+	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+
+	begin, enter := recursiveChecker.enter()
+	defer func() {
+		recursiveChecker.leave()
+		if exception := recover(); exception != nil {
+			panic(exception)
+		}
+	}()
+	r, e := DBexecDC(db, ctx, dc, release, query, args)
+	if enter {
+		coreWrapExecContext(begin, db, query, r, e)
+	}
+	return r, e
+}
+
+type releaseConn func(error)
+type stmtConnGrabber interface {
+	grabConn(context.Context) (*driverConn, releaseConn, error)
+	txCtx() context.Context
+}
+
+//go:noinline
+func DBprepareDC(db *sql.DB, ctx context.Context, dc *driverConn, release func(error), cg stmtConnGrabber, query string) (*sql.Stmt, error) {
+	fmt.Println(query)
+	return nil, nil
+}
+
+//go:noinline
+func WrapDBprepareDC(db *sql.DB, ctx context.Context, dc *driverConn, release func(error), cg stmtConnGrabber, query string) (*sql.Stmt, error) {
+	fmt.Println("WrapDBprepareDC:")
+	showStack()
+	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+
+	begin, enter := recursiveChecker.enter()
+	defer func() {
+		recursiveChecker.leave()
+		if exception := recover(); exception != nil {
+			panic(exception)
+		}
+	}()
+	r, e := DBprepareDC(db, ctx, dc, release, cg, query)
+	if enter {
+		coreWrapPrepareContext(begin, db, query, r, e)
+	}
+	return r, e
+}
+
+func readConfigBoolean(name string, defaultValue bool) bool {
+	v, exist := tingyun3.ConfigRead(name)
+	if !exist {
+		return defaultValue
+	}
+	if value, ok := v.(bool); ok {
+		return value
+	}
+	if value, ok := v.(string); ok {
+		return tystring.CaseCMP(value, "true") == 0
+	}
+	return defaultValue
+}
+func matchMethod(method, matcher string) bool {
+	return tystring.SubString(method, 0, len(matcher)) == matcher
+}
+func isNativeMethod(method string) bool {
+
+	if matchMethod(method, "database/sql.") {
+		return true
+	}
+	if matchMethod(method, "git.codemonky.net/TingYunGo/goagent") {
+		return true
+	}
+	if readConfigBoolean("GORM_ENABLED", false) {
+		return matchMethod(method, "gorm.io/")
+	}
+	return false
+}
+
+type recursiveCheck struct {
+	rlsID   int
+	success bool
+}
+
+func (r *recursiveCheck) enter() (time.Time, bool) {
+	if r.success {
+		return time.Time{}, false
+	}
+	if data := tingyun3.LocalGet(r.rlsID); data != nil {
+		return time.Time{}, false
+	}
+	r.success = true
+	tingyun3.LocalSet(r.rlsID, 1)
+	return time.Now(), true
+}
+func (r *recursiveCheck) leave() {
+	if r.success {
+		tingyun3.LocalDelete(r.rlsID)
+		r.success = false
+	}
+}
+
+func showStack() {
+	fmt.Println("Routine:", tingyun3.GetGID())
+	i := 1
+	for i > 0 {
+		if _, pc := tingyun3.GetCallerPC(i + 1); pc != 0 {
+			pcinfo := runtime.FuncForPC(pc)
+			file, line := pcinfo.FileLine(pc)
+			fmt.Println("  ", i, pcinfo.Name(), file, ":", line)
+		} else {
+			break
+		}
+		i++
+	}
+}
 func init() {
 	dbs.init()
 	tingyun3.Register(reflect.ValueOf(WrapDBOpen).Pointer())
@@ -476,4 +725,7 @@ func init() {
 	tingyun3.Register(reflect.ValueOf(WrapStmtExecContext).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapStmtClose).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapRowsClose).Pointer())
+	tingyun3.Register(reflect.ValueOf(WrapDBqueryDC).Pointer())
+	tingyun3.Register(reflect.ValueOf(WrapDBexecDC).Pointer())
+	tingyun3.Register(reflect.ValueOf(WrapDBprepareDC).Pointer())
 }
