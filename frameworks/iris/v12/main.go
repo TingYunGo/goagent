@@ -5,7 +5,6 @@
 package irisframe
 
 import (
-	"fmt"
 	"net"
 	"reflect"
 	"runtime"
@@ -31,7 +30,9 @@ type controllerInfo struct {
 
 //go:noinline
 func irisCreateRoutes(api *router.APIBuilder, methods []string, relativePath string, handlers ...context.Handler) []*router.Route {
-	fmt.Println(api, methods, relativePath, handlers)
+	trampoline.arg1 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 func wrapHandler(handler context.Handler, path string) context.Handler {
@@ -79,7 +80,9 @@ func WrapirisCreateRoutes(api *router.APIBuilder, methods []string, relativePath
 
 //go:noinline
 func irishandleMany(c *mvc.ControllerActivator, method, path, funcName string, override bool, middleware ...context.Handler) []*router.Route {
-	fmt.Println(c, method, path, funcName, override, middleware)
+	trampoline.arg2 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -96,7 +99,9 @@ func WrapirishandleMany(c *mvc.ControllerActivator, method, path, funcName strin
 
 //go:noinline
 func routerFileServer(directory string, opts ...router.DirOptions) context.Handler {
-	fmt.Println(directory, opts)
+	trampoline.arg3 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -119,7 +124,9 @@ func WraprouterFileServer(directory string, opts ...router.DirOptions) context.H
 //github.com/kataras/neffos.(*Conn).handleMessage
 //go:noinline
 func neffosConnhandleMessage(c *neffos.Conn, msg neffos.Message) error {
-	fmt.Println(c, msg)
+	trampoline.arg4 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -160,7 +167,9 @@ func WrapneffosConnhandleMessage(c *neffos.Conn, msg neffos.Message) error {
 
 //go:noinline
 func websocketUpgrade(ctx context.Context, idGen websocket.IDGenerator, s *neffos.Server) *neffos.Conn {
-	fmt.Println(ctx, idGen, s)
+	trampoline.arg5 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -177,7 +186,9 @@ func WrapwebsocketUpgrade(ctx context.Context, idGen websocket.IDGenerator, s *n
 
 //go:noinline
 func neffosmakeEventFromMethod(v reflect.Value, method reflect.Method, eventMatcher neffos.EventMatcherFunc) (eventName string, cb neffos.MessageHandlerFunc) {
-	fmt.Println(v, method, eventMatcher)
+	trampoline.arg6 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return "", nil
 }
 
@@ -215,4 +226,5 @@ func init() {
 	tingyun3.Register(reflect.ValueOf(WrapirishandleMany).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapneffosConnhandleMessage).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapneffosmakeEventFromMethod).Pointer())
+	tingyun3.Register(reflect.ValueOf(initTrampoline).Pointer())
 }

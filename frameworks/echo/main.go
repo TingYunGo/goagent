@@ -34,6 +34,9 @@ func wrapHandler(method, route string, handler echo.HandlerFunc) echo.HandlerFun
 
 //go:noinline
 func echoEchoAdd(ptr *echo.Echo, method, path string, handler echo.HandlerFunc, middleware ...echo.MiddlewareFunc) *echo.Route {
+	trampoline.arg1 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -48,6 +51,9 @@ func WrapechoEchoAdd(ptr *echo.Echo, method, path string, handler echo.HandlerFu
 
 //go:noinline
 func echoEchoadd(ptr *echo.Echo, host, method, path string, handler echo.HandlerFunc, middleware ...echo.MiddlewareFunc) *echo.Route {
+	trampoline.arg2 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -60,11 +66,11 @@ func WrapechoEchoadd(ptr *echo.Echo, host, method, path string, handler echo.Han
 	return r
 }
 
-var tempVar = 0x1234567890
-
 //go:noinline
 func echoRouterAdd(ptr *echo.Router, method, path string, h echo.HandlerFunc) {
-	tempVar += 10
+	trampoline.arg3 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 }
 
 //go:noinline
@@ -79,4 +85,5 @@ func init() {
 	tingyun3.Register(reflect.ValueOf(WrapechoEchoAdd).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapechoEchoadd).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapechoRouterAdd).Pointer())
+	tingyun3.Register(reflect.ValueOf(initTrampoline).Pointer())
 }

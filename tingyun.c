@@ -20,25 +20,9 @@ extern const ReplaceItem* TingyunReplaceItems() {
         {"net/http.(*ServeMux).Handler", ".replaceServerMuxHandler", "", 0},
         {"net/http.(*Client).do", ".replaceHttpClientDo", "", ".HttpClientDo"},
 
-        {"database/sql.Open", "/database.WrapDBOpen", "", "/database.DBOpen"},
-        {"database/sql.(*DB).Close", "/database.WrapDBClose", "", "/database.DBClose"},
-        {"database/sql.(*Conn).PrepareContext", "/database.WrapConnPrepareContext", "", "/database.ConnPrepareContext"},
-        {"database/sql.(*Conn).QueryContext", "/database.WrapConnQueryContext", "", "/database.ConnQueryContext"},
-        {"database/sql.(*Conn).ExecContext", "/database.WrapConnExecContext", "", "/database.ConnExecContext"},
-        {"database/sql.(*DB).PrepareContext", "/database.WrapDBPrepareContext", "", "/database.DBPrepareContext"},
-        {"database/sql.(*DB).QueryContext", "/database.WrapDBQueryContext", "", "/database.DBQueryContext"},
-        {"database/sql.(*DB).queryDC", "/database.WrapDBqueryDC", "", "/database.DBqueryDC"},
-        {"database/sql.(*DB).execDC", "/database.WrapDBexecDC", "", "/database.DBexecDC"},
-        {"database/sql.(*DB).prepareDC", "/database.WrapDBprepareDC", "", "/database.DBprepareDC"},
-        {"database/sql.(*DB).ExecContext", "/database.WrapDBExecContext", "", "/database.DBExecContext"},
-        {"database/sql.(*Tx).PrepareContext", "/database.WrapTxPrepareContext", "", "/database.TxPrepareContext"},
-        {"database/sql.(*Tx).QueryContext", "/database.WrapTxQueryContext", "", "/database.TxQueryContext"},
-        {"database/sql.(*Tx).ExecContext", "/database.WrapTxExecContext", "", "/database.TxExecContext"},
-        {"database/sql.(*Stmt).QueryContext", "/database.WrapStmtQueryContext", "", "/database.StmtQueryContext"},
-        {"database/sql.(*Stmt).ExecContext", "/database.WrapStmtExecContext", "", "/database.StmtExecContext"},
-        {"database/sql.(*Stmt).Close", "/database.WrapStmtClose", "", "/database.StmtClose"},
         {"database/sql.(*Rows).Close", "/database.WrapRowsClose", "", "/database.RowsClose"},
 
+        {"github.com/gin-gonic/gin.(*RouterGroup).handle", "/frameworks/gin.WrapRouterGrouphandle", "", "/frameworks/gin.RouterGrouphandle"},
 
         {"github.com/labstack/echo.(*Echo).add", "/frameworks/echo.WrapechoEchoadd", "", "/frameworks/echo.echoEchoadd"},
         {"github.com/labstack/echo.(*Echo).Add", "/frameworks/echo.WrapechoEchoAdd", "","/frameworks/echo.echoEchoAdd"},
@@ -77,12 +61,7 @@ extern const ReplaceItem* TingyunReplaceItems() {
        {"github.com/kataras/neffos.(*Conn).handleMessage",  "/frameworks/iris/v12.WrapneffosConnhandleMessage", "","/frameworks/iris/v12.neffosConnhandleMessage"},
        {"github.com/kataras/neffos.makeEventFromMethod",  "/frameworks/iris/v12.WrapneffosmakeEventFromMethod", "","/frameworks/iris/v12.neffosmakeEventFromMethod"},
 
-       {"github.com/kataras/iris/v12/websocket.Upgrade", "/frameworks/iris/v12/2.WrapwebsocketUpgrade", "","/frameworks/iris/v12/2.websocketUpgrade"},
-       {"github.com/kataras/iris/v12/mvc.(*ControllerActivator).handleMany",  "/frameworks/iris/v12/2.WrapirishandleMany", "","/frameworks/iris/v12/2.irishandleMany"},
 
-       {"github.com/kataras/neffos.(*Conn).handleMessage",  "/frameworks/iris/v12/2.WrapneffosConnhandleMessage", "","/frameworks/iris/v12/2.neffosConnhandleMessage"},
-       {"github.com/kataras/neffos.Events.fireEvent",  "/frameworks/iris/v12/2.WrapneffosfireEvent", "","/frameworks/iris/v12/2.neffosfireEvent"},
-       {"github.com/kataras/neffos.makeEventFromMethod",  "/frameworks/iris/v12/2.WrapneffosmakeEventFromMethod", "","/frameworks/iris/v12/2.neffosmakeEventFromMethod"},
 
         {"github.com/gomodule/redigo/redis.DialContext", "/nosql/redigo.WrapRedigoDialContext", "","/nosql/redigo.RedigoDialContext"},
         {"github.com/gomodule/redigo/redis.Dial", "/nosql/redigo.WrapredigoDial", "","/nosql/redigo.redigoDial"},
@@ -139,13 +118,24 @@ extern const ReplaceItem* TingyunReplaceItems() {
 extern const WrapItem* TingyunWraps() {
     
     static WrapItem targets[] = {
-       {"github.com/gin-gonic/gin.(*RouterGroup).handle", "/frameworks/gin.", "RouterGrouphandle"},
+        {"database/sql.Open", "/database.", "DBOpen"},
+        {"database/sql.(*DB).Close", "/database.", "DBClose"},
+        {"database/sql.(*DB).queryDC", "/database.", "DBqueryDC"},
+        {"database/sql.(*DB).execDC", "/database.", "DBexecDC"},
+        {"database/sql.(*DB).prepareDC", "/database.", "DBprepareDC"},
+        {"database/sql.(*Stmt).QueryContext", "/database.", "StmtQueryContext"},
+        {"database/sql.(*Stmt).ExecContext", "/database.", "StmtExecContext"},
+        {"database/sql.(*Stmt).Close", "/database.", "StmtClose"},
+
         
-       {"github.com/kataras/iris/v12/core/router.(*APIBuilder).CreateRoutes", "/frameworks/iris/v12.", "irisCreateRoutes"},
-       {"github.com/kataras/iris/v12/core/router.FileServer", "/frameworks/iris/v12.", "routerFileServer"},
+        {"github.com/kataras/iris/v12/core/router.(*APIBuilder).CreateRoutes", "/frameworks/iris/v12.", "irisCreateRoutes"},
+        {"github.com/kataras/iris/v12/core/router.FileServer", "/frameworks/iris/v12.", "routerFileServer"},
 
-       {"github.com/kataras/iris/v12/core/router.(*APIBuilder).CreateRoutes", "/frameworks/iris/v12/2.", "irisCreateRoutes"},
+        {"github.com/go-redis/redis/v7.NewClient", "/nosql/go-redis/v7.", "redisNewClient"},
+        {"github.com/go-redis/redis/v7.NewClusterClient", "/nosql/go-redis/v7.", "redisNewClusterClient"},
 
+        {"github.com/go-redis/redis/v8.NewClient", "/nosql/go-redis/v8.", "redisNewClient"},
+        {"github.com/go-redis/redis/v8.NewClusterClient", "/nosql/go-redis/v8.", "redisNewClusterClient"},
 
         {0, 0, 0}
     };

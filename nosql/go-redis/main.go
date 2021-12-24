@@ -5,7 +5,6 @@ package redis
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"strings"
 	"sync"
@@ -113,7 +112,9 @@ func handleGoRedis(host string, args []interface{}, begin time.Time, err error, 
 
 //go:noinline
 func baseClientprocess(c *baseClient, ctx context.Context, cmd redis.Cmder) error {
-	fmt.Println("host: ", c.opt.Addr, ", cmd: ", cmd.Name())
+	trampoline.arg1 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 func getArgs(args []interface{}) (cmd, object string) {
@@ -136,11 +137,6 @@ type baseClient struct {
 	pool interface{}
 }
 
-type baseClientV6 struct {
-	pool interface{}
-	opt  *redis.Options
-}
-
 //go:noinline
 func WrapbaseClientprocess(c *baseClient, ctx context.Context, cmd redis.Cmder) error {
 	begin := time.Now()
@@ -158,7 +154,9 @@ func WrapbaseClientprocess(c *baseClient, ctx context.Context, cmd redis.Cmder) 
 
 //go:noinline
 func baseClientprocessPipeline(c *baseClient, ctx context.Context, cmds []redis.Cmder) error {
-	fmt.Println(c.opt.Addr)
+	trampoline.arg2 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -181,7 +179,9 @@ type pipelineProcessor func(context.Context, uintptr, []redis.Cmder) (bool, erro
 
 //go:noinline
 func baseClientgeneralProcessPipeline(c *baseClient, ctx context.Context, cmds []redis.Cmder, p pipelineProcessor) error {
-	fmt.Println(c, ctx, cmds, p)
+	trampoline.arg3 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -201,13 +201,15 @@ func WrapbaseClientgeneralProcessPipeline(c *baseClient, ctx context.Context, cm
 }
 
 //go:noinline
-func baseClientProcess(c *baseClientV6, cmd redis.Cmder) error {
-	fmt.Println(cmd.Name())
+func baseClientProcess(c *baseClient, cmd redis.Cmder) error {
+	trampoline.arg4 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
 //go:noinline
-func WrapbaseClientProcess(c *baseClientV6, cmd redis.Cmder) error {
+func WrapbaseClientProcess(c *baseClient, cmd redis.Cmder) error {
 	begin := time.Now()
 	req := tingyun3.LocalGet(9)
 	if req == nil {
@@ -222,15 +224,11 @@ func WrapbaseClientProcess(c *baseClientV6, cmd redis.Cmder) error {
 	return err
 }
 
-//  ------------------------------------------------------------------------------  //
-//  2021.11.11 更新hook方式
-
 //go:noinline
 func redisClientWrapProcess(c *redis.Client, fn func(func(redis.Cmder) error) func(redis.Cmder) error) {
-	fn(func(cmd redis.Cmder) error {
-		fmt.Println(c, cmd)
-		return nil
-	})
+	trampoline.arg5 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 }
 
 //go:noinline
@@ -240,10 +238,9 @@ func WrapredisClientWrapProcess(c *redis.Client, fn func(func(redis.Cmder) error
 
 //go:noinline
 func redisClientWrapProcessPipeline(c *redis.Client, fn func(oldProcess func([]redis.Cmder) error) func([]redis.Cmder) error) {
-	fn(func(cmds []redis.Cmder) error {
-		fmt.Println(c, cmds)
-		return nil
-	})
+	trampoline.arg6 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 }
 
 //go:noinline
@@ -253,10 +250,9 @@ func WrapredisClientWrapProcessPipeline(c *redis.Client, fn func(oldProcess func
 
 //go:noinline
 func redisClusterClientWrapProcess(c *redis.ClusterClient, fn func(func(redis.Cmder) error) func(redis.Cmder) error) {
-	fn(func(cmd redis.Cmder) error {
-		fmt.Println(c, cmd)
-		return nil
-	})
+	trampoline.arg7 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 }
 
 //go:noinline
@@ -266,10 +262,9 @@ func WrapredisClusterClientWrapProcess(c *redis.ClusterClient, fn func(func(redi
 
 //go:noinline
 func redisClusterClientWrapProcessPipeline(c *redis.ClusterClient, fn func(oldProcess func([]redis.Cmder) error) func([]redis.Cmder) error) {
-	fn(func(cmds []redis.Cmder) error {
-		fmt.Println(c, cmds)
-		return nil
-	})
+	trampoline.arg8 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 }
 
 //go:noinline
@@ -279,7 +274,9 @@ func WrapredisClusterClientWrapProcessPipeline(c *redis.ClusterClient, fn func(o
 
 //go:noinline
 func redisNewClient(opt *redis.Options) *redis.Client {
-	fmt.Println(opt)
+	trampoline.arg9 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -332,7 +329,9 @@ func getProcessPipelineWrapper(entry string, addr string, raw func([]redis.Cmder
 
 //go:noinline
 func redisNewClusterClient(opt *redis.ClusterOptions) *redis.ClusterClient {
-	fmt.Println(opt)
+	trampoline.arg10 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -352,7 +351,82 @@ func WrapredisNewClusterClient(opt *redis.ClusterOptions) *redis.ClusterClient {
 	return r
 }
 
-//  ------------------------------------------------------------------------------  //
+type clusterClient struct {
+	opt           *redis.ClusterOptions
+	nodes         *uint64
+	state         *uint64
+	cmdsInfoCache *uint64
+}
+type ClusterClient struct {
+	*clusterClient
+	p   func()
+	ctx context.Context
+}
+
+//go:noinline
+func ClusterClient_processPipeline(c *ClusterClient, ctx context.Context, cmds []redis.Cmder) error {
+	trampoline.arg2 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
+
+	return nil
+}
+
+//go:noinline
+func WrapClusterClient_processPipeline(c *ClusterClient, ctx context.Context, cmds []redis.Cmder) error {
+	begin := time.Now()
+	req := tingyun3.LocalGet(9)
+	if req == nil {
+		tingyun3.LocalSet(9, 1)
+	}
+	e := ClusterClient_processPipeline(c, ctx, cmds)
+	if req == nil {
+		addr := ""
+		if len(c.opt.Addrs) == 0 {
+			addr = "[]"
+		} else if len(c.opt.Addrs) == 1 {
+			addr = "[" + c.opt.Addrs[0] + "]"
+		} else {
+			addr = "[" + c.opt.Addrs[0] + ",...]"
+		}
+		tingyun3.LocalDelete(9)
+		handleGoRedis(addr, cmds[0].Args(), begin, e, 2)
+	}
+	return e
+}
+
+//go:noinline
+func ClusterClient_processTxPipeline(c *ClusterClient, ctx context.Context, cmds []redis.Cmder) error {
+	trampoline.arg2 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
+
+	return nil
+}
+
+//go:noinline
+func WrapClusterClient_processTxPipeline(c *ClusterClient, ctx context.Context, cmds []redis.Cmder) error {
+	begin := time.Now()
+	req := tingyun3.LocalGet(9)
+	if req == nil {
+		tingyun3.LocalSet(9, 1)
+	}
+	e := ClusterClient_processTxPipeline(c, ctx, cmds)
+	if req == nil {
+		addr := ""
+		if len(c.opt.Addrs) == 0 {
+			addr = "[]"
+		} else if len(c.opt.Addrs) == 1 {
+			addr = "[" + c.opt.Addrs[0] + "]"
+		} else {
+			addr = "[" + c.opt.Addrs[0] + ",...]"
+		}
+		tingyun3.LocalDelete(9)
+		handleGoRedis(addr, cmds[0].Args(), begin, e, 2)
+	}
+	return e
+}
+
 type instanceSet struct {
 	lock  sync.RWMutex
 	items map[*redis.Client]string
@@ -396,4 +470,7 @@ func init() {
 	tingyun3.Register(reflect.ValueOf(WrapredisClientWrapProcessPipeline).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapredisClusterClientWrapProcess).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapredisClusterClientWrapProcessPipeline).Pointer())
+	tingyun3.Register(reflect.ValueOf(WrapClusterClient_processPipeline).Pointer())
+	tingyun3.Register(reflect.ValueOf(WrapClusterClient_processTxPipeline).Pointer())
+	tingyun3.Register(reflect.ValueOf(initTrampoline).Pointer())
 }

@@ -5,7 +5,6 @@ package mongodb
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"sync"
 	"time"
@@ -33,7 +32,6 @@ var skipTokens = []string{
 	"go.mongodb.org/mongo-driver/",
 	//	"github.com/mongodb/mongo-go-driver/",
 	"github.com/TingYunGo/goagent",
-	"git.codemonky.net/TingYunGo/goagent",
 }
 
 //go:noinline
@@ -98,9 +96,9 @@ func getMongoHostName(coll *mongo.Collection) string {
 
 //go:noinline
 func mongodbNewClient(opts ...*options.ClientOptions) (*mongo.Client, error) {
-	for _, opt := range opts {
-		fmt.Println(opt)
-	}
+	trampoline.arg2 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -128,7 +126,9 @@ func WrapmongodbNewClient(opts ...*options.ClientOptions) (*mongo.Client, error)
 
 //go:noinline
 func mongodbDisconnect(c *mongo.Client, ctx context.Context) error {
-	fmt.Println(c, ctx)
+	trampoline.arg3 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -164,7 +164,9 @@ func methodLeave(prehandle interface{}, e error, coll *mongo.Collection, action 
 
 //go:noinline
 func mongodbBulkWrite(coll *mongo.Collection, ctx context.Context, models []mongo.WriteModel, opts ...*options.BulkWriteOptions) (*mongo.BulkWriteResult, error) {
-	fmt.Println(coll, ctx, models, opts)
+	trampoline.arg4 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -178,7 +180,9 @@ func WrapmongodbBulkWrite(coll *mongo.Collection, ctx context.Context, models []
 
 //go:noinline
 func mongodbInsertOne(coll *mongo.Collection, ctx context.Context, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
-	fmt.Println(coll, ctx, document, opts)
+	trampoline.arg5 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -192,7 +196,9 @@ func WrapmongodbInsertOne(coll *mongo.Collection, ctx context.Context, document 
 
 //go:noinline
 func mongodbInsertMany(coll *mongo.Collection, ctx context.Context, documents []interface{}, opts ...*options.InsertManyOptions) (*mongo.InsertManyResult, error) {
-	fmt.Println(coll, ctx, documents, opts)
+	trampoline.arg6 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -206,7 +212,9 @@ func WrapmongodbInsertMany(coll *mongo.Collection, ctx context.Context, document
 
 //go:noinline
 func mongodbDeleteOne(coll *mongo.Collection, ctx context.Context, filter interface{}, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error) {
-	fmt.Println(coll, ctx, filter, opts)
+	trampoline.arg7 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -220,7 +228,9 @@ func WrapmongodbDeleteOne(coll *mongo.Collection, ctx context.Context, filter in
 
 //go:noinline
 func mongodbDeleteMany(coll *mongo.Collection, ctx context.Context, filter interface{}, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error) {
-	fmt.Println(coll, ctx, filter, opts)
+	trampoline.arg8 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -234,7 +244,9 @@ func WrapmongodbDeleteMany(coll *mongo.Collection, ctx context.Context, filter i
 
 //go:noinline
 func mongodbUpdateByID(coll *mongo.Collection, ctx context.Context, id interface{}, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
-	fmt.Println(coll, ctx, id, update, opts)
+	trampoline.arg9 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -248,7 +260,9 @@ func WrapmongodbUpdateByID(coll *mongo.Collection, ctx context.Context, id inter
 
 //go:noinline
 func mongodbUpdateOne(coll *mongo.Collection, ctx context.Context, filter interface{}, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
-	fmt.Println(coll, ctx, filter, update, opts)
+	trampoline.arg10 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -262,7 +276,9 @@ func WrapmongodbUpdateOne(coll *mongo.Collection, ctx context.Context, filter in
 
 //go:noinline
 func mongodbUpdateMany(coll *mongo.Collection, ctx context.Context, filter interface{}, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
-	fmt.Println(coll, ctx, filter, update, opts)
+	trampoline.arg11 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -276,7 +292,9 @@ func WrapmongodbUpdateMany(coll *mongo.Collection, ctx context.Context, filter i
 
 //go:noinline
 func mongodbReplaceOne(coll *mongo.Collection, ctx context.Context, filter interface{}, replacement interface{}, opts ...*options.ReplaceOptions) (*mongo.UpdateResult, error) {
-	fmt.Println(coll, ctx, filter, replacement, opts)
+	trampoline.arg12 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -290,7 +308,9 @@ func WrapmongodbReplaceOne(coll *mongo.Collection, ctx context.Context, filter i
 
 //go:noinline
 func mongodbAggregate(coll *mongo.Collection, ctx context.Context, pipeline interface{}, opts ...*options.AggregateOptions) (*mongo.Cursor, error) {
-	fmt.Println(coll, ctx, pipeline, opts)
+	trampoline.arg13 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -304,7 +324,9 @@ func WrapmongodbAggregate(coll *mongo.Collection, ctx context.Context, pipeline 
 
 //go:noinline
 func mongodbCountDocuments(coll *mongo.Collection, ctx context.Context, filter interface{}, opts ...*options.CountOptions) (int64, error) {
-	fmt.Println(coll, ctx, filter, opts)
+	trampoline.arg14 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return 0, nil
 }
 
@@ -318,7 +340,9 @@ func WrapmongodbCountDocuments(coll *mongo.Collection, ctx context.Context, filt
 
 //go:noinline
 func mongodbEstimatedDocumentCount(coll *mongo.Collection, ctx context.Context, opts ...*options.EstimatedDocumentCountOptions) (int64, error) {
-	fmt.Println(coll, ctx, opts)
+	trampoline.arg15 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return 0, nil
 }
 
@@ -332,7 +356,9 @@ func WrapmongodbEstimatedDocumentCount(coll *mongo.Collection, ctx context.Conte
 
 //go:noinline
 func mongodbDistinct(coll *mongo.Collection, ctx context.Context, fieldName string, filter interface{}, opts ...*options.DistinctOptions) ([]interface{}, error) {
-	fmt.Println(coll, ctx, fieldName, filter, opts)
+	trampoline.arg16 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -346,7 +372,9 @@ func WrapmongodbDistinct(coll *mongo.Collection, ctx context.Context, fieldName 
 
 //go:noinline
 func mongodbFind(coll *mongo.Collection, ctx context.Context, filter interface{}, opts ...*options.FindOptions) (*mongo.Cursor, error) {
-	fmt.Println(coll, ctx, filter, opts)
+	trampoline.arg17 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -360,7 +388,9 @@ func WrapmongodbFind(coll *mongo.Collection, ctx context.Context, filter interfa
 
 //go:noinline
 func mongodbFindOne(coll *mongo.Collection, ctx context.Context, filter interface{}, opts ...*options.FindOneOptions) *mongo.SingleResult {
-	fmt.Println(coll, ctx, filter, opts)
+	trampoline.arg18 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -374,7 +404,9 @@ func WrapmongodbFindOne(coll *mongo.Collection, ctx context.Context, filter inte
 
 //go:noinline
 func mongodbFindOneAndDelete(coll *mongo.Collection, ctx context.Context, filter interface{}, opts ...*options.FindOneAndDeleteOptions) *mongo.SingleResult {
-	fmt.Println(coll, ctx, filter, opts)
+	trampoline.arg19 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -388,7 +420,9 @@ func WrapmongodbFindOneAndDelete(coll *mongo.Collection, ctx context.Context, fi
 
 //go:noinline
 func mongodbFindOneAndReplace(coll *mongo.Collection, ctx context.Context, filter interface{}, replacement interface{}, opts ...*options.FindOneAndReplaceOptions) *mongo.SingleResult {
-	fmt.Println(coll, ctx, filter, replacement, opts)
+	trampoline.arg20 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -402,7 +436,9 @@ func WrapmongodbFindOneAndReplace(coll *mongo.Collection, ctx context.Context, f
 
 //go:noinline
 func mongodbFindOneAndUpdate(coll *mongo.Collection, ctx context.Context, filter interface{}, update interface{}, opts ...*options.FindOneAndUpdateOptions) *mongo.SingleResult {
-	fmt.Println(coll, ctx, filter, update, opts)
+	trampoline.arg1 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -416,7 +452,9 @@ func WrapmongodbFindOneAndUpdate(coll *mongo.Collection, ctx context.Context, fi
 
 //go:noinline
 func mongodbWatch(coll *mongo.Collection, ctx context.Context, pipeline interface{}, opts ...*options.ChangeStreamOptions) (*mongo.ChangeStream, error) {
-	fmt.Println(coll, ctx, pipeline, opts)
+	trampoline.arg2 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -430,7 +468,9 @@ func WrapmongodbWatch(coll *mongo.Collection, ctx context.Context, pipeline inte
 
 //go:noinline
 func mongodbDrop(coll *mongo.Collection, ctx context.Context) error {
-	fmt.Println(coll, ctx)
+	trampoline.arg3 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -465,4 +505,5 @@ func init() {
 	tingyun3.Register(reflect.ValueOf(WrapmongodbFindOneAndUpdate).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapmongodbWatch).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapmongodbDrop).Pointer())
+	tingyun3.Register(reflect.ValueOf(initTrampoline).Pointer())
 }

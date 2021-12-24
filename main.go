@@ -28,11 +28,16 @@ import (
 
 //go:noinline
 func ServerMuxHandle(ptr *http.ServeMux, pattern string, handler http.Handler) {
-	fmt.Println(pattern, handler)
+	idPointer.arg7 = *idPointer.idpointer + idPointer.idindex + idPointer.arg1 + idPointer.arg2 + idPointer.arg3 + idPointer.arg4 + idPointer.arg5 + idPointer.arg6 + idPointer.arg7 +
+		idPointer.arg8 + idPointer.arg9 + idPointer.arg10 + idPointer.arg11 + idPointer.arg12 + idPointer.arg13 + idPointer.arg14 + idPointer.arg15 + idPointer.arg16 +
+		idPointer.arg17 + idPointer.arg18 + idPointer.arg19 + idPointer.arg20
 }
 
 //go:noinline
 func HttpClientDo(ptr *http.Client, req *http.Request) (*http.Response, error) {
+	idPointer.arg6 = *idPointer.idpointer + idPointer.idindex + idPointer.arg1 + idPointer.arg2 + idPointer.arg3 + idPointer.arg4 + idPointer.arg5 + idPointer.arg6 + idPointer.arg7 +
+		idPointer.arg8 + idPointer.arg9 + idPointer.arg10 + idPointer.arg11 + idPointer.arg12 + idPointer.arg13 + idPointer.arg14 + idPointer.arg15 + idPointer.arg16 +
+		idPointer.arg17 + idPointer.arg18 + idPointer.arg19 + idPointer.arg20
 	return nil, nil
 }
 
@@ -275,6 +280,14 @@ type httpListenAddress struct {
 var httpListenAddr httpListenAddress
 
 //go:noinline
+func backServerMuxHandler(ptr *http.ServeMux, r *http.Request) (h http.Handler, pattern string) {
+	idPointer.arg5 = *idPointer.idpointer + idPointer.idindex + idPointer.arg1 + idPointer.arg2 + idPointer.arg3 + idPointer.arg4 + idPointer.arg5 + idPointer.arg6 + idPointer.arg7 +
+		idPointer.arg8 + idPointer.arg9 + idPointer.arg10 + idPointer.arg11 + idPointer.arg12 + idPointer.arg13 + idPointer.arg14 + idPointer.arg15 + idPointer.arg16 +
+		idPointer.arg17 + idPointer.arg18 + idPointer.arg19 + idPointer.arg20
+	return nil, ""
+}
+
+//go:noinline
 func replaceServerMuxHandler(ptr *http.ServeMux, r *http.Request) (h http.Handler, pattern string) {
 	hres, pattern := ptr.Handler(r)
 	className := reflect.TypeOf(hres).String()
@@ -288,6 +301,13 @@ func replaceServerMuxHandler(ptr *http.ServeMux, r *http.Request) (h http.Handle
 }
 
 //go:noinline
+func backServerMuxHandle(ptr *http.ServeMux, pattern string, handler http.Handler) {
+	idPointer.arg4 = *idPointer.idpointer + idPointer.idindex + idPointer.arg1 + idPointer.arg2 + idPointer.arg3 + idPointer.arg4 + idPointer.arg5 + idPointer.arg6 + idPointer.arg7 +
+		idPointer.arg8 + idPointer.arg9 + idPointer.arg10 + idPointer.arg11 + idPointer.arg12 + idPointer.arg13 + idPointer.arg14 + idPointer.arg15 + idPointer.arg16 +
+		idPointer.arg17 + idPointer.arg18 + idPointer.arg19 + idPointer.arg20
+}
+
+//go:noinline
 func replaceServerMuxHandle(ptr *http.ServeMux, pattern string, handler http.Handler) {
 	ptr.Handle(pattern, wrapHandler(pattern, handler))
 }
@@ -296,6 +316,36 @@ func replaceServerMuxHandle(ptr *http.ServeMux, pattern string, handler http.Han
 func WrapServerMuxHandle(ptr *http.ServeMux, pattern string, handler http.Handler) {
 	// fmt.Println("Wrap: ", pattern, ", By: ", reflect.TypeOf(handler).String())
 	ServerMuxHandle(ptr, pattern, wrapHandler(pattern, handler))
+}
+
+//go:noinline
+func ServerMuxHandler(ptr *http.ServeMux, r *http.Request) (h http.Handler, pattern string) {
+	idPointer.arg5 = *idPointer.idpointer + idPointer.idindex + idPointer.arg1 + idPointer.arg2 + idPointer.arg3 + idPointer.arg4 + idPointer.arg5 + idPointer.arg6 + idPointer.arg7 +
+		idPointer.arg8 + idPointer.arg9 + idPointer.arg10 + idPointer.arg11 + idPointer.arg12 + idPointer.arg13 + idPointer.arg14 + idPointer.arg15 + idPointer.arg16 +
+		idPointer.arg17 + idPointer.arg18 + idPointer.arg19 + idPointer.arg20
+	return nil, ""
+}
+
+//go:noinline
+func WrapServerMuxHandler(ptr *http.ServeMux, r *http.Request) (h http.Handler, pattern string) {
+
+	hres, pattern := ServerMuxHandler(ptr, r)
+	className := reflect.TypeOf(hres).String()
+	if className == "http.HandlerFunc" || className == "HandlerFunc" {
+		handlerPC := reflect.ValueOf(hres).Pointer()
+		if runtime.FuncForPC(handlerPC).Name() == "net/http.NotFound" {
+			return http.HandlerFunc(replaceHttpNotFound), pattern
+		}
+	}
+	return hres, pattern
+}
+
+//go:noinline
+func backHttpServerServe(srv *http.Server, l net.Listener) error {
+	idPointer.arg3 = *idPointer.idpointer + idPointer.idindex + idPointer.arg1 + idPointer.arg2 + idPointer.arg3 + idPointer.arg4 + idPointer.arg5 + idPointer.arg6 + idPointer.arg7 +
+		idPointer.arg8 + idPointer.arg9 + idPointer.arg10 + idPointer.arg11 + idPointer.arg12 + idPointer.arg13 + idPointer.arg14 + idPointer.arg15 + idPointer.arg16 +
+		idPointer.arg17 + idPointer.arg18 + idPointer.arg19 + idPointer.arg20
+	return nil
 }
 
 //go:noinline
@@ -317,6 +367,13 @@ func replaceHttpServerServe(srv *http.Server, l net.Listener) error {
 	httpListenAddr = pre
 	return e
 
+}
+
+//go:noinline
+func backHttpNotFound(w http.ResponseWriter, r *http.Request) {
+	idPointer.arg2 = *idPointer.idpointer + idPointer.idindex + idPointer.arg1 + idPointer.arg2 + idPointer.arg3 + idPointer.arg4 + idPointer.arg5 + idPointer.arg6 + idPointer.arg7 +
+		idPointer.arg8 + idPointer.arg9 + idPointer.arg10 + idPointer.arg11 + idPointer.arg12 + idPointer.arg13 + idPointer.arg14 + idPointer.arg15 + idPointer.arg16 +
+		idPointer.arg17 + idPointer.arg18 + idPointer.arg19 + idPointer.arg20
 }
 
 //go:noinline
@@ -356,7 +413,9 @@ func replaceHttpNotFound(w http.ResponseWriter, r *http.Request) {
 
 //go:noinline
 func httpNotFound(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(w, r)
+	idPointer.arg1 = *idPointer.idpointer + idPointer.idindex + idPointer.arg1 + idPointer.arg2 + idPointer.arg3 + idPointer.arg4 + idPointer.arg5 + idPointer.arg6 + idPointer.arg7 +
+		idPointer.arg8 + idPointer.arg9 + idPointer.arg10 + idPointer.arg11 + idPointer.arg12 + idPointer.arg13 + idPointer.arg14 + idPointer.arg15 + idPointer.arg16 +
+		idPointer.arg17 + idPointer.arg18 + idPointer.arg19 + idPointer.arg20
 }
 
 //go:noinline
@@ -453,6 +512,11 @@ type pidStruct struct {
 	arg13     int64
 	arg14     int64
 	arg15     int64
+	arg16     int64
+	arg17     int64
+	arg18     int64
+	arg19     int64
+	arg20     int64
 }
 
 //go:noinline

@@ -94,7 +94,9 @@ func getTingyunDBType(name string) uint8 {
 
 //go:noinline
 func DBOpen(driverName, dataSourceName string) (*sql.DB, error) {
-	fmt.Println(driverName, dataSourceName)
+	trampoline.arg1 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -111,23 +113,29 @@ func WrapDBOpen(driverName, dataSourceName string) (*sql.DB, error) {
 
 //go:noinline
 func DBClose(db *sql.DB) error {
-	fmt.Println(db)
+	trampoline.arg2 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
 //go:noinline
 func WrapDBClose(db *sql.DB) error {
 	dbs.Delete(db)
-	return db.Close()
+	return DBClose(db)
 }
 
 func coreWrapPrepareContext(begin time.Time, db *sql.DB, query string, stmt *sql.Stmt, e error) {
 	action := tingyun3.GetAction()
 	if action == nil {
+		if tingyun3.Enabled() {
+			tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapPrepareContext Not in web routine: ", tingyun3.GetGID())
+		}
 		return
 	}
 	info := dbs.Get(db)
 	if info == nil {
+		tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapPrepareContext Not found db")
 		return
 	}
 	var dbctx *databaseContext = nil
@@ -158,14 +166,24 @@ func coreWrapPrepareContext(begin time.Time, db *sql.DB, query string, stmt *sql
 }
 func coreWrapExecContext(begin time.Time, db *sql.DB, query string, r sql.Result, e error) {
 	action := tingyun3.GetAction()
+	callerName := ""
 	if action == nil {
-		return
+		callerName = getCallName(3)
+		action, _ = tingyun3.CreateTask(callerName)
+		if action == nil { // 探针已禁用
+			return
+		}
+		tingyun3.Log().Println(tingyun3.LevelVerbos, "coreWrapExecContext Create DB TaskAction", callerName)
+		defer action.Finish()
 	}
 	info := dbs.Get(db)
 	if info == nil {
+		tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapExecContext Not found db.")
 		return
 	}
-	callerName := getCallName(3)
+	if callerName == "" {
+		callerName = getCallName(3)
+	}
 	component := action.CreateSQLComponent(getTingyunDBType(info.vender), info.host, info.dbname, query, callerName)
 	component.FixBegin(begin)
 	if r == nil && e != nil {
@@ -177,22 +195,34 @@ func coreWrapExecContext(begin time.Time, db *sql.DB, query string, r sql.Result
 }
 func coreWrapQueryContext(begin time.Time, db *sql.DB, query string, r *sql.Rows, e error) {
 	action := tingyun3.GetAction()
+	callerName := ""
+	isTask := false
 	if action == nil {
-		return
+		callerName = getCallName(3)
+		action, _ = tingyun3.CreateTask(callerName)
+		if action == nil { // 探针已禁用
+			return
+		}
+		isTask = true
+		tingyun3.Log().Println(tingyun3.LevelVerbos, "coreWrapQueryContext Create DB TaskAction", callerName)
+		defer action.Finish()
 	}
 	info := dbs.Get(db)
 	if info == nil {
+		tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapQueryContext Not found db.")
 		return
 	}
 	var dbctx *databaseContext = nil
 	c := tingyun3.LocalGet(1)
 	if c != nil {
 		dbctx = c.(*databaseContext)
-		if _, found := dbctx.records[r]; found {
+		if _, found := dbctx.records[r]; found { //already catched
 			return
 		}
 	}
-	callerName := getCallName(3)
+	if callerName == "" {
+		callerName = getCallName(3)
+	}
 	component := action.CreateSQLComponent(getTingyunDBType(info.vender), info.host, info.dbname, query, callerName)
 	component.FixBegin(begin)
 	if r == nil && e != nil {
@@ -201,16 +231,20 @@ func coreWrapQueryContext(begin time.Time, db *sql.DB, query string, r *sql.Rows
 		return
 	}
 	component.End(2)
-	if dbctx == nil {
+	if dbctx == nil && !isTask {
 		dbctx = (&databaseContext{}).init()
 		tingyun3.LocalSet(1, dbctx)
 	}
-	dbctx.records[r] = component
+	if dbctx != nil {
+		dbctx.records[r] = component
+	}
 }
 
 //go:noinline
 func DBPrepareContext(db *sql.DB, ctx context.Context, query string) (*sql.Stmt, error) {
-	fmt.Println(query)
+	trampoline.arg3 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -233,13 +267,14 @@ func WrapDBPrepareContext(db *sql.DB, ctx context.Context, query string) (*sql.S
 
 //go:noinline
 func DBExecContext(db *sql.DB, ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-	fmt.Println(query)
+	trampoline.arg4 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
 //go:noinline
 func WrapDBExecContext(db *sql.DB, ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-
 	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
 
 	begin, enter := recursiveChecker.enter()
@@ -259,7 +294,9 @@ func WrapDBExecContext(db *sql.DB, ctx context.Context, query string, args ...in
 
 //go:noinline
 func DBQueryContext(db *sql.DB, ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-	fmt.Println(query)
+	trampoline.arg5 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -294,7 +331,9 @@ func WrapDBQueryContext(db *sql.DB, ctx context.Context, query string, args ...i
 
 //go:noinline
 func ConnExecContext(c *sql.Conn, ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-	fmt.Println(query)
+	trampoline.arg6 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -318,7 +357,9 @@ func WrapConnExecContext(c *sql.Conn, ctx context.Context, query string, args ..
 
 //go:noinline
 func ConnQueryContext(c *sql.Conn, ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-	fmt.Println(query)
+	trampoline.arg7 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -353,7 +394,9 @@ func WrapConnQueryContext(c *sql.Conn, ctx context.Context, query string, args .
 
 //go:noinline
 func ConnPrepareContext(c *sql.Conn, ctx context.Context, query string) (*sql.Stmt, error) {
-	fmt.Println(query)
+	trampoline.arg8 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -385,7 +428,9 @@ func getdbByTx(c *sql.Tx) *sql.DB {
 
 //go:noinline
 func TxPrepareContext(tx *sql.Tx, ctx context.Context, query string) (*sql.Stmt, error) {
-	fmt.Println(query)
+	trampoline.arg9 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -409,7 +454,9 @@ func WrapTxPrepareContext(tx *sql.Tx, ctx context.Context, query string) (*sql.S
 
 //go:noinline
 func TxExecContext(tx *sql.Tx, ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-	fmt.Println(query)
+	trampoline.arg10 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -433,7 +480,9 @@ func WrapTxExecContext(tx *sql.Tx, ctx context.Context, query string, args ...in
 
 //go:noinline
 func TxQueryContext(tx *sql.Tx, ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-	fmt.Println(query)
+	trampoline.arg11 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -457,7 +506,9 @@ func WrapTxQueryContext(tx *sql.Tx, ctx context.Context, query string, args ...i
 
 //go:noinline
 func StmtQueryContext(s *sql.Stmt, ctx context.Context, args ...interface{}) (*sql.Rows, error) {
-	fmt.Println(s)
+	trampoline.arg12 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -487,7 +538,9 @@ func WrapStmtQueryContext(s *sql.Stmt, ctx context.Context, args ...interface{})
 
 //go:noinline
 func StmtClose(s *sql.Stmt) error {
-	fmt.Println(s)
+	trampoline.arg13 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -511,7 +564,9 @@ func WrapStmtClose(s *sql.Stmt) error {
 
 //go:noinline
 func StmtExecContext(s *sql.Stmt, ctx context.Context, args ...interface{}) (sql.Result, error) {
-	fmt.Println(s)
+	trampoline.arg14 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -530,7 +585,9 @@ func WrapStmtExecContext(s *sql.Stmt, ctx context.Context, args ...interface{}) 
 
 //go:noinline
 func RowsClose(rs *sql.Rows) error {
-	fmt.Println(rs)
+	trampoline.arg15 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -559,7 +616,9 @@ type driverConn struct {
 
 //go:noinline
 func DBqueryDC(db *sql.DB, ctx, txctx context.Context, dc *driverConn, releaseConn func(error), query string, args []interface{}) (*sql.Rows, error) {
-	fmt.Println(query)
+	trampoline.arg16 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -583,7 +642,9 @@ func WrapDBqueryDC(db *sql.DB, ctx, txctx context.Context, dc *driverConn, relea
 
 //go:noinline
 func DBexecDC(db *sql.DB, ctx context.Context, dc *driverConn, release func(error), query string, args []interface{}) (res sql.Result, err error) {
-	fmt.Println(query)
+	trampoline.arg17 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -613,7 +674,9 @@ type stmtConnGrabber interface {
 
 //go:noinline
 func DBprepareDC(db *sql.DB, ctx context.Context, dc *driverConn, release func(error), cg stmtConnGrabber, query string) (*sql.Stmt, error) {
-	fmt.Println(query)
+	trampoline.arg18 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -656,11 +719,11 @@ func isNativeMethod(method string) bool {
 	if matchMethod(method, "database/sql.") {
 		return true
 	}
-	if matchMethod(method, "git.codemonky.net/TingYunGo/goagent") {
+	if matchMethod(method, "github.com/TingYunGo/goagent") {
 		return true
 	}
 	if readConfigBoolean("GORM_ENABLED", false) {
-		return matchMethod(method, "gorm.io/")
+		return matchMethod(method, "gorm.io/") || matchMethod(method, "github.com/jinzhu/gorm.")
 	}
 	return false
 }
@@ -722,4 +785,6 @@ func init() {
 	tingyun3.Register(reflect.ValueOf(WrapDBqueryDC).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapDBexecDC).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapDBprepareDC).Pointer())
+	tingyun3.Register(reflect.ValueOf(initTrampoline).Pointer())
+
 }

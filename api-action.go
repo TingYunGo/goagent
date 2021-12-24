@@ -66,6 +66,7 @@ type Action struct {
 	statusCode     uint16
 	stateUsed      uint8
 	trackEnable    bool
+	isTask         bool
 }
 
 func (a *Action) checkComponent() bool {
@@ -378,7 +379,7 @@ func (a *Action) SetTrackID(id string) {
 		a.trackID = id
 	}
 }
-func formatActionName(instance string, method string, isTransaction bool) string {
+func formatActionName(instance string, method string, isTransaction bool, isTask bool) string {
 	if len(instance) == 0 {
 		classEnd := strings.LastIndex(method, ".")
 		if classEnd != -1 {
@@ -393,6 +394,11 @@ func formatActionName(instance string, method string, isTransaction bool) string
 	preName := "WebAction/"
 	if isTransaction {
 		preName = "Transaction/"
+	} else if isTask {
+		preName = "TaskAction/"
+	}
+	if len(method) > 0 && method[0:1] == "/" {
+		method = method[1:]
 	}
 	return preName + instance + "/" + method
 	//	return preName + url.QueryEscape(instance) + "/" + url.QueryEscape(method)
@@ -451,7 +457,7 @@ func (a *Action) GetName() string {
 	} else if a.category != "URI" {
 		path = a.method
 	}
-	return formatActionName(category, path, !strings.Contains(a.trackID, ";n="))
+	return formatActionName(category, path, !strings.Contains(a.trackID, ";n="), a.isTask)
 }
 
 // GetURL : 取事务的 URL
@@ -622,6 +628,19 @@ func agentEnabled() bool {
 	}
 }
 
+func Enabled() bool {
+	if app == nil {
+		return false
+	}
+	if configDisabled {
+		return false
+	}
+	if !readLocalConfigBool(configLocalBoolAgentEnable, true) {
+		return false
+	}
+	return readServerConfigBool(configServerConfigBoolAgentEnabled, true)
+}
+
 //CreateAction : 在方法method中调用并 创建一个名为 name的事务,
 func CreateAction(name string, method string) (*Action, error) {
 	if app == nil {
@@ -634,6 +653,20 @@ func CreateAction(name string, method string) (*Action, error) {
 	}
 	return app.createAction(name, method)
 }
+func CreateTask(method string) (*Action, error) {
+	if app == nil {
+		if configDisabled {
+			return nil, errors.New("Agent disabled by local config file")
+		}
+		return nil, errors.New("Agent not Inited, please call AppInit() first")
+	} else if app.actionPool.Size() > int32(app.configs.local.CIntegers.Read(configLocalIntegerNbsActionCacheMax, 10000)) {
+		return nil, errors.New("Server busy, Skip one action")
+	}
+	a, e := app.createAction("Job", method)
+	a.isTask = true
+	return a, e
+}
+
 func (a *Action) destroy() {
 	if a == nil || a.stateUsed == actionUnused {
 		return

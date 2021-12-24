@@ -269,7 +269,7 @@ func (l *Logger) logsShift() {
 		return
 	}
 	logCount := l.configs.CIntegers.Read(ConfigIntegerNBSMaxLogCount, 3)
-	rollAndCompress(logfile, int(logCount))
+	rollFile(logfile, int(logCount))
 
 }
 func (l *Logger) loop(running func() bool) {

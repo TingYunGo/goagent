@@ -5,7 +5,6 @@ package redis
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"sync"
 	"time"
@@ -84,7 +83,9 @@ var dbs dbinstanceSet
 
 //go:noinline
 func redigoDial(network, address string, options ...redigo.DialOption) (redigo.Conn, error) {
-	fmt.Println(network, address, options)
+	trampoline.arg1 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -99,7 +100,9 @@ func WrapredigoDial(network, address string, options ...redigo.DialOption) (redi
 
 //go:noinline
 func RedigoDialContext(ctx context.Context, network, address string, options ...redigo.DialOption) (redigo.Conn, error) {
-	fmt.Println("network:", network, ", address:", address)
+	trampoline.arg2 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -114,7 +117,9 @@ func WrapRedigoDialContext(ctx context.Context, network, address string, options
 
 //go:noinline
 func RedigoConnClose(conn unsafe.Pointer) error {
-	fmt.Println("conn:", conn)
+	trampoline.arg3 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
 
@@ -164,7 +169,9 @@ func coreRedigoDoWithTimeout(begin time.Time, c unsafe.Pointer, readTimeout time
 
 //go:noinline
 func RedigoDoWithTimeout(c unsafe.Pointer, readTimeout time.Duration, cmd string, args ...interface{}) (interface{}, error) {
-	fmt.Println(cmd)
+	trampoline.arg4 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil, nil
 }
 
@@ -181,4 +188,5 @@ func init() {
 	tingyun3.Register(reflect.ValueOf(WrapredigoDial).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapRedigoConnClose).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapRedigoDoWithTimeout).Pointer())
+	tingyun3.Register(reflect.ValueOf(initTrampoline).Pointer())
 }
