@@ -1,6 +1,7 @@
 // Copyright 2021 冯立强 fenglq@tingyun.com.  All rights reserved.
 // +build linux
 // +build amd64
+// +build cgo
 
 package tingyun3
 
@@ -272,13 +273,6 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 	})
 }
 
-type httpListenAddress struct {
-	Addr string
-	tls  bool
-}
-
-var httpListenAddr httpListenAddress
-
 //go:noinline
 func backServerMuxHandler(ptr *http.ServeMux, r *http.Request) (h http.Handler, pattern string) {
 	idPointer.arg5 = *idPointer.idpointer + idPointer.idindex + idPointer.arg1 + idPointer.arg2 + idPointer.arg3 + idPointer.arg4 + idPointer.arg5 + idPointer.arg6 + idPointer.arg7 +
@@ -467,24 +461,6 @@ func setGID(p *pidStruct) int64 {
 	idPointer = p
 	fmt.Println(1, p)
 	return 0
-}
-
-// GetCallerPC return caller pc
-//go:noinline
-func GetCallerPC(layer int) (l int, pc uintptr) {
-	if pc, _, _, success := runtime.Caller(layer); success {
-		return layer, pc
-	}
-	return 0, 0
-}
-
-//GetCallerName : 取layer层调用栈函数名
-//go:noinline
-func GetCallerName(layer int) string {
-	if _, pc := GetCallerPC(layer + 1); pc != 0 {
-		return runtime.FuncForPC(pc).Name()
-	}
-	return ""
 }
 
 // Register : native method

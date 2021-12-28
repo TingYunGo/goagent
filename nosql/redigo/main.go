@@ -1,5 +1,6 @@
 // +build linux
 // +build amd64
+// +build cgo
 
 package redis
 

@@ -381,5 +381,23 @@ agent_sql_size_max = 5000
 听云 goagent 使用 [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) 协议发布.
 
 
+## 交叉编译
+### OSX 系统
+
+引入听云探针后,MAC系统环境下的交叉编译(linux,amd64), 需要安装交叉编译工具(C编译器及LIBC库),如果未安装相关工具,可参考使用如下包(使用MUSL C):
+
+```
+$ brew install FiloSottile/musl-cross/musl-cross
+```
+
+Go语言项目 MUSL C的交叉编译命令请参考:
+
+```
+# CC: C语言交叉编译器
+# GOARCH: 编译后的可执行文件运行的CPU架构
+# GOOS: 编译后的可执行文件运行的操作系统
+# "-extldflags -static" : 静态链接
+$ CC=x86_64-linux-musl-gcc GOARCH=amd64 GOOS=linux CGO_ENABLED=1 go build -ldflags "-linkmode external -extldflags -static"
+```
 
 
