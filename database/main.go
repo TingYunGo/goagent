@@ -137,7 +137,11 @@ func coreWrapPrepareContext(begin time.Time, db *sql.DB, query string, stmt *sql
 	info := dbs.Get(db)
 	if info == nil {
 		tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapPrepareContext Not found db")
-		return
+		info = &databaseInfo{
+			vender: "UNKNOWN",
+			host:   "UNKNOWN",
+			dbname: "UNKNOWN",
+		}
 	}
 	var dbctx *databaseContext = nil
 	c := tingyun3.LocalGet(1)
@@ -174,13 +178,19 @@ func coreWrapExecContext(begin time.Time, db *sql.DB, query string, r sql.Result
 		if action == nil { // 探针已禁用
 			return
 		}
+		action.FixBegin(begin)
 		tingyun3.Log().Println(tingyun3.LevelVerbos, "coreWrapExecContext Create DB TaskAction", callerName)
 		defer action.Finish()
 	}
 	info := dbs.Get(db)
 	if info == nil {
 		tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapExecContext Not found db.")
-		return
+		info = &databaseInfo{
+			vender: "UNKNOWN",
+			host:   "UNKNOWN",
+			dbname: "UNKNOWN",
+		}
+		// return
 	}
 	if callerName == "" {
 		callerName = getCallName(3)
@@ -204,6 +214,7 @@ func coreWrapQueryContext(begin time.Time, db *sql.DB, query string, r *sql.Rows
 		if action == nil { // 探针已禁用
 			return
 		}
+		action.FixBegin(begin)
 		isTask = true
 		tingyun3.Log().Println(tingyun3.LevelVerbos, "coreWrapQueryContext Create DB TaskAction", callerName)
 		defer action.Finish()
@@ -211,7 +222,12 @@ func coreWrapQueryContext(begin time.Time, db *sql.DB, query string, r *sql.Rows
 	info := dbs.Get(db)
 	if info == nil {
 		tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapQueryContext Not found db.")
-		return
+		info = &databaseInfo{
+			vender: "UNKNOWN",
+			host:   "UNKNOWN",
+			dbname: "UNKNOWN",
+		}
+		// return
 	}
 	var dbctx *databaseContext = nil
 	c := tingyun3.LocalGet(1)

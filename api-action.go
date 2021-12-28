@@ -596,6 +596,11 @@ func (a *Action) SetStatusCode(code uint16) int {
 	return 0
 }
 
+//FixBegin : 内部使用, 重置事务开始时间
+func (a *Action) FixBegin(begin time.Time) {
+	a.time.begin = begin
+}
+
 //SetHTTPStatus : 内部使用: 添加 http状态, skip为跳过的调用栈
 func (a *Action) SetHTTPStatus(code uint16, skip int) int {
 	if a == nil || a.stateUsed != actionUsing {
