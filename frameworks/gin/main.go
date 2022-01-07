@@ -38,10 +38,8 @@ func (r *recursiveCheck) enter() (time.Time, bool) {
 	return time.Now(), true
 }
 func (r *recursiveCheck) leave() {
-	if r.success {
-		tingyun3.LocalDelete(r.rlsID)
-		r.success = false
-	}
+	tingyun3.LocalDelete(r.rlsID)
+	r.success = false
 }
 
 func getHandlerName(handler gin.HandlerFunc) string {

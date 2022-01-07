@@ -180,7 +180,10 @@ func coreWrapExecContext(begin time.Time, db *sql.DB, query string, r sql.Result
 		}
 		action.FixBegin(begin)
 		tingyun3.Log().Println(tingyun3.LevelVerbos, "coreWrapExecContext Create DB TaskAction", callerName)
-		defer action.Finish()
+		defer func() {
+			action.Finish()
+			tingyun3.LocalClear()
+		}()
 	}
 	info := dbs.Get(db)
 	if info == nil {
@@ -217,7 +220,10 @@ func coreWrapQueryContext(begin time.Time, db *sql.DB, query string, r *sql.Rows
 		action.FixBegin(begin)
 		isTask = true
 		tingyun3.Log().Println(tingyun3.LevelVerbos, "coreWrapQueryContext Create DB TaskAction", callerName)
-		defer action.Finish()
+		defer func() {
+			action.Finish()
+			tingyun3.LocalClear()
+		}()
 	}
 	info := dbs.Get(db)
 	if info == nil {
@@ -251,6 +257,9 @@ func coreWrapQueryContext(begin time.Time, db *sql.DB, query string, r *sql.Rows
 	if dbctx == nil && !isTask {
 		dbctx = (&databaseContext{}).init()
 		tingyun3.LocalSet(1, dbctx)
+		action.OnEnd(func() {
+			tingyun3.LocalDelete(1)
+		})
 	}
 	if dbctx != nil {
 		dbctx.records[r] = component
@@ -641,11 +650,8 @@ func DBqueryDC(db *sql.DB, ctx, txctx context.Context, dc *driverConn, releaseCo
 
 //go:noinline
 func WrapDBqueryDC(db *sql.DB, ctx, txctx context.Context, dc *driverConn, releaseConn func(error), query string, args []interface{}) (*sql.Rows, error) {
-	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
-
-	begin, enter := recursiveChecker.enter()
+	begin, enter := time.Now(), true
 	defer func() {
-		recursiveChecker.leave()
 		if exception := recover(); exception != nil {
 			panic(exception)
 		}
@@ -667,11 +673,8 @@ func DBexecDC(db *sql.DB, ctx context.Context, dc *driverConn, release func(erro
 
 //go:noinline
 func WrapDBexecDC(db *sql.DB, ctx context.Context, dc *driverConn, release func(error), query string, args []interface{}) (res sql.Result, err error) {
-	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
-
-	begin, enter := recursiveChecker.enter()
+	begin, enter := time.Now(), true
 	defer func() {
-		recursiveChecker.leave()
 		if exception := recover(); exception != nil {
 			panic(exception)
 		}
@@ -699,11 +702,9 @@ func DBprepareDC(db *sql.DB, ctx context.Context, dc *driverConn, release func(e
 
 //go:noinline
 func WrapDBprepareDC(db *sql.DB, ctx context.Context, dc *driverConn, release func(error), cg stmtConnGrabber, query string) (*sql.Stmt, error) {
-	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
 
-	begin, enter := recursiveChecker.enter()
+	begin, enter := time.Now(), true
 	defer func() {
-		recursiveChecker.leave()
 		if exception := recover(); exception != nil {
 			panic(exception)
 		}
@@ -762,10 +763,8 @@ func (r *recursiveCheck) enter() (time.Time, bool) {
 	return time.Now(), true
 }
 func (r *recursiveCheck) leave() {
-	if r.success {
-		tingyun3.LocalDelete(r.rlsID)
-		r.success = false
-	}
+	tingyun3.LocalDelete(r.rlsID)
+	r.success = false
 }
 
 func showStack() {

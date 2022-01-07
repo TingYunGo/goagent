@@ -251,19 +251,17 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 			setAction(action)
 		}
 		defer func() {
+			routineLocalRemove()
 			exception := recover()
 			if exception != nil && !preAction {
 				action.setError(exception, "error", 2, true)
 			}
 			if component != nil {
 				component.Finish()
-			} else {
-				action.Finish()
-				routineLocalRemove()
-				if action != nil {
-					resWriter.(*writeWrapper).reset()
-				}
+			} else if action != nil {
+				resWriter.(*writeWrapper).reset()
 			}
+			action.Finish()
 			//re throw
 			if exception != nil {
 				panic(exception)

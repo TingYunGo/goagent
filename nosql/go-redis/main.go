@@ -42,34 +42,44 @@ func getCallName(skip int) (callerName string) {
 	return
 }
 
-type hook struct {
+type Hooks struct {
 	host string
 }
 
-func (h *hook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
-	tingyun3.LocalSet(9, &processContext{time.Now(), cmd.Name()})
-	return ctx, nil
+var _ redis.Hook = Hooks{}
+
+func (h Hooks) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
+	if ctx == nil {
+		return ctx, nil
+	}
+	return context.WithValue(ctx, "TingYunProcessCtx", &processContext{time.Now(), cmd.Name()}), nil
 }
 
-func (h *hook) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
-	if c := tingyun3.LocalDelete(9); c != nil {
-		if info, ok := c.(*processContext); ok {
+func (h Hooks) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
+	if ctx == nil {
+		return nil
+	}
+	if pctx := ctx.Value("TingYunProcessCtx"); pctx != nil {
+		if info, ok := pctx.(*processContext); ok {
 			handleGoRedis(h.host, cmd.Args(), info.begin, cmd.Err(), 2)
 		}
 	}
 	return nil
 }
 
-func (h *hook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
-	if len(cmds) > 0 {
-		tingyun3.LocalSet(9, &processContext{time.Now(), cmds[0].Name()})
+func (h Hooks) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
+	if ctx == nil {
+		return ctx, nil
 	}
-	return ctx, nil
+	return context.WithValue(ctx, "TingYunPipeCtx", &processContext{time.Now(), cmds[0].Name()}), nil
 }
 
-func (h *hook) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
-	if c := tingyun3.LocalDelete(9); c != nil {
-		if info, ok := c.(*processContext); ok {
+func (h Hooks) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
+	if ctx == nil {
+		return nil
+	}
+	if pctx := ctx.Value("TingYunPipeCtx"); pctx != nil {
+		if info, ok := pctx.(*processContext); ok {
 			handleGoRedis(h.host, cmds[0].Args(), info.begin, nil, 2)
 		}
 	}
@@ -142,14 +152,15 @@ type baseClient struct {
 func WrapbaseClientprocess(c *baseClient, ctx context.Context, cmd redis.Cmder) error {
 	begin := time.Now()
 	req := tingyun3.LocalGet(9)
+	var err error = nil
 	if req == nil {
 		tingyun3.LocalSet(9, 1)
+		defer func() {
+			tingyun3.LocalDelete(9)
+			handleGoRedis(c.opt.Addr, cmd.Args(), begin, err, 2)
+		}()
 	}
-	err := baseClientprocess(c, ctx, cmd)
-	if req == nil {
-		tingyun3.LocalDelete(9)
-		handleGoRedis(c.opt.Addr, cmd.Args(), begin, err, 2)
-	}
+	err = baseClientprocess(c, ctx, cmd)
 	return err
 }
 
@@ -165,14 +176,15 @@ func baseClientprocessPipeline(c *baseClient, ctx context.Context, cmds []redis.
 func WrapbaseClientprocessPipeline(c *baseClient, ctx context.Context, cmds []redis.Cmder) error {
 	begin := time.Now()
 	req := tingyun3.LocalGet(9)
+	var e error = nil
 	if req == nil {
 		tingyun3.LocalSet(9, 1)
+		defer func() {
+			tingyun3.LocalDelete(9)
+			handleGoRedis(c.opt.Addr, cmds[0].Args(), begin, e, 2)
+		}()
 	}
-	e := baseClientprocessPipeline(c, ctx, cmds)
-	if req == nil {
-		tingyun3.LocalDelete(9)
-		handleGoRedis(c.opt.Addr, cmds[0].Args(), begin, e, 2)
-	}
+	e = baseClientprocessPipeline(c, ctx, cmds)
 	return e
 }
 
@@ -190,14 +202,15 @@ func baseClientgeneralProcessPipeline(c *baseClient, ctx context.Context, cmds [
 func WrapbaseClientgeneralProcessPipeline(c *baseClient, ctx context.Context, cmds []redis.Cmder, p pipelineProcessor) error {
 	begin := time.Now()
 	req := tingyun3.LocalGet(9)
+	var e error = nil
 	if req == nil {
 		tingyun3.LocalSet(9, 1)
+		defer func() {
+			tingyun3.LocalDelete(9)
+			handleGoRedis(c.opt.Addr, cmds[0].Args(), begin, e, 2)
+		}()
 	}
-	e := baseClientgeneralProcessPipeline(c, ctx, cmds, p)
-	if req == nil {
-		tingyun3.LocalDelete(9)
-		handleGoRedis(c.opt.Addr, cmds[0].Args(), begin, e, 2)
-	}
+	e = baseClientgeneralProcessPipeline(c, ctx, cmds, p)
 	return e
 }
 
@@ -377,22 +390,23 @@ func ClusterClient_processPipeline(c *ClusterClient, ctx context.Context, cmds [
 func WrapClusterClient_processPipeline(c *ClusterClient, ctx context.Context, cmds []redis.Cmder) error {
 	begin := time.Now()
 	req := tingyun3.LocalGet(9)
+	var e error = nil
 	if req == nil {
 		tingyun3.LocalSet(9, 1)
+		defer func() {
+			addr := ""
+			if len(c.opt.Addrs) == 0 {
+				addr = "[]"
+			} else if len(c.opt.Addrs) == 1 {
+				addr = "[" + c.opt.Addrs[0] + "]"
+			} else {
+				addr = "[" + c.opt.Addrs[0] + ",...]"
+			}
+			tingyun3.LocalDelete(9)
+			handleGoRedis(addr, cmds[0].Args(), begin, e, 2)
+		}()
 	}
-	e := ClusterClient_processPipeline(c, ctx, cmds)
-	if req == nil {
-		addr := ""
-		if len(c.opt.Addrs) == 0 {
-			addr = "[]"
-		} else if len(c.opt.Addrs) == 1 {
-			addr = "[" + c.opt.Addrs[0] + "]"
-		} else {
-			addr = "[" + c.opt.Addrs[0] + ",...]"
-		}
-		tingyun3.LocalDelete(9)
-		handleGoRedis(addr, cmds[0].Args(), begin, e, 2)
-	}
+	e = ClusterClient_processPipeline(c, ctx, cmds)
 	return e
 }
 
@@ -409,22 +423,23 @@ func ClusterClient_processTxPipeline(c *ClusterClient, ctx context.Context, cmds
 func WrapClusterClient_processTxPipeline(c *ClusterClient, ctx context.Context, cmds []redis.Cmder) error {
 	begin := time.Now()
 	req := tingyun3.LocalGet(9)
+	var e error = nil
 	if req == nil {
 		tingyun3.LocalSet(9, 1)
+		defer func() {
+			addr := ""
+			if len(c.opt.Addrs) == 0 {
+				addr = "[]"
+			} else if len(c.opt.Addrs) == 1 {
+				addr = "[" + c.opt.Addrs[0] + "]"
+			} else {
+				addr = "[" + c.opt.Addrs[0] + ",...]"
+			}
+			tingyun3.LocalDelete(9)
+			handleGoRedis(addr, cmds[0].Args(), begin, e, 2)
+		}()
 	}
-	e := ClusterClient_processTxPipeline(c, ctx, cmds)
-	if req == nil {
-		addr := ""
-		if len(c.opt.Addrs) == 0 {
-			addr = "[]"
-		} else if len(c.opt.Addrs) == 1 {
-			addr = "[" + c.opt.Addrs[0] + "]"
-		} else {
-			addr = "[" + c.opt.Addrs[0] + ",...]"
-		}
-		tingyun3.LocalDelete(9)
-		handleGoRedis(addr, cmds[0].Args(), begin, e, 2)
-	}
+	e = ClusterClient_processTxPipeline(c, ctx, cmds)
 	return e
 }
 
