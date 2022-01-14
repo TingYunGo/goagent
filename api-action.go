@@ -656,7 +656,7 @@ func CreateAction(name string, method string) (*Action, error) {
 	} else if app.actionPool.Size() > int32(app.configs.local.CIntegers.Read(configLocalIntegerNbsActionCacheMax, 10000)) {
 		return nil, errors.New("Server busy, Skip one action")
 	}
-	return app.createAction(name, method)
+	return app.createAction(name, method, false)
 }
 func CreateTask(method string) (*Action, error) {
 	if app == nil {
@@ -667,8 +667,7 @@ func CreateTask(method string) (*Action, error) {
 	} else if app.actionPool.Size() > int32(app.configs.local.CIntegers.Read(configLocalIntegerNbsActionCacheMax, 10000)) {
 		return nil, errors.New("Server busy, Skip one action")
 	}
-	a, e := app.createAction("Job", method)
-	a.isTask = true
+	a, e := app.createAction("Job", method, true)
 	return a, e
 }
 

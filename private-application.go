@@ -93,7 +93,7 @@ func (a *application) init(configfile string) (*application, error) {
 	a.logger.Println(log.LevelInfo, "App Init by ", configfile)
 	return a, nil
 }
-func (a *application) createAction(category string, method string) (*Action, error) {
+func (a *application) createAction(category string, method string, istask bool) (*Action, error) {
 	if enabled := readServerConfigBool(configServerConfigBoolAgentEnabled, true); !enabled {
 		return nil, errors.New("Agent disabled by server config")
 	}
@@ -115,6 +115,7 @@ func (a *application) createAction(category string, method string) (*Action, err
 			time:           timeRange{time.Now(), -1},
 			_type:          ComponentDefault,
 		},
+		isTask: istask,
 	}
 	action.current = action.root
 	if category == "URI" {
