@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	beegoRoutineLocalIndex = 9 + 8 + 8 + 8
+	StorageIndexBeego = tingyun3.StorageIndexBeego
 )
 
 type handlerInfo struct {
@@ -53,8 +53,8 @@ func WrapbeegoAddMethod(p *beego.ControllerRegister, method, pattern string, f b
 		name:   methodName,
 		isFunc: true,
 	}
-	tingyun3.LocalSet(beegoRoutineLocalIndex, info)
-	defer tingyun3.LocalDelete(beegoRoutineLocalIndex)
+	tingyun3.LocalSet(StorageIndexBeego, info)
+	defer tingyun3.LocalDelete(StorageIndexBeego)
 	beegoAddMethod(p, method, pattern, f)
 }
 
@@ -77,8 +77,8 @@ func WrapbeegoHandler(p *beego.ControllerRegister, pattern string, h http.Handle
 		info.method = "ServeHTTP"
 		info.isFunc = false
 	}
-	tingyun3.LocalSet(beegoRoutineLocalIndex, info)
-	defer tingyun3.LocalDelete(beegoRoutineLocalIndex)
+	tingyun3.LocalSet(StorageIndexBeego, info)
+	defer tingyun3.LocalDelete(StorageIndexBeego)
 	beegoHandler(p, pattern, h, options...)
 }
 
@@ -94,8 +94,8 @@ func WrapbeegoaddWithMethodParams(p *beego.ControllerRegister, pattern string, c
 		name:   reflect.Indirect(reflectVal).Type().String(),
 		isFunc: false,
 	}
-	tingyun3.LocalSet(beegoRoutineLocalIndex, info)
-	defer tingyun3.LocalDelete(beegoRoutineLocalIndex)
+	tingyun3.LocalSet(StorageIndexBeego, info)
+	defer tingyun3.LocalDelete(StorageIndexBeego)
 	beegoaddWithMethodParams(p, pattern, c, methodParams, mappingMethods...)
 }
 
@@ -111,8 +111,8 @@ func WrapbeegoAddAutoPrefix(p *beego.ControllerRegister, prefix string, c beego.
 		name:   reflect.Indirect(reflectVal).Type().String(),
 		isFunc: false,
 	}
-	tingyun3.LocalSet(beegoRoutineLocalIndex, info)
-	defer tingyun3.LocalDelete(beegoRoutineLocalIndex)
+	tingyun3.LocalSet(StorageIndexBeego, info)
+	defer tingyun3.LocalDelete(StorageIndexBeego)
 	beegoAddAutoPrefix(p, prefix, c)
 }
 
@@ -128,7 +128,7 @@ func WrapbeegoaddToRouter(p *beego.ControllerRegister, method, pattern string, r
 	if routeMap == nil {
 		routeMap = make(map[string]bool)
 	}
-	info := tingyun3.LocalGet(beegoRoutineLocalIndex)
+	info := tingyun3.LocalGet(StorageIndexBeego)
 	if _, found := routeMap[pattern]; !found {
 		routeMap[pattern] = true
 		handler := handlerInfo{}

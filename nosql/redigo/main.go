@@ -141,7 +141,18 @@ var objectSkipList = []string{
 }
 
 func coreRedigoDoWithTimeout(begin time.Time, c unsafe.Pointer, readTimeout time.Duration, cmd string, args []interface{}, r interface{}, err error) {
-	action := tingyun3.GetAction()
+	action, _ := tingyun3.FindAction(nil)
+	callerName := ""
+	if action == nil {
+		callerName = getCallName(3)
+		if action, _ = tingyun3.CreateTask(callerName); action != nil {
+			action.FixBegin(begin)
+			defer func() {
+				action.Finish()
+				tingyun3.LocalClear()
+			}()
+		}
+	}
 	if action == nil {
 		return
 	}
@@ -149,7 +160,9 @@ func coreRedigoDoWithTimeout(begin time.Time, c unsafe.Pointer, readTimeout time
 	if host == "" {
 		host = "UNKNOWN"
 	}
-	callerName := getCallName(3)
+	if len(callerName) == 0 {
+		callerName = getCallName(3)
+	}
 	object := ""
 	if len(args) > 0 && tystring.FindString(objectSkipList, cmd) == -1 {
 		if o, ok := args[0].(string); ok {

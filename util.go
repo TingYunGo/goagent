@@ -529,11 +529,19 @@ func parseURI(url string) string {
 		}
 	}
 	for id := 0; id < len(url); id++ {
-		if url[id] == '/' {
+		if url[id] == '/' || url[id] == '?' {
 			return tystring.SubString(url, id, len(url))
 		}
 	}
 	return ""
+}
+func parseUriRequest(uri string) string {
+	for id := 0; id < len(uri); id++ {
+		if uri[id] == '?' {
+			return tystring.SubString(uri, 0, id)
+		}
+	}
+	return uri
 }
 func parseQueryString(uri string) string {
 	for id := 0; id < len(uri); id++ {

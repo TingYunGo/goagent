@@ -26,7 +26,7 @@ type mongoInfo struct {
 }
 
 const (
-	mongoRoutineLocalIndex = 9 + 8 + 8
+	StorageIndexMongo = tingyun3.StorageIndexMongo
 )
 
 var skipTokens = []string{
@@ -139,18 +139,33 @@ func WrapmongodbDisconnect(c *mongo.Client, ctx context.Context) error {
 	return mongodbDisconnect(c, ctx)
 }
 
-func methodEnter() (interface{}, *tingyun3.Action, time.Time) {
-	if prehandle := tingyun3.LocalGet(mongoRoutineLocalIndex); prehandle != nil {
-		return prehandle, nil, time.Time{}
+func methodEnter(ctx context.Context) (interface{}, *tingyun3.Action, time.Time, bool) {
+	if prehandle := tingyun3.LocalGet(StorageIndexMongo); prehandle != nil {
+		return prehandle, nil, time.Time{}, false
 	}
-	tingyun3.LocalSet(mongoRoutineLocalIndex, 1)
-	return nil, tingyun3.GetAction(), time.Now()
+	action, _ := tingyun3.FindAction(ctx)
+	isTask := false
+	if action == nil {
+		if action, _ = tingyun3.CreateTask(getCallName(2)); action != nil {
+			isTask = true
+		}
+	}
+	tingyun3.LocalSet(StorageIndexMongo, 1)
+	return nil, action, time.Now(), isTask
 }
-func methodLeave(prehandle interface{}, e error, coll *mongo.Collection, action *tingyun3.Action, begin time.Time, invokeName string) {
+func methodLeave(prehandle interface{}, e error, coll *mongo.Collection, action *tingyun3.Action, begin time.Time, invokeName string, isTask bool) {
 	if prehandle != nil {
 		return
 	}
-	tingyun3.LocalDelete(mongoRoutineLocalIndex)
+	defer func() {
+		if action != nil && isTask {
+			action.Finish()
+		}
+		if tingyun3.GetAction() == nil {
+			tingyun3.LocalClear()
+		}
+	}()
+	tingyun3.LocalDelete(StorageIndexMongo)
 	if action == nil {
 		return
 	}
@@ -173,9 +188,9 @@ func mongodbBulkWrite(coll *mongo.Collection, ctx context.Context, models []mong
 
 //go:noinline
 func WrapmongodbBulkWrite(coll *mongo.Collection, ctx context.Context, models []mongo.WriteModel, opts ...*options.BulkWriteOptions) (*mongo.BulkWriteResult, error) {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	res, e := mongodbBulkWrite(coll, ctx, models, opts...)
-	methodLeave(handle, e, coll, action, begin, "BulkWrite")
+	methodLeave(handle, e, coll, action, begin, "BulkWrite", isTask)
 	return res, e
 }
 
@@ -189,9 +204,9 @@ func mongodbInsertOne(coll *mongo.Collection, ctx context.Context, document inte
 
 //go:noinline
 func WrapmongodbInsertOne(coll *mongo.Collection, ctx context.Context, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	r, e := mongodbInsertOne(coll, ctx, document, opts...)
-	methodLeave(handle, e, coll, action, begin, "InsertOne")
+	methodLeave(handle, e, coll, action, begin, "InsertOne", isTask)
 	return r, e
 }
 
@@ -205,9 +220,9 @@ func mongodbInsertMany(coll *mongo.Collection, ctx context.Context, documents []
 
 //go:noinline
 func WrapmongodbInsertMany(coll *mongo.Collection, ctx context.Context, documents []interface{}, opts ...*options.InsertManyOptions) (*mongo.InsertManyResult, error) {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	r, e := mongodbInsertMany(coll, ctx, documents, opts...)
-	methodLeave(handle, e, coll, action, begin, "InsertMany")
+	methodLeave(handle, e, coll, action, begin, "InsertMany", isTask)
 	return r, e
 }
 
@@ -221,9 +236,9 @@ func mongodbDeleteOne(coll *mongo.Collection, ctx context.Context, filter interf
 
 //go:noinline
 func WrapmongodbDeleteOne(coll *mongo.Collection, ctx context.Context, filter interface{}, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error) {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	r, e := mongodbDeleteOne(coll, ctx, filter, opts...)
-	methodLeave(handle, e, coll, action, begin, "DeleteOne")
+	methodLeave(handle, e, coll, action, begin, "DeleteOne", isTask)
 	return r, e
 }
 
@@ -237,9 +252,9 @@ func mongodbDeleteMany(coll *mongo.Collection, ctx context.Context, filter inter
 
 //go:noinline
 func WrapmongodbDeleteMany(coll *mongo.Collection, ctx context.Context, filter interface{}, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error) {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	r, e := mongodbDeleteMany(coll, ctx, filter, opts...)
-	methodLeave(handle, e, coll, action, begin, "DeleteMany")
+	methodLeave(handle, e, coll, action, begin, "DeleteMany", isTask)
 	return r, e
 }
 
@@ -253,9 +268,9 @@ func mongodbUpdateByID(coll *mongo.Collection, ctx context.Context, id interface
 
 //go:noinline
 func WrapmongodbUpdateByID(coll *mongo.Collection, ctx context.Context, id interface{}, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	r, e := mongodbUpdateByID(coll, ctx, id, update, opts...)
-	methodLeave(handle, e, coll, action, begin, "UpdateByID")
+	methodLeave(handle, e, coll, action, begin, "UpdateByID", isTask)
 	return r, e
 }
 
@@ -269,9 +284,9 @@ func mongodbUpdateOne(coll *mongo.Collection, ctx context.Context, filter interf
 
 //go:noinline
 func WrapmongodbUpdateOne(coll *mongo.Collection, ctx context.Context, filter interface{}, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	r, e := mongodbUpdateOne(coll, ctx, filter, update, opts...)
-	methodLeave(handle, e, coll, action, begin, "UpdateOne")
+	methodLeave(handle, e, coll, action, begin, "UpdateOne", isTask)
 	return r, e
 }
 
@@ -285,9 +300,9 @@ func mongodbUpdateMany(coll *mongo.Collection, ctx context.Context, filter inter
 
 //go:noinline
 func WrapmongodbUpdateMany(coll *mongo.Collection, ctx context.Context, filter interface{}, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	r, e := mongodbUpdateMany(coll, ctx, filter, update, opts...)
-	methodLeave(handle, e, coll, action, begin, "UpdateMany")
+	methodLeave(handle, e, coll, action, begin, "UpdateMany", isTask)
 	return r, e
 }
 
@@ -301,9 +316,9 @@ func mongodbReplaceOne(coll *mongo.Collection, ctx context.Context, filter inter
 
 //go:noinline
 func WrapmongodbReplaceOne(coll *mongo.Collection, ctx context.Context, filter interface{}, replacement interface{}, opts ...*options.ReplaceOptions) (*mongo.UpdateResult, error) {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	r, e := mongodbReplaceOne(coll, ctx, filter, replacement, opts...)
-	methodLeave(handle, e, coll, action, begin, "ReplaceOne")
+	methodLeave(handle, e, coll, action, begin, "ReplaceOne", isTask)
 	return r, e
 }
 
@@ -317,9 +332,9 @@ func mongodbAggregate(coll *mongo.Collection, ctx context.Context, pipeline inte
 
 //go:noinline
 func WrapmongodbAggregate(coll *mongo.Collection, ctx context.Context, pipeline interface{}, opts ...*options.AggregateOptions) (*mongo.Cursor, error) {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	r, e := mongodbAggregate(coll, ctx, pipeline, opts...)
-	methodLeave(handle, e, coll, action, begin, "Aggregate")
+	methodLeave(handle, e, coll, action, begin, "Aggregate", isTask)
 	return r, e
 }
 
@@ -333,9 +348,9 @@ func mongodbCountDocuments(coll *mongo.Collection, ctx context.Context, filter i
 
 //go:noinline
 func WrapmongodbCountDocuments(coll *mongo.Collection, ctx context.Context, filter interface{}, opts ...*options.CountOptions) (int64, error) {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	r, e := mongodbCountDocuments(coll, ctx, filter, opts...)
-	methodLeave(handle, e, coll, action, begin, "CountDocuments")
+	methodLeave(handle, e, coll, action, begin, "CountDocuments", isTask)
 	return r, e
 }
 
@@ -349,9 +364,9 @@ func mongodbEstimatedDocumentCount(coll *mongo.Collection, ctx context.Context, 
 
 //go:noinline
 func WrapmongodbEstimatedDocumentCount(coll *mongo.Collection, ctx context.Context, opts ...*options.EstimatedDocumentCountOptions) (int64, error) {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	r, e := mongodbEstimatedDocumentCount(coll, ctx, opts...)
-	methodLeave(handle, e, coll, action, begin, "EstimatedDocumentCount")
+	methodLeave(handle, e, coll, action, begin, "EstimatedDocumentCount", isTask)
 	return r, e
 }
 
@@ -365,9 +380,9 @@ func mongodbDistinct(coll *mongo.Collection, ctx context.Context, fieldName stri
 
 //go:noinline
 func WrapmongodbDistinct(coll *mongo.Collection, ctx context.Context, fieldName string, filter interface{}, opts ...*options.DistinctOptions) ([]interface{}, error) {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	r, e := mongodbDistinct(coll, ctx, fieldName, filter, opts...)
-	methodLeave(handle, e, coll, action, begin, "Distinct")
+	methodLeave(handle, e, coll, action, begin, "Distinct", isTask)
 	return r, e
 }
 
@@ -381,9 +396,9 @@ func mongodbFind(coll *mongo.Collection, ctx context.Context, filter interface{}
 
 //go:noinline
 func WrapmongodbFind(coll *mongo.Collection, ctx context.Context, filter interface{}, opts ...*options.FindOptions) (*mongo.Cursor, error) {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	r, e := mongodbFind(coll, ctx, filter, opts...)
-	methodLeave(handle, e, coll, action, begin, "Find")
+	methodLeave(handle, e, coll, action, begin, "Find", isTask)
 	return r, e
 }
 
@@ -397,9 +412,9 @@ func mongodbFindOne(coll *mongo.Collection, ctx context.Context, filter interfac
 
 //go:noinline
 func WrapmongodbFindOne(coll *mongo.Collection, ctx context.Context, filter interface{}, opts ...*options.FindOneOptions) *mongo.SingleResult {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	r := mongodbFindOne(coll, ctx, filter, opts...)
-	methodLeave(handle, r.Err(), coll, action, begin, "FindOne")
+	methodLeave(handle, r.Err(), coll, action, begin, "FindOne", isTask)
 	return r
 }
 
@@ -413,9 +428,9 @@ func mongodbFindOneAndDelete(coll *mongo.Collection, ctx context.Context, filter
 
 //go:noinline
 func WrapmongodbFindOneAndDelete(coll *mongo.Collection, ctx context.Context, filter interface{}, opts ...*options.FindOneAndDeleteOptions) *mongo.SingleResult {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	r := mongodbFindOneAndDelete(coll, ctx, filter, opts...)
-	methodLeave(handle, r.Err(), coll, action, begin, "FindOneAndDelete")
+	methodLeave(handle, r.Err(), coll, action, begin, "FindOneAndDelete", isTask)
 	return r
 }
 
@@ -429,9 +444,9 @@ func mongodbFindOneAndReplace(coll *mongo.Collection, ctx context.Context, filte
 
 //go:noinline
 func WrapmongodbFindOneAndReplace(coll *mongo.Collection, ctx context.Context, filter interface{}, replacement interface{}, opts ...*options.FindOneAndReplaceOptions) *mongo.SingleResult {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	r := mongodbFindOneAndReplace(coll, ctx, filter, replacement, opts...)
-	methodLeave(handle, r.Err(), coll, action, begin, "FindOneAndReplace")
+	methodLeave(handle, r.Err(), coll, action, begin, "FindOneAndReplace", isTask)
 	return r
 }
 
@@ -445,9 +460,9 @@ func mongodbFindOneAndUpdate(coll *mongo.Collection, ctx context.Context, filter
 
 //go:noinline
 func WrapmongodbFindOneAndUpdate(coll *mongo.Collection, ctx context.Context, filter interface{}, update interface{}, opts ...*options.FindOneAndUpdateOptions) *mongo.SingleResult {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	r := mongodbFindOneAndUpdate(coll, ctx, filter, update, opts...)
-	methodLeave(handle, r.Err(), coll, action, begin, "FindOneAndUpdate")
+	methodLeave(handle, r.Err(), coll, action, begin, "FindOneAndUpdate", isTask)
 	return r
 }
 
@@ -461,9 +476,9 @@ func mongodbWatch(coll *mongo.Collection, ctx context.Context, pipeline interfac
 
 //go:noinline
 func WrapmongodbWatch(coll *mongo.Collection, ctx context.Context, pipeline interface{}, opts ...*options.ChangeStreamOptions) (*mongo.ChangeStream, error) {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	r, e := mongodbWatch(coll, ctx, pipeline, opts...)
-	methodLeave(handle, e, coll, action, begin, "Watch")
+	methodLeave(handle, e, coll, action, begin, "Watch", isTask)
 	return r, e
 }
 
@@ -477,9 +492,9 @@ func mongodbDrop(coll *mongo.Collection, ctx context.Context) error {
 
 //go:noinline
 func WrapmongodbDrop(coll *mongo.Collection, ctx context.Context) error {
-	handle, action, begin := methodEnter()
+	handle, action, begin, isTask := methodEnter(ctx)
 	e := mongodbDrop(coll, ctx)
-	methodLeave(handle, e, coll, action, begin, "Drop")
+	methodLeave(handle, e, coll, action, begin, "Drop", isTask)
 	return e
 }
 

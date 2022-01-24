@@ -14,6 +14,7 @@ extern int tingyun_go_init(void *);
 import "C"
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -224,6 +225,9 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 					action.method = methodName
 					action.root.method = methodName
 				}
+			}
+			if action != nil {
+				r = r.WithContext(context.WithValue(r.Context(), "TingYunWebAction", action))
 			}
 		}
 		action.SetName("CLIENTIP", parseIP(r.RemoteAddr))

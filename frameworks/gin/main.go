@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	ginRoutineLocalIndex = 9 + 8*5
+	StorageIndexGin = tingyun3.StorageIndexGin
 )
 
 type recursiveCheck struct {
@@ -79,7 +79,7 @@ func RouterGrouphandle(group *gin.RouterGroup, httpMethod, relativePath string, 
 
 //go:noinline
 func WrapRouterGrouphandle(group *gin.RouterGroup, httpMethod, relativePath string, handlers gin.HandlersChain) gin.IRoutes {
-	recursiveChecker := &recursiveCheck{rlsID: ginRoutineLocalIndex, success: false}
+	recursiveChecker := &recursiveCheck{rlsID: StorageIndexGin, success: false}
 
 	defer func() {
 		recursiveChecker.leave()
@@ -104,7 +104,7 @@ func RouterGroupHandle(group *gin.RouterGroup, httpMethod, relativePath string, 
 
 //go:noinline
 func WrapRouterGroupHandle(group *gin.RouterGroup, httpMethod, relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
-	recursiveChecker := &recursiveCheck{rlsID: ginRoutineLocalIndex, success: false}
+	recursiveChecker := &recursiveCheck{rlsID: StorageIndexGin, success: false}
 	defer func() {
 		recursiveChecker.leave()
 		if exception := recover(); exception != nil {

@@ -13,32 +13,31 @@ type Unit struct {
 }
 
 func (u *Unit) init() {
-	u.items = make(map[int64]interface{})
+	u.items = nil
 }
-func (u *Unit) get(gid int64) interface{} {
-	u.lock.RLock()
-	defer u.lock.RUnlock()
-	if v, found := u.items[gid]; found {
-		return v
-	}
-	return nil
-}
-func (u *Unit) set(gid int64, local interface{}) {
+func (u *Unit) Exec(gid int64, update func(value interface{}) interface{}) {
 	u.lock.Lock()
 	defer u.lock.Unlock()
 	if u.items == nil {
-		u.init()
+		if v := update(nil); v != nil {
+			u.items = map[int64]interface{}{gid: v}
+		}
+	} else {
+		if v, found := u.items[gid]; !found {
+			if v = update(nil); v != nil {
+				u.items[gid] = v
+			}
+		} else {
+			if n := update(v); n == nil {
+				delete(u.items, gid)
+				if len(u.items) == 0 {
+					u.items = nil
+				}
+			} else if n != v {
+				u.items[gid] = n
+			}
+		}
 	}
-	u.items[gid] = local
-}
-func (u *Unit) remove(gid int64) interface{} {
-	u.lock.Lock()
-	defer u.lock.Unlock()
-	if v, found := u.items[gid]; found {
-		delete(u.items, gid)
-		return v
-	}
-	return nil
 }
 
 const (
@@ -55,21 +54,19 @@ func init() {
 }
 
 // Get is Return the goroutine local storage value
-func routineLocalGet() interface{} {
+func routineLocalExec(update func(value interface{}) interface{}) {
 	gid := GetGID()
-	return storages[gid%localStorageNodes].get(gid)
-}
-
-// Set is Set the gorouteine local storage value
-func routineLocalSet(local interface{}) {
-	gid := GetGID()
-	storages[gid%localStorageNodes].set(gid, local)
+	storages[gid%localStorageNodes].Exec(gid, update)
 }
 
 // Remove is clean the goroutine local storage
 func routineLocalRemove() interface{} {
-	gid := GetGID()
-	return storages[gid%localStorageNodes].remove(gid)
+	var r interface{} = nil
+	routineLocalExec(func(local interface{}) interface{} {
+		r = local
+		return nil
+	})
+	return r
 }
 
 // Clear Routine Local Storage

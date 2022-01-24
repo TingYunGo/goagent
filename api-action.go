@@ -3,6 +3,7 @@
 package tingyun3
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -61,7 +62,7 @@ type Action struct {
 	time           timeRange
 	root           *Component
 	current        *Component
-	callbacks      []interface{}
+	callbacks      pool.SerialReadPool
 	tracerIDMaker  int32
 	statusCode     uint16
 	stateUsed      uint8
@@ -100,11 +101,18 @@ func (a *Action) CreateExternalComponent(url string, method string) *Component {
 	} else if tystring.SubString(url, 0, 7) == "http://" {
 		protocol = "http"
 	}
+	urlRequest := parseUriRequest(parseURI(url))
+	if len(urlRequest) == 0 {
+		urlRequest = "/"
+	} else if len(urlRequest) > 1 && urlRequest[0] == '/' {
+		urlRequest = urlRequest[1:]
+	}
 	c := &Component{
 		action:         a,
 		instance:       url,
 		method:         method,
 		protocol:       protocol,
+		op:             urlRequest,
 		tracerParentID: a.current.tracerID,
 		tracerID:       a.makeTracerID(),
 		exID:           false,
@@ -118,10 +126,8 @@ func (a *Action) CreateExternalComponent(url string, method string) *Component {
 
 // OnEnd : 注册一个在事务结束时执行的回调函数
 func (a *Action) OnEnd(cb func()) {
-	if a.callbacks == nil {
-		a.callbacks = []interface{}{cb}
-	} else {
-		a.callbacks = append(a.callbacks, cb)
+	if a != nil && a.stateUsed == actionUsing {
+		a.callbacks.Put(cb)
 	}
 }
 
@@ -535,16 +541,11 @@ func (a *Action) Finish() {
 	if a == nil || a.stateUsed != actionUsing {
 		return
 	}
-	if a.callbacks != nil {
-		i := len(a.callbacks)
-		for i > 0 {
-			i--
-			cb := a.callbacks[i].(func())
-			cb()
-			a.callbacks[i] = nil
-		}
-		a.callbacks = nil
+	for callback := a.callbacks.Get(); callback != nil; callback = a.callbacks.Get() {
+		cb := callback.(func())
+		cb()
 	}
+
 	a.stateUsed = actionFinished
 	if a.statusCode == 0 {
 		a.statusCode = 200
@@ -688,7 +689,6 @@ func (a *Action) destroy() {
 	}
 	for a.errors.Get() != nil {
 	}
-	a.callbacks = nil
 	a.root = nil
 	a.requestParams = nil
 	a.customParams = nil
@@ -696,100 +696,115 @@ func (a *Action) destroy() {
 	a.statusCode = 0
 }
 func getAction() *Action {
-	if l := routineLocalGet(); l != nil {
-		localStorage := l.(*RoutineLocal)
-		return localStorage.action
-	}
-	return nil
+	var res *Action = nil
+	routineLocalExec(func(local interface{}) interface{} {
+		if local != nil {
+			localStorage := local.(*RoutineLocal)
+			res = localStorage.action
+		}
+		return local
+	})
+	return res
 }
 func setAction(action *Action) {
 	if action == nil {
 		return
 	}
-	if l := routineLocalGet(); l == nil {
-		localStorage := &RoutineLocal{action, nil, nil}
-		routineLocalSet(localStorage)
-		localStorage.action = action
-	} else {
-		localStorage := l.(*RoutineLocal)
-		localStorage.action = action
-	}
+	routineLocalExec(func(local interface{}) interface{} {
+		if local == nil {
+			return &RoutineLocal{action, nil, nil}
+		} else {
+			localStorage := local.(*RoutineLocal)
+			localStorage.action = action
+			return local
+		}
+	})
 }
 
 func getComponent() *Component {
-	l := routineLocalGet()
-	if l == nil {
-		return nil
-	}
-	localStorage := l.(*RoutineLocal)
-	if localStorage == nil {
-		return nil
-	}
-	return localStorage.component
+	var res *Component = nil
+	routineLocalExec(func(local interface{}) interface{} {
+		if local != nil {
+			localStorage := local.(*RoutineLocal)
+			res = localStorage.component
+		}
+		return local
+	})
+	return res
 }
 func setComponent(component *Component) {
-	l := routineLocalGet()
-	if l == nil {
-		return
-	}
-	localStorage := l.(*RoutineLocal)
-	if localStorage != nil {
-		localStorage.component = component
-	}
+	routineLocalExec(func(local interface{}) interface{} {
+		if local != nil {
+			localStorage := local.(*RoutineLocal)
+			localStorage.component = component
+		}
+		return local
+	})
 }
 
 // LocalGet : 从协程局部存储器中取出key为 id的对象,没有则返回nil
 func LocalGet(id int) interface{} {
-	l := routineLocalGet()
-	if l == nil {
-		return nil
-	}
-	localStorage := l.(*RoutineLocal)
-	if localStorage == nil {
-		return nil
-	}
-	if localStorage.pointers == nil {
-		return nil
-	}
-	if r, found := localStorage.pointers[id]; found {
-		return r
-	}
-	return nil
+	var res interface{} = nil
+	routineLocalExec(func(local interface{}) interface{} {
+		if local == nil {
+			return nil
+		}
+		localStorage := local.(*RoutineLocal)
+		if localStorage == nil {
+			return nil
+		}
+		if localStorage.pointers != nil {
+			if r, found := localStorage.pointers[id]; found {
+				res = r
+			}
+		}
+		return local
+	})
+	return res
 }
 
 // LocalSet : 以id为key, 将对象object写入协程局部存储器
 func LocalSet(id int, object interface{}) {
-
-	if l := routineLocalGet(); l == nil {
-		localStorage := &RoutineLocal{nil, nil, map[int]interface{}{
-			id: object,
-		}}
-		routineLocalSet(localStorage)
-	} else {
-		localStorage := l.(*RoutineLocal)
-		if localStorage.pointers == nil {
-			localStorage.pointers = map[int]interface{}{
+	routineLocalExec(func(local interface{}) interface{} {
+		if local == nil {
+			return &RoutineLocal{nil, nil, map[int]interface{}{
 				id: object,
-			}
+			}}
 		} else {
-			localStorage.pointers[id] = object
+			localStorage := local.(*RoutineLocal)
+			if localStorage.pointers == nil {
+				localStorage.pointers = map[int]interface{}{
+					id: object,
+				}
+			} else {
+				localStorage.pointers[id] = object
+			}
+			return local
 		}
-	}
+	})
 }
 
 // LocalDelete : 从协程局部存储器中删除key为 id的对象,并返回这个对象
 func LocalDelete(id int) interface{} {
-
-	if l := routineLocalGet(); l != nil {
-		localStorage := l.(*RoutineLocal)
+	var res interface{} = nil
+	routineLocalExec(func(local interface{}) interface{} {
+		if local == nil {
+			return nil
+		}
+		localStorage := local.(*RoutineLocal)
 		if localStorage.pointers != nil {
 			if r, found := localStorage.pointers[id]; found {
+				res = r
 				delete(localStorage.pointers, id)
-				return r
+				if localStorage.action == nil && localStorage.component == nil && len(localStorage.pointers) == 0 {
+					return nil
+				}
+				return local
 			}
 		}
-	}
-	return nil
+		return local
+	})
+	return res
 }
 
 // GetComponent : 辅助功能函数: 将存储到协程局部存储器的组件对象取出
@@ -805,6 +820,19 @@ func SetComponent(c *Component) {
 // GetAction : 辅助功能函数: 将存储到协程局部存储器的Action对象取出
 func GetAction() *Action {
 	return getAction()
+}
+
+func FindAction(ctx context.Context) (action *Action, sync bool) {
+	if action := getAction(); action != nil {
+		return action, true
+	} else if ctx == nil {
+		return nil, true
+	} else if value := ctx.Value("TingYunWebAction"); value != nil {
+		if a, ok := value.(*Action); ok {
+			return a, false
+		}
+	}
+	return nil, true
 }
 
 // SetAction : 辅助功能函数: 将事务存到协程局部存储器

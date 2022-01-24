@@ -19,6 +19,11 @@ import (
 	"github.com/TingYunGo/goagent/libs/tystring"
 )
 
+const (
+	StorageIndexContext = tingyun3.StorageIndexDatabase + 0
+	StorageIndexLock    = tingyun3.StorageIndexDatabase + 1
+)
+
 type dbinstanceSet struct {
 	lock  sync.RWMutex
 	items map[*sql.DB]databaseInfo
@@ -126,8 +131,8 @@ func WrapDBClose(db *sql.DB) error {
 	return DBClose(db)
 }
 
-func coreWrapPrepareContext(begin time.Time, db *sql.DB, query string, stmt *sql.Stmt, e error) {
-	action := tingyun3.GetAction()
+func coreWrapPrepareContext(ctx context.Context, begin time.Time, db *sql.DB, query string, stmt *sql.Stmt, e error) {
+	action, sync := tingyun3.FindAction(ctx)
 	if action == nil {
 		if tingyun3.Enabled() {
 			tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapPrepareContext Not in web routine: ", tingyun3.GetGID())
@@ -144,7 +149,7 @@ func coreWrapPrepareContext(begin time.Time, db *sql.DB, query string, stmt *sql
 		}
 	}
 	var dbctx *databaseContext = nil
-	c := tingyun3.LocalGet(1)
+	c := tingyun3.LocalGet(StorageIndexContext)
 	if c != nil {
 		dbctx = c.(*databaseContext)
 		if _, found := dbctx.stmts[stmt]; found {
@@ -159,18 +164,18 @@ func coreWrapPrepareContext(begin time.Time, db *sql.DB, query string, stmt *sql
 		component.End(2)
 		return
 	}
-	if dbctx == nil {
+	if dbctx == nil && sync {
 		dbctx = (&databaseContext{}).init()
-		tingyun3.LocalSet(1, dbctx)
+		tingyun3.LocalSet(StorageIndexContext, dbctx)
 	}
 	action.OnEnd(func() {
 		dbctx.clear()
-		tingyun3.LocalDelete(1)
+		tingyun3.LocalDelete(StorageIndexContext)
 	})
 	dbctx.stmts[stmt] = component
 }
-func coreWrapExecContext(begin time.Time, db *sql.DB, query string, r sql.Result, e error) {
-	action := tingyun3.GetAction()
+func coreWrapExecContext(ctx context.Context, begin time.Time, db *sql.DB, query string, r sql.Result, e error) {
+	action, _ := tingyun3.FindAction(ctx)
 	callerName := ""
 	if action == nil {
 		callerName = getCallName(3)
@@ -207,8 +212,8 @@ func coreWrapExecContext(begin time.Time, db *sql.DB, query string, r sql.Result
 	}
 	component.End(2)
 }
-func coreWrapQueryContext(begin time.Time, db *sql.DB, query string, r *sql.Rows, e error) {
-	action := tingyun3.GetAction()
+func coreWrapQueryContext(ctx context.Context, begin time.Time, db *sql.DB, query string, r *sql.Rows, e error) {
+	action, sync := tingyun3.FindAction(ctx)
 	callerName := ""
 	isTask := false
 	if action == nil {
@@ -236,7 +241,7 @@ func coreWrapQueryContext(begin time.Time, db *sql.DB, query string, r *sql.Rows
 		// return
 	}
 	var dbctx *databaseContext = nil
-	c := tingyun3.LocalGet(1)
+	c := tingyun3.LocalGet(StorageIndexContext)
 	if c != nil {
 		dbctx = c.(*databaseContext)
 		if _, found := dbctx.records[r]; found { //already catched
@@ -254,14 +259,14 @@ func coreWrapQueryContext(begin time.Time, db *sql.DB, query string, r *sql.Rows
 		return
 	}
 	component.End(2)
-	if dbctx == nil && !isTask {
+	if dbctx == nil && !isTask && sync && r != nil {
 		dbctx = (&databaseContext{}).init()
-		tingyun3.LocalSet(1, dbctx)
+		tingyun3.LocalSet(StorageIndexContext, dbctx)
 		action.OnEnd(func() {
-			tingyun3.LocalDelete(1)
+			tingyun3.LocalDelete(StorageIndexContext)
 		})
 	}
-	if dbctx != nil {
+	if dbctx != nil && r != nil {
 		dbctx.records[r] = component
 	}
 }
@@ -276,7 +281,7 @@ func DBPrepareContext(db *sql.DB, ctx context.Context, query string) (*sql.Stmt,
 
 //go:noinline
 func WrapDBPrepareContext(db *sql.DB, ctx context.Context, query string) (*sql.Stmt, error) {
-	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+	recursiveChecker := &recursiveCheck{rlsID: StorageIndexLock, success: false}
 	begin, enter := recursiveChecker.enter()
 	defer func() {
 		recursiveChecker.leave()
@@ -286,7 +291,7 @@ func WrapDBPrepareContext(db *sql.DB, ctx context.Context, query string) (*sql.S
 	}()
 	stmt, e := DBPrepareContext(db, ctx, query)
 	if enter {
-		coreWrapPrepareContext(begin, db, query, stmt, e)
+		coreWrapPrepareContext(ctx, begin, db, query, stmt, e)
 	}
 	return stmt, e
 }
@@ -301,7 +306,7 @@ func DBExecContext(db *sql.DB, ctx context.Context, query string, args ...interf
 
 //go:noinline
 func WrapDBExecContext(db *sql.DB, ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+	recursiveChecker := &recursiveCheck{rlsID: StorageIndexLock, success: false}
 
 	begin, enter := recursiveChecker.enter()
 	defer func() {
@@ -313,7 +318,7 @@ func WrapDBExecContext(db *sql.DB, ctx context.Context, query string, args ...in
 
 	r, e := DBExecContext(db, ctx, query, args...)
 	if enter {
-		coreWrapExecContext(begin, db, query, r, e)
+		coreWrapExecContext(ctx, begin, db, query, r, e)
 	}
 	return r, e
 }
@@ -339,7 +344,7 @@ func getCallName(skip int) (callerName string) {
 
 //go:noinline
 func WrapDBQueryContext(db *sql.DB, ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+	recursiveChecker := &recursiveCheck{rlsID: StorageIndexLock, success: false}
 
 	begin, enter := recursiveChecker.enter()
 	defer func() {
@@ -350,7 +355,7 @@ func WrapDBQueryContext(db *sql.DB, ctx context.Context, query string, args ...i
 	}()
 	r, e := DBQueryContext(db, ctx, query, args...)
 	if enter {
-		coreWrapQueryContext(begin, db, query, r, e)
+		coreWrapQueryContext(ctx, begin, db, query, r, e)
 	}
 	return r, e
 }
@@ -365,7 +370,7 @@ func ConnExecContext(c *sql.Conn, ctx context.Context, query string, args ...int
 
 //go:noinline
 func WrapConnExecContext(c *sql.Conn, ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+	recursiveChecker := &recursiveCheck{rlsID: StorageIndexLock, success: false}
 
 	begin, enter := recursiveChecker.enter()
 	defer func() {
@@ -376,7 +381,7 @@ func WrapConnExecContext(c *sql.Conn, ctx context.Context, query string, args ..
 	}()
 	r, e := ConnExecContext(c, ctx, query, args...)
 	if enter {
-		coreWrapExecContext(begin, getdb_byconn(c), query, r, e)
+		coreWrapExecContext(ctx, begin, getdb_byconn(c), query, r, e)
 	}
 	return r, e
 }
@@ -402,7 +407,7 @@ func getdb_byconn(c *sql.Conn) *sql.DB {
 
 //go:noinline
 func WrapConnQueryContext(c *sql.Conn, ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+	recursiveChecker := &recursiveCheck{rlsID: StorageIndexLock, success: false}
 
 	begin, enter := recursiveChecker.enter()
 	defer func() {
@@ -413,7 +418,7 @@ func WrapConnQueryContext(c *sql.Conn, ctx context.Context, query string, args .
 	}()
 	r, e := ConnQueryContext(c, ctx, query, args...)
 	if enter {
-		coreWrapQueryContext(begin, getdb_byconn(c), query, r, e)
+		coreWrapQueryContext(ctx, begin, getdb_byconn(c), query, r, e)
 	}
 	return r, e
 }
@@ -428,7 +433,7 @@ func ConnPrepareContext(c *sql.Conn, ctx context.Context, query string) (*sql.St
 
 //go:noinline
 func WrapConnPrepareContext(c *sql.Conn, ctx context.Context, query string) (*sql.Stmt, error) {
-	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+	recursiveChecker := &recursiveCheck{rlsID: StorageIndexLock, success: false}
 
 	begin, enter := recursiveChecker.enter()
 	defer func() {
@@ -439,7 +444,7 @@ func WrapConnPrepareContext(c *sql.Conn, ctx context.Context, query string) (*sq
 	}()
 	stmt, e := ConnPrepareContext(c, ctx, query)
 	if enter {
-		coreWrapPrepareContext(begin, getdb_byconn(c), query, stmt, e)
+		coreWrapPrepareContext(ctx, begin, getdb_byconn(c), query, stmt, e)
 	}
 	return stmt, e
 }
@@ -462,7 +467,7 @@ func TxPrepareContext(tx *sql.Tx, ctx context.Context, query string) (*sql.Stmt,
 
 //go:noinline
 func WrapTxPrepareContext(tx *sql.Tx, ctx context.Context, query string) (*sql.Stmt, error) {
-	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+	recursiveChecker := &recursiveCheck{rlsID: StorageIndexLock, success: false}
 
 	begin, enter := recursiveChecker.enter()
 	defer func() {
@@ -473,7 +478,7 @@ func WrapTxPrepareContext(tx *sql.Tx, ctx context.Context, query string) (*sql.S
 	}()
 	stmt, e := TxPrepareContext(tx, ctx, query)
 	if enter {
-		coreWrapPrepareContext(begin, getdbByTx(tx), query, stmt, e)
+		coreWrapPrepareContext(ctx, begin, getdbByTx(tx), query, stmt, e)
 	}
 	return stmt, e
 }
@@ -488,7 +493,7 @@ func TxExecContext(tx *sql.Tx, ctx context.Context, query string, args ...interf
 
 //go:noinline
 func WrapTxExecContext(tx *sql.Tx, ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+	recursiveChecker := &recursiveCheck{rlsID: StorageIndexLock, success: false}
 
 	begin, enter := recursiveChecker.enter()
 	defer func() {
@@ -499,7 +504,7 @@ func WrapTxExecContext(tx *sql.Tx, ctx context.Context, query string, args ...in
 	}()
 	r, e := TxExecContext(tx, ctx, query, args...)
 	if enter {
-		coreWrapExecContext(begin, getdbByTx(tx), query, r, e)
+		coreWrapExecContext(ctx, begin, getdbByTx(tx), query, r, e)
 	}
 	return r, e
 }
@@ -514,7 +519,7 @@ func TxQueryContext(tx *sql.Tx, ctx context.Context, query string, args ...inter
 
 //go:noinline
 func WrapTxQueryContext(tx *sql.Tx, ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-	recursiveChecker := &recursiveCheck{rlsID: 2, success: false}
+	recursiveChecker := &recursiveCheck{rlsID: StorageIndexLock, success: false}
 
 	begin, enter := recursiveChecker.enter()
 	defer func() {
@@ -525,7 +530,7 @@ func WrapTxQueryContext(tx *sql.Tx, ctx context.Context, query string, args ...i
 	}()
 	r, e := TxQueryContext(tx, ctx, query, args...)
 	if enter {
-		coreWrapQueryContext(begin, getdbByTx(tx), query, r, e)
+		coreWrapQueryContext(ctx, begin, getdbByTx(tx), query, r, e)
 	}
 	return r, e
 }
@@ -541,7 +546,7 @@ func StmtQueryContext(s *sql.Stmt, ctx context.Context, args ...interface{}) (*s
 //go:noinline
 func WrapStmtQueryContext(s *sql.Stmt, ctx context.Context, args ...interface{}) (*sql.Rows, error) {
 	r, e := StmtQueryContext(s, ctx, args...)
-	if c := tingyun3.LocalGet(1); c != nil {
+	if c := tingyun3.LocalGet(StorageIndexContext); c != nil {
 		dbctx := c.(*databaseContext)
 		component, found := dbctx.stmts[s]
 		if !found {
@@ -553,7 +558,7 @@ func WrapStmtQueryContext(s *sql.Stmt, ctx context.Context, args ...interface{})
 			component.SetException(e, callerName, 2)
 			if dbctx.empty() {
 				dbctx.clear()
-				tingyun3.LocalDelete(1)
+				tingyun3.LocalDelete(StorageIndexContext)
 			}
 			return r, e
 		}
@@ -574,7 +579,7 @@ func StmtClose(s *sql.Stmt) error {
 func WrapStmtClose(s *sql.Stmt) error {
 	err := StmtClose(s)
 
-	if c := tingyun3.LocalGet(1); c != nil {
+	if c := tingyun3.LocalGet(StorageIndexContext); c != nil {
 		dbctx := c.(*databaseContext)
 		if c, found := dbctx.stmts[s]; found {
 			c.End(1)
@@ -582,7 +587,7 @@ func WrapStmtClose(s *sql.Stmt) error {
 		}
 		if dbctx.empty() {
 			dbctx.clear()
-			tingyun3.LocalDelete(1)
+			tingyun3.LocalDelete(StorageIndexContext)
 		}
 	}
 	return err
@@ -600,7 +605,7 @@ func StmtExecContext(s *sql.Stmt, ctx context.Context, args ...interface{}) (sql
 func WrapStmtExecContext(s *sql.Stmt, ctx context.Context, args ...interface{}) (sql.Result, error) {
 	r, e := StmtExecContext(s, ctx, args...)
 
-	if c := tingyun3.LocalGet(1); c != nil {
+	if c := tingyun3.LocalGet(StorageIndexContext); c != nil {
 		dbctx := c.(*databaseContext)
 		if c, found := dbctx.stmts[s]; found {
 			c.End(1)
@@ -620,14 +625,14 @@ func RowsClose(rs *sql.Rows) error {
 //go:noinline
 func WrapRowsClose(rs *sql.Rows) error {
 	err := RowsClose(rs)
-	if c := tingyun3.LocalGet(1); c != nil {
+	if c := tingyun3.LocalGet(StorageIndexContext); c != nil {
 		dbctx := c.(*databaseContext)
 		if c, found := dbctx.records[rs]; found {
 			c.End(1)
 			delete(dbctx.records, rs)
 		}
 		if dbctx.empty() {
-			tingyun3.LocalDelete(1)
+			tingyun3.LocalDelete(StorageIndexContext)
 		}
 	}
 	return err
@@ -658,7 +663,7 @@ func WrapDBqueryDC(db *sql.DB, ctx, txctx context.Context, dc *driverConn, relea
 	}()
 	r, e := DBqueryDC(db, ctx, txctx, dc, releaseConn, query, args)
 	if enter {
-		coreWrapQueryContext(begin, db, query, r, e)
+		coreWrapQueryContext(ctx, begin, db, query, r, e)
 	}
 	return r, e
 }
@@ -681,7 +686,7 @@ func WrapDBexecDC(db *sql.DB, ctx context.Context, dc *driverConn, release func(
 	}()
 	r, e := DBexecDC(db, ctx, dc, release, query, args)
 	if enter {
-		coreWrapExecContext(begin, db, query, r, e)
+		coreWrapExecContext(ctx, begin, db, query, r, e)
 	}
 	return r, e
 }
@@ -711,7 +716,7 @@ func WrapDBprepareDC(db *sql.DB, ctx context.Context, dc *driverConn, release fu
 	}()
 	r, e := DBprepareDC(db, ctx, dc, release, cg, query)
 	if enter {
-		coreWrapPrepareContext(begin, db, query, r, e)
+		coreWrapPrepareContext(ctx, begin, db, query, r, e)
 	}
 	return r, e
 }

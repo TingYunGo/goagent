@@ -42,6 +42,7 @@ const (
 	configLocalIntegerAgentInitDelay     = 7
 	configLocalIntegerComponentMax       = 8
 	configLocalIntegerMaxSQLSize         = 9
+	configLocalIntegerGoRedisFLAG        = 10
 	configLocalIntegerMax                = 16
 
 	configServerStringAppSessionKey     = 1
@@ -144,6 +145,7 @@ var localIntegerKeyMap = map[string]int{
 	"agent_log_file_size":   configLocalIntegerNbsMaxLogSize,
 	"agent_init_delay":      configLocalIntegerAgentInitDelay,
 	"agent_component_max":   configLocalIntegerComponentMax,
+	"go-redis.flag":         configLocalIntegerGoRedisFLAG,
 	"agent_sql_size_max":    configLocalIntegerMaxSQLSize,
 }
 

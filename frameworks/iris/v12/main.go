@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	irisRoutineLocalIndex = 9 + 8*4
+	StorageIndexIris = tingyun3.StorageIndexIris
 )
 
 type controllerInfo struct {
@@ -38,7 +38,7 @@ func irisCreateRoutes(api *router.APIBuilder, methods []string, relativePath str
 }
 func wrapHandler(handler context.Handler, path string) context.Handler {
 	info := controllerInfo{}
-	if i := tingyun3.LocalGet(irisRoutineLocalIndex); i != nil {
+	if i := tingyun3.LocalGet(StorageIndexIris); i != nil {
 		controller := i.(controllerInfo)
 		info.name, info.method = controller.name, controller.method
 	}
@@ -51,7 +51,7 @@ func wrapHandler(handler context.Handler, path string) context.Handler {
 		return handler
 	}
 	return func(ctx context.Context) {
-		if tingyun3.LocalGet(irisRoutineLocalIndex) == nil {
+		if tingyun3.LocalGet(StorageIndexIris) == nil {
 			action := tingyun3.GetAction()
 			if action != nil {
 				if len(info.name) == 0 && len(info.method) > 0 {
@@ -64,8 +64,8 @@ func wrapHandler(handler context.Handler, path string) context.Handler {
 					action.SetName("URI", path)
 				}
 			}
-			tingyun3.LocalSet(irisRoutineLocalIndex, 1)
-			defer tingyun3.LocalDelete(irisRoutineLocalIndex)
+			tingyun3.LocalSet(StorageIndexIris, 1)
+			defer tingyun3.LocalDelete(StorageIndexIris)
 		}
 		handler(ctx)
 	}
@@ -93,8 +93,8 @@ func WrapirishandleMany(c *mvc.ControllerActivator, method, path, funcName strin
 		name:   c.Name(),
 		method: funcName,
 	}
-	tingyun3.LocalSet(irisRoutineLocalIndex, info)
-	defer tingyun3.LocalDelete(irisRoutineLocalIndex)
+	tingyun3.LocalSet(StorageIndexIris, info)
+	defer tingyun3.LocalDelete(StorageIndexIris)
 	return irishandleMany(c, method, path, funcName, override, middleware...)
 }
 
@@ -110,13 +110,13 @@ func routerFileServer(directory string, opts ...router.DirOptions) context.Handl
 func WraprouterFileServer(directory string, opts ...router.DirOptions) context.Handler {
 	handler := routerFileServer(directory, opts...)
 	return func(ctx context.Context) {
-		if tingyun3.LocalGet(irisRoutineLocalIndex) == nil {
+		if tingyun3.LocalGet(StorageIndexIris) == nil {
 			action := tingyun3.GetAction()
 			if action != nil {
 				action.SetName("URI", ctx.Request().URL.Path)
 			}
-			tingyun3.LocalSet(irisRoutineLocalIndex, 1)
-			defer tingyun3.LocalDelete(irisRoutineLocalIndex)
+			tingyun3.LocalSet(StorageIndexIris, 1)
+			defer tingyun3.LocalDelete(StorageIndexIris)
 		}
 		handler(ctx)
 	}

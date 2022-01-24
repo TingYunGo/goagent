@@ -13,6 +13,10 @@ import (
 	"github.com/labstack/echo"
 )
 
+const (
+	StorageIndexEcho = tingyun3.StorageIndexEcho
+)
+
 func getHandlerName(handler echo.HandlerFunc) string {
 	handlerPC := reflect.ValueOf(handler).Pointer()
 	return runtime.FuncForPC(handlerPC).Name()
@@ -43,10 +47,10 @@ func echoEchoAdd(ptr *echo.Echo, method, path string, handler echo.HandlerFunc, 
 
 //go:noinline
 func WrapechoEchoAdd(ptr *echo.Echo, method, path string, handler echo.HandlerFunc, middleware ...echo.MiddlewareFunc) *echo.Route {
-	tingyun3.LocalSet(9+8, "handled")
+	tingyun3.LocalSet(StorageIndexEcho, "handled")
 	wrapper := wrapHandler(method, path, handler)
 	r := echoEchoAdd(ptr, method, path, wrapper, middleware...)
-	tingyun3.LocalDelete(9 + 8)
+	tingyun3.LocalDelete(StorageIndexEcho)
 	return r
 }
 
@@ -60,10 +64,10 @@ func echoEchoadd(ptr *echo.Echo, host, method, path string, handler echo.Handler
 
 //go:noinline
 func WrapechoEchoadd(ptr *echo.Echo, host, method, path string, handler echo.HandlerFunc, middleware ...echo.MiddlewareFunc) *echo.Route {
-	tingyun3.LocalSet(9+8, "handled")
+	tingyun3.LocalSet(StorageIndexEcho, "handled")
 	wrapper := wrapHandler(method, path, handler)
 	r := echoEchoadd(ptr, host, method, path, wrapper, middleware...)
-	tingyun3.LocalDelete(9 + 8)
+	tingyun3.LocalDelete(StorageIndexEcho)
 	return r
 }
 
@@ -76,7 +80,7 @@ func echoRouterAdd(ptr *echo.Router, method, path string, h echo.HandlerFunc) {
 
 //go:noinline
 func WrapechoRouterAdd(ptr *echo.Router, method, path string, h echo.HandlerFunc) {
-	if tingyun3.LocalGet(9+8) == nil && h != nil {
+	if tingyun3.LocalGet(StorageIndexEcho) == nil && h != nil {
 		h = wrapHandler(method, path, h)
 	}
 	echoRouterAdd(ptr, method, path, h)
