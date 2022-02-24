@@ -398,10 +398,10 @@ func formatActionName(instance string, method string, isTransaction bool, isTask
 	// 	method = method[1:mlen]
 	// }
 	preName := "WebAction/"
-	if isTransaction {
-		preName = "Transaction/"
-	} else if isTask {
+	if isTask {
 		preName = "TaskAction/"
+	} else if isTransaction {
+		preName = "Transaction/"
 	}
 	if len(method) > 0 && method[0:1] == "/" {
 		method = method[1:]
