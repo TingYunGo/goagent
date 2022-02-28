@@ -14,11 +14,11 @@ typedef struct {
 } ReplaceItem;
 extern const ReplaceItem* TingyunReplaceItems() {
     static ReplaceItem targets[] = {
-        {"net/http.NotFound", ".replaceHttpNotFound", "net/http", 0},
-        {"net/http.(*Server).Serve", ".replaceHttpServerServe", "", 0},
-        {"net/http.(*ServeMux).Handle", ".replaceServerMuxHandle", "", 0},
-        {"net/http.(*ServeMux).Handler", ".replaceServerMuxHandler", "", 0},
-        {"net/http.(*Client).do", ".replaceHttpClientDo", "", ".HttpClientDo"},
+     {"net/http.NotFound", ".WraphttpNotFound", "net/http", ".httpNotFound"},
+     {"net/http.(*Server).Serve", ".WrapHttpServerServe", "", ".HttpServerServe"},
+     {"net/http.(*ServeMux).Handle", ".WrapServerMuxHandle", "", ".ServerMuxHandle"},
+     {"net/http.(*ServeMux).Handler", ".WrapServerMuxHandler", "", ".ServerMuxHandler"},
+     {"net/http.(*Client).do", ".WrapHttpClientDo", "", ".HttpClientDo"},
 
         {"database/sql.(*Rows).Close", "/database.WrapRowsClose", "", "/database.RowsClose"},
 

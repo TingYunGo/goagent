@@ -1,6 +1,6 @@
 // Copyright 2021 冯立强 fenglq@tingyun.com.  All rights reserved.
 // +build linux
-// +build amd64
+// +build amd64 arm64
 // +build cgo
 
 package database

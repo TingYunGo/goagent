@@ -1,5 +1,5 @@
 // +build linux
-// +build amd64
+// +build amd64 arm64
 // +build cgo
 
 package mongodb
