@@ -1,4 +1,4 @@
-// Copyright 2021 冯立强 fenglq@tingyun.com.  All rights reserved.
+// Copyright 2021~2022 冯立强 fenglq@tingyun.com.  All rights reserved.
 // +build linux
 // +build amd64 arm64
 // +build cgo
@@ -25,20 +25,82 @@ const (
 )
 
 type dbinstanceSet struct {
-	lock  sync.RWMutex
-	items map[*sql.DB]databaseInfo
+	lock    sync.RWMutex
+	items   map[*sql.DB]databaseInfo
+	venders map[string]map[string]int
 }
 
 func (d *dbinstanceSet) init() {
 	d.items = map[*sql.DB]databaseInfo{}
+	d.venders = map[string]map[string]int{}
 }
-func (d *dbinstanceSet) Get(db *sql.DB) *databaseInfo {
+func (d *dbinstanceSet) appendDSN(vender, dsn string) {
+	if d.venders == nil {
+		d.venders = map[string]map[string]int{}
+	}
+	if _, found := d.venders[vender]; !found {
+		d.venders[vender] = map[string]int{}
+	}
+	dsns := d.venders[vender]
+	if n, found := dsns[dsn]; !found {
+		dsns[dsn] = 1
+	} else {
+		dsns[dsn] = n + 1
+	}
+}
+func (d *dbinstanceSet) eraseDBC(db *sql.DB) {
+	if i, found := d.items[db]; !found {
+		return
+	} else if d.venders == nil {
+		return
+	} else if v, foundVender := d.venders[i.vender]; !foundVender {
+		return
+	} else if n, foundDSN := v[i.dsn]; !foundDSN {
+		return
+	} else if n < 1 {
+		return
+	} else if n == 1 {
+		delete(v, i.dsn)
+	} else {
+		v[i.dsn] = n - 1
+	}
+}
+func (d *dbinstanceSet) defaultDBInfo() (*databaseInfo, string) {
+	if d.venders == nil {
+		return nil, ""
+	} else if len(d.venders) != 1 {
+		return nil, ""
+	}
+	for v, dsns := range d.venders {
+		if len(dsns) != 1 {
+			return &databaseInfo{
+				vender: v,
+				dsn:    "UNKNOWN",
+				host:   "UNKNOWN",
+				dbname: "UNKNOWN",
+			}, "Got vender by guess."
+		}
+		for dsn, _ := range dsns {
+			r := &databaseInfo{}
+			r.init(v, dsn)
+			return r, "Got vender by guess."
+		}
+	}
+	return nil, ""
+}
+func (d *dbinstanceSet) Get(db *sql.DB) (*databaseInfo, string) {
 	d.lock.RLock()
 	defer d.lock.RUnlock()
 	if i, found := d.items[db]; found {
-		return &i
+		return &i, ""
+	} else {
+		for it, info := range d.items {
+			if matchObject(db, it) {
+				return &info, "Matched a cloned *sql.DB"
+			}
+		}
 	}
-	return nil
+	return d.defaultDBInfo()
 }
 func (d *dbinstanceSet) Set(db *sql.DB, info databaseInfo) {
 	d.lock.Lock()
@@ -47,10 +109,12 @@ func (d *dbinstanceSet) Set(db *sql.DB, info databaseInfo) {
 		d.init()
 	}
 	d.items[db] = info
+	d.appendDSN(info.vender, info.dsn)
 }
 func (d *dbinstanceSet) Delete(db *sql.DB) {
 	d.lock.Lock()
 	defer d.lock.Unlock()
+	d.eraseDBC(db)
 	delete(d.items, db)
 }
 
@@ -139,7 +203,7 @@ func coreWrapPrepareContext(ctx context.Context, begin time.Time, db *sql.DB, qu
 		}
 		return
 	}
-	info := dbs.Get(db)
+	info, reason := dbs.Get(db)
 	if info == nil {
 		tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapPrepareContext Not found db")
 		info = &databaseInfo{
@@ -147,6 +211,8 @@ func coreWrapPrepareContext(ctx context.Context, begin time.Time, db *sql.DB, qu
 			host:   "UNKNOWN",
 			dbname: "UNKNOWN",
 		}
+	} else if len(reason) > 0 && readConfigBoolean("WARNING_DBINFO", true) {
+		tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapPrepareContext: database info Match:", reason)
 	}
 	var dbctx *databaseContext = nil
 	c := tingyun3.LocalGet(StorageIndexContext)
@@ -190,7 +256,7 @@ func coreWrapExecContext(ctx context.Context, begin time.Time, db *sql.DB, query
 			tingyun3.LocalClear()
 		}()
 	}
-	info := dbs.Get(db)
+	info, reason := dbs.Get(db)
 	if info == nil {
 		tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapExecContext Not found db.")
 		info = &databaseInfo{
@@ -198,7 +264,8 @@ func coreWrapExecContext(ctx context.Context, begin time.Time, db *sql.DB, query
 			host:   "UNKNOWN",
 			dbname: "UNKNOWN",
 		}
-		// return
+	} else if len(reason) > 0 && readConfigBoolean("WARNING_DBINFO", true) {
+		tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapExecContext: database info Match:", reason)
 	}
 	if callerName == "" {
 		callerName = getCallName(3)
@@ -230,7 +297,7 @@ func coreWrapQueryContext(ctx context.Context, begin time.Time, db *sql.DB, quer
 			tingyun3.LocalClear()
 		}()
 	}
-	info := dbs.Get(db)
+	info, reason := dbs.Get(db)
 	if info == nil {
 		tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapQueryContext Not found db.")
 		info = &databaseInfo{
@@ -238,7 +305,8 @@ func coreWrapQueryContext(ctx context.Context, begin time.Time, db *sql.DB, quer
 			host:   "UNKNOWN",
 			dbname: "UNKNOWN",
 		}
-		// return
+	} else if len(reason) > 0 && readConfigBoolean("WARNING_DBINFO", true) {
+		tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapQueryContext: database info Match:", reason)
 	}
 	var dbctx *databaseContext = nil
 	c := tingyun3.LocalGet(StorageIndexContext)

@@ -32,6 +32,7 @@ const (
 	configLocalBoolWebsocketEnabled      = 4
 	configLocalBoolTransactionEnabled    = 5
 	configLocalBoolGormEnabled           = 6
+	configLocalBoolWarningDBInfo         = 7
 	configLocalBoolMax                   = 8
 	configLocalIntegerNbsPort            = 1
 	configLocalIntegerNbsSaveCount       = 2
@@ -128,6 +129,7 @@ var localBoolKeyMap = map[string]int{
 	"agent_enabled":       configLocalBoolAgentEnable,
 	"transaction_enabled": configLocalBoolTransactionEnabled,
 	"GORM_ENABLED":        configLocalBoolGormEnabled,
+	"WARNING_DBINFO":      configLocalBoolWarningDBInfo,
 }
 
 var localIntegerKeyMap = map[string]int{
