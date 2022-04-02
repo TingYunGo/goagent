@@ -208,6 +208,7 @@ func (a *application) startLogin() {
 		}
 	})
 	if err != nil {
+		a.logger.Println(log.LevelError, err)
 		a.serverCtrl.loginResultTime = time.Now()
 		a.serverCtrl.loginState = serverLoginFaild
 	}
@@ -221,7 +222,7 @@ func (a *application) checkFaildState() {
 
 func (a *application) timerCheck() {
 	if a.serverCtrl.postIsReturn {
-		a.server.ReleaseRequest()
+		a.server.request = nil
 		a.serverCtrl.postIsReturn = false
 	}
 	//不在LoginSuccess状态,返回
@@ -258,7 +259,7 @@ func (a *application) timerCheck() {
 var dropTrace int = 0
 
 func (a *application) upload() {
-	if a.server.request != nil {
+	if len(a.server.uploadSet) >= 3 {
 		return
 	}
 	if a.reportQueue.Size() > 0 {
@@ -293,18 +294,24 @@ func (a *application) upload() {
 		}
 		b, _ := traceData.Serialize()
 		traceData.destroy()
+		req := RequestHandler{
+			request: nil,
+		}
 		var err error
-		a.server.request, err = a.server.Upload(b, func(err error, rcode int, statusCode int) {
+		req.request, err = a.server.Upload(b, func(err error, rcode int, statusCode int) {
 			if rcode == -2 {
 				a.logger.Println(LevelError, "Upload error: status:", statusCode, ",rcode: ", rcode, ": ", err)
 			}
 			a.serverCtrl.Pushback(func() {
-				a.serverCtrl.OnReturn()
+				delete(a.server.uploadSet, req.request)
+				a.serverCtrl.lastUploadTime = time.Now()
 			})
 		})
 		if err != nil {
 			a.logger.Println(LevelError, "App.", "Upload Error :", err)
 			a.serverCtrl.lastUploadTime = time.Now()
+		} else {
+			a.server.uploadSet[req.request] = 1
 		}
 	}
 }

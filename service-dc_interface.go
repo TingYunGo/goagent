@@ -25,28 +25,18 @@ type serviceDC struct {
 	request      *postRequest.Request
 	aliveRequest *postRequest.Request
 	uploadHost   string
-	inLogin      bool
 	lastAlive    time.Time
 	lastValidDC  int
-}
-
-func (s *serviceDC) ReleaseRequest() {
-	if s.request != nil {
-		s.request.Release()
-		s.request = nil
-	}
-}
-func (s *serviceDC) ReleaseAlive() {
-	if s.aliveRequest != nil {
-		s.aliveRequest.Release()
-		s.aliveRequest = nil
-	}
+	uploadSet    map[*postRequest.Request]int
 }
 
 func (s *serviceDC) keepAlive(callback func(error, map[string]interface{})) {
 	//getCmd?version=3.2.0&sessionKey=4112274
 	currTime := time.Now()
 	if currTime.Sub(s.lastAlive) < 30*time.Second {
+		return
+	}
+	if s.aliveRequest != nil {
 		return
 	}
 	requrl, err := s.makeTraceURL("getCmd")
@@ -68,14 +58,14 @@ func (s *serviceDC) keepAlive(callback func(error, map[string]interface{})) {
 			}
 		}
 		jsonData, er := parseJSON(data, statusCode, err)
+		s.aliveRequest = nil
 		callback(er, jsonData)
-		s.ReleaseAlive()
 	})
 }
 
 //Login --启动登陆过程,如果已经在login中,返回error
 func (s *serviceDC) Login(callback func(error, map[string]interface{})) error {
-	if s.inLogin {
+	if s.request != nil {
 		return errors.New("Login already Startd")
 	}
 	if host := s.configs.local.CStrings.Read(configLocalStringNbsHost, ""); len(host) == 0 {
@@ -89,7 +79,7 @@ func (s *serviceDC) Login(callback func(error, map[string]interface{})) error {
 	var err error = nil
 	Log().Println(LevelInfo, "Redirect:", requrl)
 	s.request, err = postRequest.New(requrl, params, []byte("{}"), time.Second*10, func(data []byte, statusCode int, err error) {
-
+		s.request = nil
 		//完成回调,在另一个routine中触发
 		use := atomic.AddInt32(&s.locked, 1)
 		defer atomic.AddInt32(&s.locked, -1)
@@ -125,12 +115,9 @@ func (s *serviceDC) Login(callback func(error, map[string]interface{})) error {
 				if use != 1 {
 					return
 				}
-				s.inLogin = false
 				if err == nil {
 					Log().Println(LevelInfo, "Login Status Code:", statusCode)
-					if len(data) > 0 {
-						Log().Println(LevelInfo|Audit, "Login Response Data:", string(data))
-					}
+					Log().Println(LevelInfo, "Login Response Data:", string(data))
 				}
 				r, er := parseJSON(data, statusCode, err)
 				callback(er, r)
@@ -139,13 +126,10 @@ func (s *serviceDC) Login(callback func(error, map[string]interface{})) error {
 		}
 		if e != nil {
 			s.lastValidDC++
-			s.inLogin = false
 			callback(e, nil)
 		}
 	})
-	if err == nil {
-		s.inLogin = true
-	} else {
+	if err != nil {
 		s.lastValidDC++
 	}
 	return err
@@ -174,15 +158,11 @@ type requestContext struct {
 
 //上传数据,如果inLogin, 返回false,否则创建request,
 func (s *serviceDC) Upload(data []byte, callback func(err error, rCode int, httpStatus int)) (*postRequest.Request, error) {
-	if s.inLogin {
-		return nil, errors.New("server in login")
-	}
-
 	requrl, err := s.makeTraceURL("trace")
 	if err != nil {
 		return nil, err
 	}
-	Log().Println(LevelInfo|Audit, "Upload", len(data), "bytes:", requrl)
+	Log().Println(LevelInfo, "Upload", len(data), "bytes:", requrl)
 	Log().Println(LevelInfo|Audit, "Upload Request Data:", len(data))
 	return postRequest.New(requrl, map[string]string{ /*"Content-Encoding": "deflate"*/ }, data, time.Second*10, func(data []byte, statusCode int, err error) {
 		use := atomic.AddInt32(&s.locked, 1)
@@ -192,9 +172,9 @@ func (s *serviceDC) Upload(data []byte, callback func(err error, rCode int, http
 		}
 		if err == nil {
 			if len(data) > 0 {
-				Log().Println(LevelInfo|Audit, "Upload Status Code:", statusCode, ", Data:", string(data))
+				Log().Println(LevelInfo, "Upload Status Code:", statusCode, ", Data:", string(data))
 			} else {
-				Log().Println(LevelInfo|Audit, "Upload Status Code:", statusCode)
+				Log().Println(LevelInfo, "Upload Status Code:", statusCode)
 			}
 		}
 		r, er := parseJSON(data, statusCode, err)
@@ -217,15 +197,15 @@ func (s *serviceDC) Release() {
 		atomic.AddInt32(&s.locked, -1)
 		time.Sleep(1 * time.Millisecond)
 	}
-	s.ReleaseRequest()
+	s.request = nil
 	s.configs = nil
 }
 func (s *serviceDC) init(config *configurations) {
 	s.configs = config
 	s.request = nil
-	s.inLogin = false
 	s.locked = 0
 	s.lastValidDC = 0
+	s.uploadSet = map[*postRequest.Request]int{}
 }
 
 func parseJSON(data []byte, statusCode int, err error) (map[string]interface{}, error) {
@@ -294,4 +274,8 @@ func getRedirectHost(s *serviceDC, protocol string) string {
 	}
 	port = int(s.configs.local.CIntegers.Read(configLocalIntegerNbsPort, int64(port)))
 	return fmt.Sprintf("%s://%s:%d", protocol, host, port)
+}
+
+type RequestHandler struct {
+	request *postRequest.Request
 }
