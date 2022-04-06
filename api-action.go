@@ -169,6 +169,23 @@ func getValidString(value, defaultValue string) string {
 	return value
 }
 
+func getRedisInstanceName(host, key string) string {
+	if len(key) == 0 {
+		return host
+	}
+	redisUseKey := int(readLocalConfigInteger(configLocalIntegerRedisInstanceUseKey, 0))
+	if key[0] == '[' {
+		if (redisUseKey & 2) == 0 {
+			return host
+		}
+	} else {
+		if (redisUseKey & 1) == 0 {
+			return host
+		}
+	}
+	return host + "/" + key
+}
+
 // CreateRedisComponent : 创建一个Redis数据库访问组件
 func (a *Action) CreateRedisComponent(host, cmd, key, method string) *Component {
 	if app == nil || a == nil || a.stateUsed != actionUsing {
@@ -178,10 +195,11 @@ func (a *Action) CreateRedisComponent(host, cmd, key, method string) *Component 
 		return nil
 	}
 	key = getValidString(key, "NULL")
+
 	c := &Component{
 		action:         a,
 		method:         method,
-		instance:       getValidString(host, "NULL") + "/" + key,
+		instance:       getRedisInstanceName(getValidString(host, "NULL"), key),
 		table:          key,
 		op:             cmd,
 		tracerParentID: a.current.tracerID,

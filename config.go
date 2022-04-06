@@ -19,32 +19,33 @@ import (
 )
 
 const (
-	configLocalStringNbsHost             = 1
-	configLocalStringNbsLicenseKey       = 2
-	configLocalStringNbsAppName          = 3
-	configLocalStringNbsLevel            = log.ConfigStringNBSLevel
-	configLocalStringNbsLogFileName      = log.ConfigStringNBSLogFileName
-	configLocalStringAppUUID             = 6
-	configLocalStringMax                 = 8
-	configLocalBoolAgentEnable           = 1
-	configLocalBoolSSL                   = 2
-	configLocalBoolAudit                 = log.ConfigBoolNBSAudit
-	configLocalBoolWebsocketEnabled      = 4
-	configLocalBoolTransactionEnabled    = 5
-	configLocalBoolGormEnabled           = 6
-	configLocalBoolWarningDBInfo         = 7
-	configLocalBoolMax                   = 8
-	configLocalIntegerNbsPort            = 1
-	configLocalIntegerNbsSaveCount       = 2
-	configLocalIntegerNbsMaxLogSize      = log.ConfigIntegerNBSMaxLogSize
-	configLocalIntegerNbsMaxLogCount     = log.ConfigIntegerNBSMaxLogCount
-	configLocalIntegerNbsActionCacheMax  = 5
-	configLocalIntegerNbsActionReportMax = 6
-	configLocalIntegerAgentInitDelay     = 7
-	configLocalIntegerComponentMax       = 8
-	configLocalIntegerMaxSQLSize         = 9
-	configLocalIntegerGoRedisFLAG        = 10
-	configLocalIntegerMax                = 16
+	configLocalStringNbsHost              = 1
+	configLocalStringNbsLicenseKey        = 2
+	configLocalStringNbsAppName           = 3
+	configLocalStringNbsLevel             = log.ConfigStringNBSLevel
+	configLocalStringNbsLogFileName       = log.ConfigStringNBSLogFileName
+	configLocalStringAppUUID              = 6
+	configLocalStringMax                  = 8
+	configLocalBoolAgentEnable            = 1
+	configLocalBoolSSL                    = 2
+	configLocalBoolAudit                  = log.ConfigBoolNBSAudit
+	configLocalBoolWebsocketEnabled       = 4
+	configLocalBoolTransactionEnabled     = 5
+	configLocalBoolGormEnabled            = 6
+	configLocalBoolWarningDBInfo          = 7
+	configLocalBoolMax                    = 8
+	configLocalIntegerNbsPort             = 1
+	configLocalIntegerNbsSaveCount        = 2
+	configLocalIntegerNbsMaxLogSize       = log.ConfigIntegerNBSMaxLogSize
+	configLocalIntegerNbsMaxLogCount      = log.ConfigIntegerNBSMaxLogCount
+	configLocalIntegerNbsActionCacheMax   = 5
+	configLocalIntegerNbsActionReportMax  = 6
+	configLocalIntegerAgentInitDelay      = 7
+	configLocalIntegerComponentMax        = 8
+	configLocalIntegerMaxSQLSize          = 9
+	configLocalIntegerGoRedisFLAG         = 10
+	configLocalIntegerRedisInstanceUseKey = 11
+	configLocalIntegerMax                 = 16
 
 	configServerStringAppSessionKey     = 1
 	configServerStringTingyunIDSecret   = 2
@@ -149,6 +150,7 @@ var localIntegerKeyMap = map[string]int{
 	"agent_component_max":   configLocalIntegerComponentMax,
 	"go-redis.flag":         configLocalIntegerGoRedisFLAG,
 	"agent_sql_size_max":    configLocalIntegerMaxSQLSize,
+	"REDIS_INST_USE_KEY":    configLocalIntegerRedisInstanceUseKey,
 }
 
 var serverStringKeyMap = map[string]int{

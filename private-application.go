@@ -6,7 +6,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/TingYunGo/goagent/utils/logger"
+	log "github.com/TingYunGo/goagent/utils/logger"
 
 	"github.com/TingYunGo/goagent/libs/list"
 	"github.com/TingYunGo/goagent/libs/pool"
@@ -49,6 +49,12 @@ func readServerConfigBool(id int, defaultValue bool) bool {
 		return defaultValue
 	}
 	return app.configs.serverExt.CBools.Read(id, defaultValue)
+}
+func readLocalConfigInteger(id int, defaultValue int64) int64 {
+	if app == nil {
+		return defaultValue
+	}
+	return app.configs.local.CIntegers.Read(id, defaultValue)
 }
 func readLocalConfigBool(id int, defaultValue bool) bool {
 	if app == nil {
