@@ -177,6 +177,9 @@ func handleGoRedis(ctx context.Context, host, cmd, object string, begin time.Tim
 		callerName = getCallName(3)
 	}
 	component := action.CreateRedisComponent(host, cmd, object, callerName)
+	if component == nil {
+		return
+	}
 	component.FixBegin(begin)
 	if err != nil {
 		component.SetException(err, callerName, 3)

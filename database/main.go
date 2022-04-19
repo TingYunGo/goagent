@@ -224,6 +224,9 @@ func coreWrapPrepareContext(ctx context.Context, begin time.Time, db *sql.DB, qu
 	}
 	callerName := getCallName(3)
 	component := action.CreateSQLComponent(getTingyunDBType(info.vender), info.host, info.dbname, query, callerName)
+	if component == nil {
+		return
+	}
 	component.FixBegin(begin)
 	if stmt == nil || e != nil {
 		component.SetException(e, callerName, 3)
@@ -271,6 +274,9 @@ func coreWrapExecContext(ctx context.Context, begin time.Time, db *sql.DB, query
 		callerName = getCallName(3)
 	}
 	component := action.CreateSQLComponent(getTingyunDBType(info.vender), info.host, info.dbname, query, callerName)
+	if component == nil {
+		return
+	}
 	component.FixBegin(begin)
 	if r == nil && e != nil {
 		component.SetException(e, callerName, 3)
@@ -320,6 +326,9 @@ func coreWrapQueryContext(ctx context.Context, begin time.Time, db *sql.DB, quer
 		callerName = getCallName(3)
 	}
 	component := action.CreateSQLComponent(getTingyunDBType(info.vender), info.host, info.dbname, query, callerName)
+	if component == nil {
+		return
+	}
 	component.FixBegin(begin)
 	if r == nil && e != nil {
 		component.SetException(e, callerName, 3)

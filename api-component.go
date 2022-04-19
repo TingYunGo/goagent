@@ -120,6 +120,9 @@ func (c *Component) SetMethod(method string) {
 //End : 内部使用, skip为跳过的调用栈数
 //go:noinline
 func (c *Component) End(skip int) {
+	if c == nil {
+		return
+	}
 	c.FixStackEnd(skip+1, func(a string) bool {
 		return false
 	})
@@ -229,6 +232,9 @@ func (c *Component) CreateComponent(method string) *Component {
 }
 
 func (c *Component) destroy() {
+	if c == nil {
+		return
+	}
 	if c._type == componentUnused {
 		return
 	}
@@ -249,10 +255,16 @@ func (c *Component) destroy() {
 
 //FixBegin : 校正事务开始时间
 func (c *Component) FixBegin(begin time.Time) {
+	if c == nil {
+		return
+	}
 	c.time.begin = begin
 }
 
 func (c *Component) unicID() string {
+	if c == nil {
+		return ""
+	}
 	if c.exID {
 		return unicID(c.time.begin, c)
 	}

@@ -170,6 +170,9 @@ func coreRedigoDoWithTimeout(begin time.Time, c unsafe.Pointer, readTimeout time
 		}
 	}
 	component := action.CreateRedisComponent(host, cmd, object, callerName)
+	if component == nil {
+		return
+	}
 	component.FixBegin(begin)
 	if err != nil {
 		component.SetException(err, callerName, 3)

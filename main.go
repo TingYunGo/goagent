@@ -49,14 +49,18 @@ func WrapHttpClientDo(ptr *http.Client, req *http.Request) (*http.Response, erro
 		_, pc := GetCallerPC(3)
 		methodName := runtime.FuncForPC(pc).Name()
 		component = action.CreateExternalComponent(req.URL.String(), methodName)
-		if trackID := component.CreateTrackID(); len(trackID) > 0 {
-			req.Header.Add("X-Tingyun", trackID)
+		if component != nil {
+			if trackID := component.CreateTrackID(); len(trackID) > 0 {
+				req.Header.Add("X-Tingyun", trackID)
+			}
 		}
 	}
 	defer func() {
 		if exception := recover(); exception != nil {
-			component.setError(exception, "error", true)
-			component.Finish()
+			if component != nil {
+				component.setError(exception, "error", true)
+				component.Finish()
+			}
 			panic(exception)
 		}
 	}()
