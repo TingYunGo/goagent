@@ -75,6 +75,7 @@ type serverControl struct {
 	loginState        uint8
 	postIsReturn      bool
 	requestLoginReset bool
+	login_time        int64
 }
 
 func (s *serverControl) Pushback(eventCallback func()) {
@@ -101,6 +102,7 @@ func (s *serverControl) OnReturn() {
 
 func (s *serverControl) init() {
 	s.loginState = serverUnInited
+	s.login_time = 0
 	s.postIsReturn = false
 	s.finishedPool.Init()
 }
@@ -205,6 +207,7 @@ func (a *application) startLogin() {
 			}
 			a.server.lastAlive = time.Now()
 			a.serverCtrl.loginState = serverLoginSuccess
+			a.serverCtrl.login_time++
 		}
 	})
 	if err != nil {

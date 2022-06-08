@@ -667,18 +667,18 @@ func Enabled() bool {
 
 //CreateAction : 在方法method中调用并 创建一个名为 name的事务,
 func CreateAction(name string, method string) (*Action, error) {
-	if app == nil || !app.inited {
+	if app == nil || !app.inited || app.serverCtrl.login_time == 0 {
 		if configDisabled {
 			return nil, errors.New("Agent disabled by local config file")
 		}
-		return nil, errors.New("Agent not Inited, please call AppInit() first")
+		return nil, errors.New("Agent not Inited")
 	} else if app.actionPool.Size() > int32(app.configs.local.CIntegers.Read(configLocalIntegerNbsActionCacheMax, 10000)) {
 		return nil, errors.New("Server busy, Skip one action")
 	}
 	return app.createAction(name, method, false)
 }
 func CreateTask(method string) (*Action, error) {
-	if app == nil || !app.inited {
+	if app == nil || !app.inited || app.serverCtrl.login_time == 0 {
 		if configDisabled {
 			return nil, errors.New("Agent disabled by local config file")
 		}

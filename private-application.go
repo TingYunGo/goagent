@@ -39,7 +39,7 @@ func appendAction(action *Action) {
 	}
 }
 func readServerConfigInt(id int, defaultValue int) int {
-	if app == nil || !app.inited {
+	if app == nil || !app.inited || app.serverCtrl.login_time == 0 {
 		return defaultValue
 	}
 	return int(app.configs.serverExt.CIntegers.Read(id, int64(defaultValue)))
@@ -98,7 +98,7 @@ func (a *application) init(configfile string) (*application, error) {
 	return a, nil
 }
 func (a *application) createAction(category string, method string, istask bool) (*Action, error) {
-	if a == nil || !a.inited {
+	if a == nil || !a.inited || app.serverCtrl.login_time == 0 {
 		return nil, errors.New("Agent not inited")
 	}
 	if enabled := readServerConfigBool(configServerConfigBoolAgentEnabled, true); !enabled {
