@@ -18,6 +18,7 @@ type Strings struct {
 	item_count int
 	current    int
 	arrays     [4][]string_item
+	inited     bool
 }
 
 func (s *Strings) Init(item_count int) *Strings {
@@ -30,6 +31,7 @@ func (s *Strings) Init(item_count int) *Strings {
 		}
 		s.arrays[i] = a
 	}
+	s.inited = true
 	return s
 }
 func in_range(id int, id_range int) bool {
@@ -37,10 +39,10 @@ func in_range(id int, id_range int) bool {
 }
 
 func (s *Strings) Find(id int) (string, bool) {
-	if !in_range(id, s.item_count) {
+	if s == nil || !s.inited || !in_range(id, s.item_count) || !in_range(s.current, 4) {
 		return "", false
 	}
-	item := &s.arrays[s.current][id]
+	item := &s.arrays[s.current%4][id]
 	if item.used {
 		return item.value, true
 	}

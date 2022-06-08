@@ -22,6 +22,7 @@ type Arrays struct {
 	current    int
 	arrays     [4][]array_item
 	cleared    bool
+	inited     bool
 }
 
 func (s *Arrays) cleanNext() {
@@ -43,13 +44,14 @@ func (s *Arrays) Init(item_count int) *Arrays {
 		}
 		s.arrays[i] = a
 	}
+	s.inited = true
 	return s
 }
 func (s *Arrays) Find(id int) ([]int64, bool) {
-	if !in_range(id, s.item_count) {
+	if s == nil || !s.inited || !in_range(id, s.item_count) || !in_range(s.current, 4) {
 		return nil, false
 	}
-	item := &s.arrays[s.current][id]
+	item := &s.arrays[s.current%4][id]
 	if item.used {
 		return item.value, true
 	}

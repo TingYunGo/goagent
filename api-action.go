@@ -89,7 +89,7 @@ func fixSQL(sql string) string {
 //    url    : 调用Web Service的url,格式: http(s)://host/uri, 例如 http://www.baidu.com/
 //    method : 发起这个Web Service调用的类名.方法名, 例如 http.Get
 func (a *Action) CreateExternalComponent(url string, method string) *Component {
-	if app == nil || a == nil || a.stateUsed != actionUsing {
+	if app == nil || a == nil || a.stateUsed != actionUsing || !app.inited {
 		return nil
 	}
 	if !a.checkComponent() {
@@ -134,7 +134,7 @@ func (a *Action) OnEnd(cb func()) {
 // CreateMQComponent : 创建一个消息队列组件
 //   vender : mq类型: kafka/rabbit MQ/ActiveMQ
 func (a *Action) CreateMQComponent(vender string, isConsumer bool, host, queue string) *Component {
-	if app == nil || a == nil || a.stateUsed != actionUsing {
+	if app == nil || a == nil || a.stateUsed != actionUsing || !app.inited {
 		return nil
 	}
 	if !a.checkComponent() {
@@ -188,7 +188,7 @@ func getRedisInstanceName(host, key string) string {
 
 // CreateRedisComponent : 创建一个Redis数据库访问组件
 func (a *Action) CreateRedisComponent(host, cmd, key, method string) *Component {
-	if app == nil || a == nil || a.stateUsed != actionUsing {
+	if app == nil || a == nil || a.stateUsed != actionUsing || !app.inited {
 		return nil
 	}
 	if !a.checkComponent() {
@@ -222,7 +222,7 @@ func (a *Action) CreateRedisComponent(host, cmd, key, method string) *Component 
 //    op     : 操作类型, 关系型数据库("SELECT", "INSERT", "UPDATE", "DELETE" ...), NOSQL("GET", "SET" ...)
 //    method : 发起这个数据库调用的类名.方法名, 例如 db.query redis.get
 func (a *Action) CreateDBComponent(dbType uint8, host string, dbname string, table string, op string, method string) *Component {
-	if app == nil || a == nil || a.stateUsed != actionUsing {
+	if app == nil || a == nil || a.stateUsed != actionUsing || !app.inited {
 		return nil
 	}
 	if !a.checkComponent() {
@@ -252,7 +252,7 @@ func (a *Action) CreateDBComponent(dbType uint8, host string, dbname string, tab
 
 // CreateMongoComponent 创建 Mongo 组件
 func (a *Action) CreateMongoComponent(host, database, collection, op, method string) *Component {
-	if app == nil || a == nil || a.stateUsed != actionUsing {
+	if app == nil || a == nil || a.stateUsed != actionUsing || !app.inited {
 		return nil
 	}
 	if !a.checkComponent() {
@@ -278,7 +278,7 @@ func (a *Action) CreateMongoComponent(host, database, collection, op, method str
 
 //CreateSQLComponent : 以 SQL语句创建一个数据库组件
 func (a *Action) CreateSQLComponent(dbType uint8, host string, dbname string, sql string, method string) *Component {
-	if app == nil || a == nil || a.stateUsed != actionUsing {
+	if app == nil || a == nil || a.stateUsed != actionUsing || !app.inited {
 		return nil
 	}
 	if !a.checkComponent() {
@@ -309,7 +309,7 @@ func (a *Action) CreateSQLComponent(dbType uint8, host string, dbname string, sq
 //参数
 //    method : 类名.方法名, 例如 main.user.login
 func (a *Action) CreateComponent(method string) *Component {
-	if app == nil || a == nil || a.stateUsed != actionUsing {
+	if app == nil || a == nil || a.stateUsed != actionUsing || !app.inited {
 		return nil
 	}
 	if !a.checkComponent() {
@@ -667,7 +667,7 @@ func Enabled() bool {
 
 //CreateAction : 在方法method中调用并 创建一个名为 name的事务,
 func CreateAction(name string, method string) (*Action, error) {
-	if app == nil {
+	if app == nil || !app.inited {
 		if configDisabled {
 			return nil, errors.New("Agent disabled by local config file")
 		}
@@ -678,7 +678,7 @@ func CreateAction(name string, method string) (*Action, error) {
 	return app.createAction(name, method, false)
 }
 func CreateTask(method string) (*Action, error) {
-	if app == nil {
+	if app == nil || !app.inited {
 		if configDisabled {
 			return nil, errors.New("Agent disabled by local config file")
 		}

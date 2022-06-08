@@ -19,13 +19,13 @@ import (
 //    jsonFile: 听云配置文件路径，文件格式为json格式
 func tingyunAppInit(jsonFile string) error {
 	if app == nil {
-		app = new(application)
+		new_app, err := new(application).init(jsonFile)
+		if new_app == nil {
+			return err
+		}
+		app = new_app
 	}
-	_, err := app.init(jsonFile)
-	if err != nil {
-		app = nil
-	}
-	return err
+	return nil
 }
 
 //Running : 检测探针是否启动(为Frameworks提供接口)

@@ -50,12 +50,12 @@ const (
 	configServerStringAppSessionKey     = 1
 	configServerStringTingyunIDSecret   = 2
 	configServerStringApplicationID     = 3
-	configServerStringMax               = 8
+	configServerStringMax               = 16
 	configServerBoolEnabled             = 1
-	configServerBoolMax                 = 8
+	configServerBoolMax                 = 24
 	configServerIntegerDataSentInterval = 1
 	configServerIntegerApdexT           = 2
-	configServerIntegerMax              = 8
+	configServerIntegerMax              = 16
 
 	configServerConfigStringActionTracerRecordSQL            = 1
 	configServerConfigStringRumScript                        = 2
@@ -99,7 +99,7 @@ const (
 	configServerConfigIntegerResourceSafe                    = 8
 	configServerConfigIntegerApdexThreshold                  = 9
 	configServerConfigIntegerMTime                           = 10
-	configServerConfigIntegerMax                             = 11
+	configServerConfigIntegerMax                             = 16
 
 	configServerConfigIArrayIgnoredStatusCodes = 1
 	configServerConfigIArrayMax                = 8

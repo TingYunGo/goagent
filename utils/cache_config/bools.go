@@ -7,6 +7,7 @@ type Bools struct {
 	item_count int
 	current    int
 	arrays     [4][]byte
+	inited     bool
 }
 
 func (s *Bools) Init(item_count int) *Bools {
@@ -19,13 +20,14 @@ func (s *Bools) Init(item_count int) *Bools {
 		}
 		s.arrays[i] = a
 	}
+	s.inited = true
 	return s
 }
 func (s *Bools) Find(id int) (bool, bool) {
-	if !in_range(id, s.item_count) {
+	if s == nil || !s.inited || !in_range(id, s.item_count) || !in_range(s.current, 4) {
 		return false, false
 	}
-	r := s.arrays[s.current][id]
+	r := s.arrays[s.current%4][id]
 	if (r & 2) == 0 {
 		return false, false
 	}
