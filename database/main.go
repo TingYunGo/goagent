@@ -205,14 +205,14 @@ func coreWrapPrepareContext(ctx context.Context, begin time.Time, db *sql.DB, qu
 	}
 	info, reason := dbs.Get(db)
 	if info == nil {
-		tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapPrepareContext Not found db")
+		tingyun3.Log().Println(tingyun3.LevelVerbos, "coreWrapPrepareContext Not found db")
 		info = &databaseInfo{
 			vender: "UNKNOWN",
 			host:   "UNKNOWN",
 			dbname: "UNKNOWN",
 		}
 	} else if len(reason) > 0 && readConfigBoolean("WARNING_DBINFO", true) {
-		tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapPrepareContext: database info Match:", reason)
+		tingyun3.Log().Println(tingyun3.LevelInfo, "coreWrapPrepareContext: database info Match:", reason)
 	}
 	var dbctx *databaseContext = nil
 	c := tingyun3.LocalGet(StorageIndexContext)
@@ -261,14 +261,14 @@ func coreWrapExecContext(ctx context.Context, begin time.Time, db *sql.DB, query
 	}
 	info, reason := dbs.Get(db)
 	if info == nil {
-		tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapExecContext Not found db.")
+		tingyun3.Log().Println(tingyun3.LevelVerbos, "coreWrapExecContext Not found db.")
 		info = &databaseInfo{
 			vender: "UNKNOWN",
 			host:   "UNKNOWN",
 			dbname: "UNKNOWN",
 		}
 	} else if len(reason) > 0 && readConfigBoolean("WARNING_DBINFO", true) {
-		tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapExecContext: database info Match:", reason)
+		tingyun3.Log().Println(tingyun3.LevelInfo, "coreWrapExecContext: database info Match:", reason)
 	}
 	if callerName == "" {
 		callerName = getCallName(3)
@@ -305,14 +305,14 @@ func coreWrapQueryContext(ctx context.Context, begin time.Time, db *sql.DB, quer
 	}
 	info, reason := dbs.Get(db)
 	if info == nil {
-		tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapQueryContext Not found db.")
+		tingyun3.Log().Println(tingyun3.LevelVerbos, "coreWrapQueryContext Not found db.")
 		info = &databaseInfo{
 			vender: "UNKNOWN",
 			host:   "UNKNOWN",
 			dbname: "UNKNOWN",
 		}
 	} else if len(reason) > 0 && readConfigBoolean("WARNING_DBINFO", true) {
-		tingyun3.Log().Println(tingyun3.LevelWarning, "coreWrapQueryContext: database info Match:", reason)
+		tingyun3.Log().Println(tingyun3.LevelInfo, "coreWrapQueryContext: database info Match:", reason)
 	}
 	var dbctx *databaseContext = nil
 	c := tingyun3.LocalGet(StorageIndexContext)
