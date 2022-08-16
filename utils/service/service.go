@@ -24,10 +24,11 @@ func (s *Service) Stop() {
 func (s *Service) Start(worker func(running func() bool)) {
 	s.used = 0
 	go func() {
-		atomic.AddInt32(&s.used, 1)
-		worker(func() bool {
+		inRunning := func() bool {
 			return s.used == 1
-		})
+		}
+		atomic.AddInt32(&s.used, 1)
+		worker(inRunning)
 		atomic.AddInt32(&s.used, 1)
 	}()
 }

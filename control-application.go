@@ -34,7 +34,7 @@ const (
 //actionPool里的请求归纳处理
 func (a *application) parseActions(parseMax int) int {
 	actionParsed := 0
-	report_max := int(app.configs.local.CIntegers.Read(configLocalIntegerNbsActionReportMax, 5000))
+	report_max := int(a.configs.local.CIntegers.Read(configLocalIntegerNbsActionReportMax, 5000))
 	saveCount := int(a.configs.local.CIntegers.Read(configLocalIntegerNbsSaveCount, 10))
 	if saveCount < 1 {
 		saveCount = 1
@@ -320,7 +320,7 @@ func (a *application) upload() {
 }
 
 func (a *application) loop(running func() bool) {
-	init_delay := app.configs.local.CIntegers.Read(configLocalIntegerAgentInitDelay, 1)
+	init_delay := a.configs.local.CIntegers.Read(configLocalIntegerAgentInitDelay, 1)
 	time.Sleep(time.Second * time.Duration(init_delay))
 	lastParsed := 1
 	sleepDuration := time.Millisecond
