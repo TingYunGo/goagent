@@ -63,7 +63,7 @@
     module http_example
     go 1.12
     require (
-    	github.com/TingYunGo/goagent v0.7.8
+    	github.com/TingYunGo/goagent v1.1.0
         github.com/golang/protobuf v1.5.2 // indirect
     )
     ```
@@ -88,7 +88,7 @@
 
 ###  听云 goagent 是什么?
   - 听云 goagent是一个Go语言第三方模块, 发布根路径是: github.com/TingYunGo/goagent
-  - 听云 goagent 支持 amd64架构处理器 的linux环境， go1.9 到 最新的 go1.17.x Go语言版本。
+  - 听云 goagent 支持 amd64架构处理器 的linux环境， go1.9 到 最新的 go1.19.x Go语言版本。
   - 听云 goagent 提供自动嵌码和自定义嵌码(Go API)两种嵌码机制。
   - 自动嵌码支持列表参考  [框架支持列表](#tingyun_agent_frame)  和  [组件支持列表](#tingyun_agent_component) 
 
@@ -165,8 +165,8 @@
 
 | 框架 | 听云探针嵌码 import 模块路径 | 支持版本 |
 |-----|---------------------------|--------|
-| net/http <br/> 内置http框架 | github.com/TingYunGo/goagent | go1.9 ~ go1.17.x |
-| github.com/gin-gonic/gin <br/>gin框架 | github.com/TingYunGo/goagent/frameworks/gin | gin v1.3.0 ~ gin v1.7.4 |
+| net/http <br/> 内置http框架 | github.com/TingYunGo/goagent | go1.9 ~ go1.19.x |
+| github.com/gin-gonic/gin <br/>gin框架 | github.com/TingYunGo/goagent/frameworks/gin | gin v1.3.0 ~ gin v1.8.2 |
 | github.com/astaxie/beego <br/>beego框架: GOPATH模式  | github.com/TingYunGo/goagent/frameworks/beego/path/astaxie | beego v1.12.0 ~ beego v2.0.0-beta |
 | github.com/beego/beego <br/>beego框架: GOPATH模式  | github.com/TingYunGo/goagent/frameworks/beego/path | beego v1.12.0 ~ beego v2.0.1 |
 | github.com/beego/beego <br/> beego框架v1: GOMOD模式  | github.com/TingYunGo/goagent/frameworks/beego | beego v1.12.0 ~ beego v1.12.3 |
@@ -182,7 +182,7 @@
 
 | 组件 | 听云探针嵌码 import 模块路径 | 支持版本 |
 |-----|---------------------------|---------|
-| database/sql <br/> 数据库 | github.com/TingYunGo/goagent/database | go1.9 ~ go1.17.x<br/>驱动列表:<br/>mssql: github.com/denisenkom/go-mssqldb v0.9.0 ~ v0.11.0 <br/>mysql: github.com/go-sql-driver/mysql v1.0.0 ~ v1.6.0 <br/> postgresql: github.com/lib/pq v1.0.0 ~ v1.10.3 <br> sqlite: github.com/mattn/go-sqlite3 v1.0.0 ~ v1.14.8 |
+| database/sql <br/> 数据库 | github.com/TingYunGo/goagent/database | go1.9 ~ go1.19.x<br/>驱动列表:<br/>mssql: github.com/denisenkom/go-mssqldb v0.9.0 ~ v0.11.0 <br/>mysql: github.com/go-sql-driver/mysql v1.0.0 ~ v1.6.0 <br/> postgresql: github.com/lib/pq v1.0.0 ~ v1.10.3 <br> sqlite: github.com/mattn/go-sqlite3 v1.0.0 ~ v1.14.8 |
 | github.com/gomodule/redigo <br/> redis: redigo | github.com/TingYunGo/goagent/nosql/redigo | v1.7.0 ~ v1.8.5 |
 | github.com/go-redis/redis <br/> redis: go-redis, GOPATH模式 | github.com/TingYunGo/goagent/nosql/go-redis | v6.10.0 ~ v8.11.4 |
 | github.com/go-redis/redis <br/> redis: go-redis default, GOMOD模式 | github.com/TingYunGo/goagent/nosql/go-redis | v6.10.0 ~ v8.11.4 |
@@ -319,6 +319,14 @@ agent_log_file_size = 10
 # 日志文件个数超过此阈值将从最早的文件开始删除
 agent_log_file_count = 3
 
+######## 指标采集配置项 ########
+
+# gorilla/websocket 框架采集启用控制选项: bool 类型, 缺省值 false;
+gorilla.websocket=false
+
+# websocket采集 阈值,单位:毫秒; 缺省值0
+# websocket消息处理耗时低于此阈值时,不采集websocket消息处理事务, 为0时全部采集
+websocket.ignore.duration=0
 
 ######## 内存控制阈值 ########
 
