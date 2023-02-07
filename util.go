@@ -408,24 +408,11 @@ func isSpace(t byte) bool {
 func isHex(ch byte) bool {
 	return ch-'0' < 10 || ch-'a' < 6 || ch-'A' < 6
 }
+func trimString(value string, isSep func(byte) bool) string {
+	return tystring.TrimString(value, isSep)
+}
 func trimSpace(value string) string {
-	begin := 0
-	for ; begin < len(value); begin++ {
-		if !isSpace(value[begin]) {
-			break
-		}
-	}
-	value = value[begin:]
-	end := len(value)
-	if end == 0 {
-		return value
-	}
-	for ; end > 0; end-- {
-		if !isSpace(value[end-1]) {
-			break
-		}
-	}
-	return value[:end]
+	return trimString(value, isSpace)
 }
 func fileCat(filename string) string {
 	bytes, err := ioutil.ReadFile(filename)
@@ -503,6 +490,9 @@ func parsePort(addr string) (uint16, error) {
 func caseCMP(a, b string) int {
 	return tystring.CaseCMP(a, b)
 }
+func subString(str string, begin, size int) string {
+	return tystring.SubString(str, begin, size)
+}
 func parseHost(url string) string {
 	for id := 0; id < len(url); id++ {
 		if !tystring.IsAlpha(url[id]) {
@@ -551,6 +541,10 @@ func parseQueryString(uri string) string {
 	}
 	return ""
 }
+func splitMapString(source string, isSep func(byte) bool, handler func(string, string)) {
+	tystring.SplitMapString(source, isSep, handler)
+}
+
 func splitStrings(source string, handler func(string) bool, isSep func(byte) bool) {
 	if handler == nil || isSep == nil {
 		return
@@ -574,4 +568,24 @@ func splitStrings(source string, handler func(string) bool, isSep func(byte) boo
 		handler(source[begin:len(source)])
 	}
 	return
+}
+func limitAppend(a, b []byte, size int) []byte {
+	if a == nil {
+		if b == nil {
+			return nil
+		}
+		if len(b) <= size {
+			return b
+		}
+		return b[0:size]
+	}
+	leftSize := len(a)
+	if leftSize >= size {
+		return a[0:size]
+	}
+	if b == nil {
+		return a
+	}
+	size = size - leftSize
+	return append(a, b[0:size]...)
 }

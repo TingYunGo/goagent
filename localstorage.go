@@ -53,10 +53,22 @@ func init() {
 	}
 }
 
+func executeRoutineLocal(gid int64, update func(value interface{}) interface{}) {
+	storages[gid%localStorageNodes].Exec(gid, update)
+}
+
 // Get is Return the goroutine local storage value
 func routineLocalExec(update func(value interface{}) interface{}) {
-	gid := GetGID()
-	storages[gid%localStorageNodes].Exec(gid, update)
+	executeRoutineLocal(GetGID(), update)
+}
+
+func removeRoutineLocal(gid int64) interface{} {
+	var r interface{} = nil
+	executeRoutineLocal(gid, func(local interface{}) interface{} {
+		r = local
+		return nil
+	})
+	return r
 }
 
 // Remove is clean the goroutine local storage

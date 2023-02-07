@@ -74,3 +74,47 @@ func FindString(array []string, target string) int {
 	}
 	return -1
 }
+func TrimString(value string, isSep func(byte) bool) string {
+	begin := 0
+	for ; begin < len(value); begin++ {
+		if !isSep(value[begin]) {
+			break
+		}
+	}
+	value = value[begin:]
+	end := len(value)
+	if end == 0 {
+		return value
+	}
+	for ; end > 0; end-- {
+		if !isSep(value[end-1]) {
+			break
+		}
+	}
+	return value[:end]
+}
+
+func SplitMapString(source string, isSep func(byte) bool, handler func(string, string)) {
+	if handler == nil || isSep == nil {
+		return
+	}
+	source = TrimString(source, isSep)
+	keyLen := len(source)
+	for i := 0; i < keyLen; i++ {
+		if isSep(source[i]) {
+			keyLen = i
+			break
+		}
+	}
+	value := ""
+	for i := keyLen; i < len(source); i++ {
+		if !isSep(source[i]) {
+			value = source[i:]
+			break
+		}
+	}
+	if keyLen > 0 {
+		handler(source[:keyLen], value)
+	}
+	return
+}

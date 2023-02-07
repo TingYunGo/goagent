@@ -33,7 +33,8 @@ const (
 	configLocalBoolTransactionEnabled     = 5
 	configLocalBoolGormEnabled            = 6
 	configLocalBoolWarningDBInfo          = 7
-	configLocalBoolMax                    = 8
+	configLocalBoolGorillaWebsocket       = 8
+	configLocalBoolMax                    = 16
 	configLocalIntegerNbsPort             = 1
 	configLocalIntegerNbsSaveCount        = 2
 	configLocalIntegerNbsMaxLogSize       = log.ConfigIntegerNBSMaxLogSize
@@ -45,6 +46,7 @@ const (
 	configLocalIntegerMaxSQLSize          = 9
 	configLocalIntegerGoRedisFLAG         = 10
 	configLocalIntegerRedisInstanceUseKey = 11
+	ConfigLocalIntegerWebsocketIgnore     = 12
 	configLocalIntegerMax                 = 16
 
 	configServerStringAppSessionKey     = 1
@@ -131,26 +133,28 @@ var localBoolKeyMap = map[string]int{
 	"transaction_enabled": configLocalBoolTransactionEnabled,
 	"GORM_ENABLED":        configLocalBoolGormEnabled,
 	"WARNING_DBINFO":      configLocalBoolWarningDBInfo,
+	"gorilla.websocket":   configLocalBoolGorillaWebsocket,
 }
 
 var localIntegerKeyMap = map[string]int{
-	"nbs.port":              configLocalIntegerNbsPort,
-	"nbs.savecount":         configLocalIntegerNbsSaveCount,
-	"nbs.max_log_size":      configLocalIntegerNbsMaxLogSize,
-	"nbs.max_log_count":     configLocalIntegerNbsMaxLogCount,
-	"nbs.action_cache_max":  configLocalIntegerNbsActionCacheMax,
-	"nbs.action_report_max": configLocalIntegerNbsActionReportMax,
-	"collector.port":        configLocalIntegerNbsPort,
-	"action_cache_max":      configLocalIntegerNbsActionCacheMax,
-	"action_report_max":     configLocalIntegerNbsActionReportMax,
-	"report_queue_count":    configLocalIntegerNbsSaveCount,
-	"agent_log_file_count":  configLocalIntegerNbsMaxLogCount,
-	"agent_log_file_size":   configLocalIntegerNbsMaxLogSize,
-	"agent_init_delay":      configLocalIntegerAgentInitDelay,
-	"agent_component_max":   configLocalIntegerComponentMax,
-	"go-redis.flag":         configLocalIntegerGoRedisFLAG,
-	"agent_sql_size_max":    configLocalIntegerMaxSQLSize,
-	"REDIS_INST_USE_KEY":    configLocalIntegerRedisInstanceUseKey,
+	"nbs.port":                  configLocalIntegerNbsPort,
+	"nbs.savecount":             configLocalIntegerNbsSaveCount,
+	"nbs.max_log_size":          configLocalIntegerNbsMaxLogSize,
+	"nbs.max_log_count":         configLocalIntegerNbsMaxLogCount,
+	"nbs.action_cache_max":      configLocalIntegerNbsActionCacheMax,
+	"nbs.action_report_max":     configLocalIntegerNbsActionReportMax,
+	"collector.port":            configLocalIntegerNbsPort,
+	"action_cache_max":          configLocalIntegerNbsActionCacheMax,
+	"action_report_max":         configLocalIntegerNbsActionReportMax,
+	"report_queue_count":        configLocalIntegerNbsSaveCount,
+	"agent_log_file_count":      configLocalIntegerNbsMaxLogCount,
+	"agent_log_file_size":       configLocalIntegerNbsMaxLogSize,
+	"agent_init_delay":          configLocalIntegerAgentInitDelay,
+	"agent_component_max":       configLocalIntegerComponentMax,
+	"go-redis.flag":             configLocalIntegerGoRedisFLAG,
+	"agent_sql_size_max":        configLocalIntegerMaxSQLSize,
+	"REDIS_INST_USE_KEY":        configLocalIntegerRedisInstanceUseKey,
+	"websocket.ignore.duration": ConfigLocalIntegerWebsocketIgnore,
 }
 
 var serverStringKeyMap = map[string]int{

@@ -21,7 +21,9 @@ import (
 	"net/http"
 	"reflect"
 	"runtime"
+	"strconv"
 	"strings"
+	"time"
 	"unsafe"
 
 	"github.com/TingYunGo/goagent/libs/tystring"
@@ -81,26 +83,132 @@ func WrapHttpClientDo(ptr *http.Client, req *http.Request) (*http.Response, erro
 	return res, err
 }
 
+type NetConnWrapper struct {
+	conn net.Conn
+	w    *writeWrapper
+	url  string
+}
+
+func (c *NetConnWrapper) Url() string {
+	if c == nil {
+		return ""
+	}
+	return c.url
+}
+
+func (c *NetConnWrapper) Read(b []byte) (n int, err error) {
+	return c.conn.Read(b)
+}
+func (c *NetConnWrapper) Write(b []byte) (n int, err error) {
+	if c.w != nil {
+		if c.w.handleBinaryWrite(b) {
+			c.w = nil
+		}
+	}
+	return c.conn.Write(b)
+}
+func (c *NetConnWrapper) Close() error {
+	return c.conn.Close()
+}
+func (c *NetConnWrapper) LocalAddr() net.Addr {
+	return c.conn.LocalAddr()
+}
+func (c *NetConnWrapper) RemoteAddr() net.Addr {
+	return c.conn.RemoteAddr()
+}
+func (c *NetConnWrapper) SetDeadline(t time.Time) error {
+	return c.conn.SetDeadline(t)
+}
+func (c *NetConnWrapper) SetReadDeadline(t time.Time) error {
+	return c.conn.SetReadDeadline(t)
+}
+func (c *NetConnWrapper) SetWriteDeadline(t time.Time) error {
+	return c.conn.SetWriteDeadline(t)
+}
+
 type writeWrapper struct {
 	http.ResponseWriter
 	w       http.ResponseWriter
 	action  *Action
 	rules   *dataItemRules
+	gid     int64
+	wCache  []byte
+	url     string
 	answerd bool
+}
+
+func (w *writeWrapper) parseSwitchProtocol() bool {
+	if w.wCache == nil {
+		return false
+	}
+	if strings.LastIndex(string(w.wCache), "\r\n\r\n") == -1 {
+		if len(w.wCache) == 4000 {
+			w.wCache = nil
+			return true
+		}
+		return false
+	}
+	//解析http应答头
+	index := strings.Index(string(w.wCache), "\r\n\r\n")
+	header := w.wCache[0:index]
+	parts := strings.Split(string(header), "\r\n")
+	w.wCache = nil
+	answer_code := 0
+	if len(parts) > 0 {
+		splitMapString(parts[0], isSpace, func(_, value string) {
+			splitMapString(value, isSpace, func(answerCode, _ string) {
+				if code, err := strconv.Atoi(answerCode); err == nil {
+					answer_code = code
+				}
+			})
+		})
+		for _, line := range parts {
+			fmt.Println("SWITCH:", line)
+		}
+		if answer_code > 0 {
+			w.action.SetHTTPStatus(uint16(answer_code), 3)
+			w.answerd = true
+			w.action.Finish()
+			if w.gid != 0 {
+				removeRoutineLocal(w.gid)
+			}
+			w.reset()
+		}
+	}
+	return true
+}
+func (w *writeWrapper) handleBinaryWrite(b []byte) bool {
+	if w == nil {
+		return true
+	}
+	w.wCache = limitAppend(w.wCache, b, 4000)
+	//协议切换头处理
+	return w.parseSwitchProtocol()
 }
 
 func (w *writeWrapper) reset() {
 	w.w = nil
 	w.action = nil
 	w.rules = nil
+	w.gid = 0
+	w.wCache = nil
+	w.url = ""
 }
 
-func createWriteWraper(w http.ResponseWriter, action *Action, rule *dataItemRules) http.ResponseWriter {
+func createWriteWraper(w http.ResponseWriter, req *http.Request, action *Action, rule *dataItemRules) http.ResponseWriter {
 	r := &writeWrapper{}
 	r.w = w
 	r.action = action
 	r.rules = rule
 	r.answerd = false
+	r.gid = GetGID()
+
+	proto := "://"
+	if req.TLS != nil {
+		proto = "s://"
+	}
+	r.url = proto + req.Host + req.RequestURI
+
 	return r
 }
 
@@ -159,7 +267,12 @@ func (w *writeWrapper) CloseNotify() <-chan bool {
 	return w.w.(http.CloseNotifier).CloseNotify()
 }
 func (w *writeWrapper) Hijack() (net.Conn, *bufio.ReadWriter, error) {
-	return w.w.(http.Hijacker).Hijack()
+	c, rw, e := w.w.(http.Hijacker).Hijack()
+	if c != nil && e == nil && readLocalConfigBool(configLocalBoolGorillaWebsocket, false) {
+		conn := &NetConnWrapper{c, w, w.url}
+		c = conn
+	}
+	return c, rw, e
 }
 func wrapHandler(pattern string, handler http.Handler) http.Handler {
 	h := handler
@@ -219,10 +332,14 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 				}
 				action.SetURL(protocol + "://" + r.Host + r.RequestURI)
 			}
-			resWriter = createWriteWraper(w, action, rule)
+			resWriter = createWriteWraper(w, r, action, rule)
 			setAction(action)
 		}
 		defer func() {
+			a := getAction()
+			if a != nil && a != action {
+				a.Finish()
+			}
 			routineLocalRemove()
 			exception := recover()
 			if exception != nil && !preAction {
@@ -333,7 +450,7 @@ func WraphttpNotFound(w http.ResponseWriter, r *http.Request) {
 				action.SetName("CLIENTIP", parseIP(r.RemoteAddr))
 				action.SetURL(protocol + "://" + r.Host + r.RequestURI)
 			}
-			resWriter = createWriteWraper(w, action, rule)
+			resWriter = createWriteWraper(w, r, action, rule)
 		}
 	}
 	httpNotFound(resWriter, r)

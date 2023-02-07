@@ -24,6 +24,8 @@ extern const ReplaceItem* TingyunReplaceItems() {
 
         {"github.com/gin-gonic/gin.(*RouterGroup).handle", "/frameworks/gin.WrapRouterGrouphandle", "", "/frameworks/gin.RouterGrouphandle"},
 
+        {"github.com/gorilla/websocket.(*Conn).NextReader", "/frameworks/websocket/gorilla.WrapConnNextReader", "", "/frameworks/websocket/gorilla.ConnNextReader"},
+
         {"github.com/labstack/echo.(*Echo).add", "/frameworks/echo.WrapechoEchoadd", "", "/frameworks/echo.echoEchoadd"},
         {"github.com/labstack/echo.(*Echo).Add", "/frameworks/echo.WrapechoEchoAdd", "","/frameworks/echo.echoEchoAdd"},
         {"github.com/labstack/echo.(*Router).Add", "/frameworks/echo.WrapechoRouterAdd", "","/frameworks/echo.echoRouterAdd"},

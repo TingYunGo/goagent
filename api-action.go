@@ -521,6 +521,22 @@ func (a *Action) Slow() bool {
 	return false
 }
 
+func (a *Action) Duration() time.Duration {
+	if a == nil {
+		return 0
+	}
+	if a.stateUsed == actionUnused {
+		return 0
+	}
+	if a.stateUsed == actionFinished {
+		return a.time.duration
+	}
+	if a.stateUsed == actionUsing {
+		return time.Now().Sub(a.time.begin)
+	}
+	return 0
+}
+
 //Ignore : 忽略本次事务的性能数据
 func (a *Action) Ignore() {
 	if a == nil || a.stateUsed != actionUsing {
@@ -682,7 +698,7 @@ func CreateTask(method string) (*Action, error) {
 		if configDisabled {
 			return nil, errors.New("Agent disabled by local config file")
 		}
-		return nil, errors.New("Agent not Inited, please call AppInit() first")
+		return nil, errors.New("Agent not Inited")
 	} else if app.actionPool.Size() > int32(app.configs.local.CIntegers.Read(configLocalIntegerNbsActionCacheMax, 10000)) {
 		return nil, errors.New("Server busy, Skip one action")
 	}

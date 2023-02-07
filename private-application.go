@@ -56,6 +56,9 @@ func readLocalConfigInteger(id int, defaultValue int64) int64 {
 	}
 	return app.configs.local.CIntegers.Read(id, defaultValue)
 }
+func ReadLocalConfigInteger(id int, defaultValue int64) int64 {
+	return readLocalConfigInteger(id, defaultValue)
+}
 func readLocalConfigBool(id int, defaultValue bool) bool {
 	if app == nil {
 		return defaultValue

@@ -124,7 +124,7 @@ func (c *Component) End(skip int) {
 		return
 	}
 	c.FixStackEnd(skip+1, func(a string) bool {
-		return false
+		return subString(a, 0, 21) == "github.com/TingYunGo/"
 	})
 }
 
