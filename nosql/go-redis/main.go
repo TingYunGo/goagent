@@ -5,7 +5,6 @@
 package redis
 
 import (
-	"context"
 	"reflect"
 	"strings"
 	"sync"
@@ -64,85 +63,6 @@ func getCallName(skip int) (callerName string) {
 	return
 }
 
-type Hooks struct {
-	host string
-}
-
-func (h Hooks) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
-	if ctx == nil {
-		return ctx, nil
-	}
-	if pctx := ctx.Value("TingYunGoRedisCtx"); pctx != nil {
-		if info, ok := pctx.(*processContext); ok {
-			if info.cmd == cmdProcessHook {
-				info.layer++
-			}
-		}
-		return ctx, nil
-	}
-	return context.WithValue(ctx, "TingYunGoRedisCtx", &processContext{time.Now(), cmdProcessHook, 0}), nil
-}
-
-func (h Hooks) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
-	if ctx == nil {
-		return nil
-	}
-	if pctx := ctx.Value("TingYunGoRedisCtx"); pctx != nil {
-		if info, ok := pctx.(*processContext); ok {
-			if info.cmd != cmdProcessHook {
-				return nil
-			}
-			if info.layer != 0 {
-				info.layer--
-				return nil
-			}
-			c, object := parseCmder(cmd)
-			handleGoRedis(ctx, h.host, c, object, info.begin, cmd.Err(), 2)
-		}
-	}
-	return nil
-}
-
-func (h Hooks) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
-	if ctx == nil {
-		return ctx, nil
-	}
-	if pctx := ctx.Value("TingYunGoRedisCtx"); pctx != nil {
-		if info, ok := pctx.(*processContext); ok {
-			if info.cmd == cmdProcessPipeHook {
-				info.layer++
-			}
-		}
-		return ctx, nil
-	}
-	configFlag := readConfigInt("go-redis.flag", 0)
-
-	if (configFlag&1) == 0 && tingyun3.MatchCallerName(3, "github.com/go-redis/redis/v8.(*clusterStateHolder).LazyReload.func1") {
-		return ctx, nil
-	}
-	return context.WithValue(ctx, "TingYunGoRedisCtx", &processContext{time.Now(), cmdProcessPipeHook, 0}), nil
-}
-
-func (h Hooks) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
-	if ctx == nil {
-		return nil
-	}
-	if pctx := ctx.Value("TingYunGoRedisCtx"); pctx != nil {
-		if info, ok := pctx.(*processContext); ok {
-			if info.cmd != cmdProcessPipeHook {
-				return nil
-			}
-			if info.layer != 0 {
-				info.layer--
-				return nil
-			}
-			cmd, object := parseCmders(cmds)
-			handleGoRedis(ctx, h.host, cmd, object, info.begin, nil, 2)
-		}
-	}
-	return nil
-}
-
 type processContext struct {
 	begin time.Time
 	cmd   int
@@ -157,8 +77,8 @@ var objectSkipList = []string{
 	"SELECT",
 }
 
-func handleGoRedis(ctx context.Context, host, cmd, object string, begin time.Time, err error, skip int) {
-	action, _ := tingyun3.FindAction(ctx)
+func handleGoRedis(host, cmd, object string, begin time.Time, err error, skip int) {
+	action := tingyun3.GetAction()
 	callerName := ""
 	if action == nil {
 		callerName = getCallName(3)
@@ -191,13 +111,6 @@ func handleGoRedis(ctx context.Context, host, cmd, object string, begin time.Tim
 	})
 }
 
-//go:noinline
-func baseClientprocess(c *baseClient, ctx context.Context, cmd redis.Cmder) error {
-	trampoline.arg1 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
-		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
-		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
-	return nil
-}
 func getArgs(args []interface{}) (cmd, object string) {
 	argc := len(args)
 	cmd, object = "", ""
@@ -254,111 +167,7 @@ type baseClient struct {
 	pool interface{}
 }
 
-//go:noinline
-func WrapbaseClientprocess(c *baseClient, ctx context.Context, cmd redis.Cmder) error {
-	if ctx != nil {
-		if pctx := ctx.Value("TingYunGoRedisCtx"); pctx != nil {
-			if _, ok := pctx.(*processContext); ok {
-				return baseClientprocess(c, ctx, cmd)
-			}
-		}
-	}
-	begin := time.Now()
-	req := tingyun3.LocalGet(StorageIndexRedis)
-	var err error = nil
-	if req == nil {
-		tingyun3.LocalSet(StorageIndexRedis, 1)
-		defer func() {
-			command, object := parseCmder(cmd)
-			handleGoRedis(ctx, c.opt.Addr, command, object, begin, err, 2)
-			tingyun3.LocalDelete(StorageIndexRedis)
-			if tingyun3.GetAction() == nil {
-				tingyun3.LocalClear()
-			}
-		}()
-	}
-	ctx = context.WithValue(ctx, "TingYunGoRedisCtx", &processContext{time.Now(), cmdbaseClientprocess, 0})
-
-	err = baseClientprocess(c, ctx, cmd)
-	return err
-}
-
-//go:noinline
-func baseClientprocessPipeline(c *baseClient, ctx context.Context, cmds []redis.Cmder) error {
-	trampoline.arg2 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
-		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
-		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
-	return nil
-}
-
-//go:noinline
-func WrapbaseClientprocessPipeline(c *baseClient, ctx context.Context, cmds []redis.Cmder) error {
-	if ctx != nil {
-		if pctx := ctx.Value("TingYunGoRedisCtx"); pctx != nil {
-			if _, ok := pctx.(*processContext); ok {
-				return baseClientprocessPipeline(c, ctx, cmds)
-			}
-		}
-	}
-	begin := time.Now()
-	req := tingyun3.LocalGet(StorageIndexRedis)
-	var e error = nil
-	if req == nil {
-		tingyun3.LocalSet(StorageIndexRedis, 1)
-		defer func() {
-			tingyun3.LocalDelete(StorageIndexRedis)
-			cmd, object := parseCmders(cmds)
-			handleGoRedis(ctx, c.opt.Addr, cmd, object, begin, e, 2)
-			if tingyun3.GetAction() == nil {
-				tingyun3.LocalClear()
-			}
-		}()
-	}
-	ctx = context.WithValue(ctx, "TingYunGoRedisCtx", &processContext{time.Now(), cmdbaseClientprocessPipeline, 0})
-
-	e = baseClientprocessPipeline(c, ctx, cmds)
-	return e
-}
-
-type pipelineProcessor func(context.Context, uintptr, []redis.Cmder) (bool, error)
-
-//go:noinline
-func baseClientgeneralProcessPipeline(c *baseClient, ctx context.Context, cmds []redis.Cmder, p pipelineProcessor) error {
-	trampoline.arg3 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
-		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
-		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
-	return nil
-}
-
-//go:noinline
-func WrapbaseClientgeneralProcessPipeline(c *baseClient, ctx context.Context, cmds []redis.Cmder, p pipelineProcessor) error {
-	if ctx != nil {
-		if pctx := ctx.Value("TingYunGoRedisCtx"); pctx != nil {
-			if _, ok := pctx.(*processContext); ok {
-				return baseClientgeneralProcessPipeline(c, ctx, cmds, p)
-			}
-		}
-	}
-
-	begin := time.Now()
-	req := tingyun3.LocalGet(StorageIndexRedis)
-	var e error = nil
-	if req == nil {
-		tingyun3.LocalSet(StorageIndexRedis, 1)
-		defer func() {
-			tingyun3.LocalDelete(StorageIndexRedis)
-			cmd, object := parseCmders(cmds)
-			handleGoRedis(ctx, c.opt.Addr, cmd, object, begin, e, 2)
-			if tingyun3.GetAction() == nil {
-				tingyun3.LocalClear()
-			}
-		}()
-	}
-	ctx = context.WithValue(ctx, "TingYunGoRedisCtx", &processContext{time.Now(), cmdbaseClientgeneralProcessPipeline, 0})
-
-	e = baseClientgeneralProcessPipeline(c, ctx, cmds, p)
-	return e
-}
+type pipelineProcessor func(uintptr, []redis.Cmder) (bool, error)
 
 //go:noinline
 func baseClientProcess(c *baseClient, cmd redis.Cmder) error {
@@ -380,7 +189,7 @@ func WrapbaseClientProcess(c *baseClient, cmd redis.Cmder) error {
 	if req == nil {
 		tingyun3.LocalDelete(StorageIndexRedis)
 		command, object := parseCmder(cmd)
-		handleGoRedis(nil, c.opt.Addr, command, object, begin, err, 2)
+		handleGoRedis(c.opt.Addr, command, object, begin, err, 2)
 		if tingyun3.GetAction() == nil {
 			tingyun3.LocalClear()
 		}
@@ -471,7 +280,7 @@ func getProcessWrapper(entry, addr string, raw func(redis.Cmder) error) func(red
 		if req == nil {
 			tingyun3.LocalDelete(StorageIndexRedis)
 			command, object := parseCmder(cmd)
-			handleGoRedis(nil, addr, command, object, begin, err, 2)
+			handleGoRedis(addr, command, object, begin, err, 2)
 			if tingyun3.GetAction() == nil {
 				tingyun3.LocalClear()
 			}
@@ -490,7 +299,7 @@ func getProcessPipelineWrapper(entry string, addr string, raw func([]redis.Cmder
 		if req == nil && len(cmds) > 0 {
 			tingyun3.LocalDelete(StorageIndexRedis)
 			cmd, object := parseCmders(cmds)
-			handleGoRedis(nil, addr, cmd, object, begin, err, 2)
+			handleGoRedis(addr, cmd, object, begin, err, 2)
 			if tingyun3.GetAction() == nil {
 				tingyun3.LocalClear()
 			}
@@ -521,109 +330,6 @@ func WrapredisNewClusterClient(opt *redis.ClusterOptions) *redis.ClusterClient {
 		return getProcessPipelineWrapper("redisClusterClient.Pipline", addr, raw)
 	})
 	return r
-}
-
-type clusterClient struct {
-	opt           *redis.ClusterOptions
-	nodes         *uint64
-	state         *uint64
-	cmdsInfoCache *uint64
-}
-type ClusterClient struct {
-	*clusterClient
-	p   func()
-	ctx context.Context
-}
-
-//go:noinline
-func ClusterClient_processPipeline(c *ClusterClient, ctx context.Context, cmds []redis.Cmder) error {
-	trampoline.arg2 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
-		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
-		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
-
-	return nil
-}
-
-//go:noinline
-func WrapClusterClient_processPipeline(c *ClusterClient, ctx context.Context, cmds []redis.Cmder) error {
-	if ctx != nil {
-		if pctx := ctx.Value("TingYunGoRedisCtx"); pctx != nil {
-			if _, ok := pctx.(*processContext); ok {
-				return ClusterClient_processPipeline(c, ctx, cmds)
-			}
-		}
-	}
-
-	begin := time.Now()
-	req := tingyun3.LocalGet(StorageIndexRedis)
-	var e error = nil
-	if req == nil {
-		tingyun3.LocalSet(StorageIndexRedis, 1)
-		defer func() {
-			addr := ""
-			if len(c.opt.Addrs) == 0 {
-				addr = "[]"
-			} else if len(c.opt.Addrs) == 1 {
-				addr = "[" + c.opt.Addrs[0] + "]"
-			} else {
-				addr = "[" + c.opt.Addrs[0] + ",...]"
-			}
-			tingyun3.LocalDelete(StorageIndexRedis)
-			cmd, object := parseCmders(cmds)
-			handleGoRedis(ctx, addr, cmd, object, begin, e, 2)
-			if tingyun3.GetAction() == nil {
-				tingyun3.LocalClear()
-			}
-		}()
-	}
-	ctx = context.WithValue(ctx, "TingYunGoRedisCtx", &processContext{time.Now(), cmdClusterClient_processPipeline, 0})
-	e = ClusterClient_processPipeline(c, ctx, cmds)
-	return e
-}
-
-//go:noinline
-func ClusterClient_processTxPipeline(c *ClusterClient, ctx context.Context, cmds []redis.Cmder) error {
-	trampoline.arg2 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
-		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
-		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
-
-	return nil
-}
-
-//go:noinline
-func WrapClusterClient_processTxPipeline(c *ClusterClient, ctx context.Context, cmds []redis.Cmder) error {
-	if ctx != nil {
-		if pctx := ctx.Value("TingYunGoRedisCtx"); pctx != nil {
-			if _, ok := pctx.(*processContext); ok {
-				return ClusterClient_processTxPipeline(c, ctx, cmds)
-			}
-		}
-	}
-	begin := time.Now()
-	req := tingyun3.LocalGet(StorageIndexRedis)
-	var e error = nil
-	if req == nil {
-		tingyun3.LocalSet(StorageIndexRedis, 1)
-		defer func() {
-			addr := ""
-			if len(c.opt.Addrs) == 0 {
-				addr = "[]"
-			} else if len(c.opt.Addrs) == 1 {
-				addr = "[" + c.opt.Addrs[0] + "]"
-			} else {
-				addr = "[" + c.opt.Addrs[0] + ",...]"
-			}
-			tingyun3.LocalDelete(StorageIndexRedis)
-			cmd, object := parseCmders(cmds)
-			handleGoRedis(ctx, addr, cmd, object, begin, e, 2)
-			if tingyun3.GetAction() == nil {
-				tingyun3.LocalClear()
-			}
-		}()
-	}
-	ctx = context.WithValue(ctx, "TingYunGoRedisCtx", &processContext{time.Now(), cmdClusterClient_processTxPipeline, 0})
-	e = ClusterClient_processTxPipeline(c, ctx, cmds)
-	return e
 }
 
 type instanceSet struct {
@@ -657,10 +363,6 @@ var dbs instanceSet
 
 func init() {
 	dbs.init()
-	tingyun3.Register(reflect.ValueOf(WrapbaseClientprocess).Pointer())
-	tingyun3.Register(reflect.ValueOf(WrapbaseClientProcess).Pointer())
-	tingyun3.Register(reflect.ValueOf(WrapbaseClientprocessPipeline).Pointer())
-	tingyun3.Register(reflect.ValueOf(WrapbaseClientgeneralProcessPipeline).Pointer())
 
 	tingyun3.Register(reflect.ValueOf(WrapredisNewClient).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapredisNewClusterClient).Pointer())
@@ -669,7 +371,6 @@ func init() {
 	tingyun3.Register(reflect.ValueOf(WrapredisClientWrapProcessPipeline).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapredisClusterClientWrapProcess).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapredisClusterClientWrapProcessPipeline).Pointer())
-	tingyun3.Register(reflect.ValueOf(WrapClusterClient_processPipeline).Pointer())
-	tingyun3.Register(reflect.ValueOf(WrapClusterClient_processTxPipeline).Pointer())
+
 	tingyun3.Register(reflect.ValueOf(initTrampoline).Pointer())
 }

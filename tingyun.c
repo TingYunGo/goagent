@@ -70,11 +70,6 @@ extern const ReplaceItem* TingyunReplaceItems() {
         {"github.com/gomodule/redigo/redis.(*conn).Close", "/nosql/redigo.WrapRedigoConnClose", "","/nosql/redigo.RedigoConnClose"},
         {"github.com/gomodule/redigo/redis.(*conn).DoWithTimeout", "/nosql/redigo.WrapRedigoDoWithTimeout", "","/nosql/redigo.RedigoDoWithTimeout"},
 
-        {"github.com/go-redis/redis.(*baseClient).process", "/nosql/go-redis.WrapbaseClientprocess", "","/nosql/go-redis.baseClientprocess"},
-        {"github.com/go-redis/redis.(*baseClient).Process", "/nosql/go-redis.WrapbaseClientProcess", "","/nosql/go-redis.baseClientProcess"},
-        {"github.com/go-redis/redis.(*baseClient).processPipeline", "/nosql/go-redis.WrapbaseClientprocessPipeline", "","/nosql/go-redis.baseClientprocessPipeline"},
-        {"github.com/go-redis/redis.(*baseClient).generalProcessPipeline", "/nosql/go-redis.WrapbaseClientgeneralProcessPipeline", "","/nosql/go-redis.baseClientgeneralProcessPipeline"},
-
         {"github.com/go-redis/redis.NewClient", "/nosql/go-redis.WrapredisNewClient", "","/nosql/go-redis.redisNewClient"},
         {"github.com/go-redis/redis.NewClusterClient", "/nosql/go-redis.WrapredisNewClusterClient", "","/nosql/go-redis.redisNewClusterClient"},
 
