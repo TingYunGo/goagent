@@ -70,13 +70,20 @@ extern const ReplaceItem* TingyunReplaceItems() {
         {"github.com/gomodule/redigo/redis.(*conn).Close", "/nosql/redigo.WrapRedigoConnClose", "","/nosql/redigo.RedigoConnClose"},
         {"github.com/gomodule/redigo/redis.(*conn).DoWithTimeout", "/nosql/redigo.WrapRedigoDoWithTimeout", "","/nosql/redigo.RedigoDoWithTimeout"},
 
+
         {"github.com/go-redis/redis.NewClient", "/nosql/go-redis.WrapredisNewClient", "","/nosql/go-redis.redisNewClient"},
         {"github.com/go-redis/redis.NewClusterClient", "/nosql/go-redis.WrapredisNewClusterClient", "","/nosql/go-redis.redisNewClusterClient"},
+        {"github.com/go-redis/redis.NewSentinelClient", "/nosql/go-redis.WrapredisNewSentinelClient", "","/nosql/go-redis.redisNewSentinelClient"},
+        {"github.com/go-redis/redis.NewFailoverClient", "/nosql/go-redis.WrapredisNewFailoverClient", "","/nosql/go-redis.redisNewFailoverClient"},
+
+        {"github.com/go-redis/redis.(*baseClient).Process", "/nosql/go-redis.WrapbaseClientProcess", "","/nosql/go-redis.baseClientProcess"},
 
         {"github.com/go-redis/redis.(*Client).WrapProcess", "/nosql/go-redis.WrapredisClientWrapProcess", "","/nosql/go-redis.redisClientWrapProcess"},
         {"github.com/go-redis/redis.(*Client).WrapProcessPipeline", "/nosql/go-redis.WrapredisClientWrapProcessPipeline", "","/nosql/go-redis.redisClientWrapProcessPipeline"},
         {"github.com/go-redis/redis.(*ClusterClient).WrapProcess", "/nosql/go-redis.WrapredisClusterClientWrapProcess", "","/nosql/go-redis.redisClusterClientWrapProcess"},
         {"github.com/go-redis/redis.(*ClusterClient).WrapProcessPipeline", "/nosql/go-redis.WrapredisClusterClientWrapProcessPipeline", "","/nosql/go-redis.redisClusterClientWrapProcessPipeline"},
+        {"github.com/go-redis/redis.(*SentinelClient).WrapProcess", "/nosql/go-redis.WrapredisSentinelClientWrapProcess", "","/nosql/go-redis.redisSentinelClientWrapProcess"},
+        {"github.com/go-redis/redis.(*SentinelClient).WrapProcessPipeline", "/nosql/go-redis.WrapredisSentinelClientWrapProcessPipeline", "","/nosql/go-redis.redisSentinelClientWrapProcessPipeline"},
 
         {"github.com/go-redis/redis/v7.(*baseClient).process", "/nosql/go-redis/v7.WrapbaseClientprocess", "","/nosql/go-redis/v7.baseClientprocess"},
         {"github.com/go-redis/redis/v7.(*baseClient).processPipeline", "/nosql/go-redis/v7.WrapbaseClientprocessPipeline", "","/nosql/go-redis/v7.baseClientprocessPipeline"},
@@ -107,6 +114,51 @@ extern const ReplaceItem* TingyunReplaceItems() {
         {"go.mongodb.org/mongo-driver/mongo.NewClient", "/nosql/mongodb.WrapmongodbNewClient", "","/nosql/mongodb.mongodbNewClient"},
         {"go.mongodb.org/mongo-driver/mongo.(*Client).Disconnect", "/nosql/mongodb.WrapmongodbDisconnect", "","/nosql/mongodb.mongodbDisconnect"},
 
+        {"gopkg.in/mgo%2ev2.DialWithInfo", "/nosql/mgo.WrapmgoDialWithInfo", "","/nosql/mgo.mgoDialWithInfo"},
+        {"gopkg.in/mgo%2ev2.copySession", "/nosql/mgo.WrapmgocopySession", "","/nosql/mgo.mgocopySession"},
+        
+        {"gopkg.in/mgo%2ev2.(*Session).Close", "/nosql/mgo.WrapmgoSessionClose", "","/nosql/mgo.mgoSessionClose"},
+        {"gopkg.in/mgo%2ev2.(*Session).FindRef", "/nosql/mgo.WrapmgoSessionFindRef", "","/nosql/mgo.mgoSessionFindRef"},
+        {"gopkg.in/mgo%2ev2.(*Database).FindRef", "/nosql/mgo.WrapmgoDatabaseFindRef", "","/nosql/mgo.mgoDatabaseFindRef"},
+        
+        {"gopkg.in/mgo%2ev2.(*Collection).Count", "/nosql/mgo.WrapmgoCollectionCount", "","/nosql/mgo.mgoCollectionCount"},
+        {"gopkg.in/mgo%2ev2.(*Collection).Create", "/nosql/mgo.WrapmgoCollectionCreate", "","/nosql/mgo.mgoCollectionCreate"},
+        {"gopkg.in/mgo%2ev2.(*Collection).DropCollection", "/nosql/mgo.WrapmgoCollectionDropCollection", "","/nosql/mgo.mgoCollectionDropCollection"},
+        {"gopkg.in/mgo%2ev2.(*Collection).DropIndex", "/nosql/mgo.WrapmgoCollectionDropIndex", "","/nosql/mgo.mgoCollectionDropIndex"},
+        {"gopkg.in/mgo%2ev2.(*Collection).DropIndexName", "/nosql/mgo.WrapmgoCollectionDropIndexName", "","/nosql/mgo.mgoCollectionDropIndexName"},
+        {"gopkg.in/mgo%2ev2.(*Collection).EnsureIndex", "/nosql/mgo.WrapmgoCollectionEnsureIndex", "","/nosql/mgo.mgoCollectionEnsureIndex"},
+        {"gopkg.in/mgo%2ev2.(*Collection).EnsureIndexKey", "/nosql/mgo.WrapmgoCollectionEnsureIndexKey", "","/nosql/mgo.mgoCollectionEnsureIndexKey"},
+        {"gopkg.in/mgo%2ev2.(*Collection).Find", "/nosql/mgo.WrapmgoCollectionFind", "","/nosql/mgo.mgoCollectionFind"},
+        {"gopkg.in/mgo%2ev2.(*Collection).FindId", "/nosql/mgo.WrapmgoCollectionFindId", "","/nosql/mgo.mgoCollectionFindId"},
+        {"gopkg.in/mgo%2ev2.(*Collection).Indexes", "/nosql/mgo.WrapmgoCollectionIndexes", "","/nosql/mgo.mgoCollectionIndexes"},
+        {"gopkg.in/mgo%2ev2.(*Collection).Insert", "/nosql/mgo.WrapmgoCollectionInsert", "","/nosql/mgo.mgoCollectionInsert"},
+        {"gopkg.in/mgo%2ev2.(*Collection).Pipe", "/nosql/mgo.WrapmgoCollectionPipe", "","/nosql/mgo.mgoCollectionPipe"},
+        {"gopkg.in/mgo%2ev2.(*Collection).Remove", "/nosql/mgo.WrapmgoCollectionRemove", "","/nosql/mgo.mgoCollectionRemove"},
+        {"gopkg.in/mgo%2ev2.(*Collection).RemoveAll", "/nosql/mgo.WrapmgoCollectionRemoveAll", "","/nosql/mgo.mgoCollectionRemoveAll"},
+        {"gopkg.in/mgo%2ev2.(*Collection).RemoveId", "/nosql/mgo.WrapmgoCollectionRemoveId", "","/nosql/mgo.mgoCollectionRemoveId"},
+        {"gopkg.in/mgo%2ev2.(*Collection).Repair", "/nosql/mgo.WrapmgoCollectionRepair", "","/nosql/mgo.mgoCollectionRepair"},
+        {"gopkg.in/mgo%2ev2.(*Collection).Update", "/nosql/mgo.WrapmgoCollectionUpdate", "","/nosql/mgo.mgoCollectionUpdate"},
+        {"gopkg.in/mgo%2ev2.(*Collection).UpdateAll", "/nosql/mgo.WrapmgoCollectionUpdateAll", "","/nosql/mgo.mgoCollectionUpdateAll"},
+        {"gopkg.in/mgo%2ev2.(*Collection).UpdateId", "/nosql/mgo.WrapmgoCollectionUpdateId", "","/nosql/mgo.mgoCollectionUpdateId"},
+        {"gopkg.in/mgo%2ev2.(*Collection).Upsert", "/nosql/mgo.WrapmgoCollectionUpsert", "","/nosql/mgo.mgoCollectionUpsert"},
+        {"gopkg.in/mgo%2ev2.(*Collection).UpsertId", "/nosql/mgo.WrapmgoCollectionUpsertId", "","/nosql/mgo.mgoCollectionUpsertId"},
+
+        {"gopkg.in/mgo%2ev2.(*Query).All", "/nosql/mgo.WrapmgoQueryAll", "","/nosql/mgo.mgoQueryAll"},
+        {"gopkg.in/mgo%2ev2.(*Query).Apply", "/nosql/mgo.WrapmgoQueryApply", "","/nosql/mgo.mgoQueryApply"},
+        {"gopkg.in/mgo%2ev2.(*Query).Count", "/nosql/mgo.WrapmgoQueryCount", "","/nosql/mgo.mgoQueryCount"},
+        {"gopkg.in/mgo%2ev2.(*Query).Distinct", "/nosql/mgo.WrapmgoQueryDistinct", "","/nosql/mgo.mgoQueryDistinct"},
+        {"gopkg.in/mgo%2ev2.(*Query).Explain", "/nosql/mgo.WrapmgoQueryExplain", "","/nosql/mgo.mgoQueryExplain"},
+        {"gopkg.in/mgo%2ev2.(*Query).For", "/nosql/mgo.WrapmgoQueryFor", "","/nosql/mgo.mgoQueryFor"},
+        {"gopkg.in/mgo%2ev2.(*Query).Iter", "/nosql/mgo.WrapmgoQueryIter", "","/nosql/mgo.mgoQueryIter"},
+        {"gopkg.in/mgo%2ev2.(*Query).MapReduce", "/nosql/mgo.WrapmgoQueryMapReduce", "","/nosql/mgo.mgoQueryMapReduce"},
+        {"gopkg.in/mgo%2ev2.(*Query).One", "/nosql/mgo.WrapmgoQueryOne", "","/nosql/mgo.mgoQueryOne"},
+        {"gopkg.in/mgo%2ev2.(*Query).Tail", "/nosql/mgo.WrapmgoQueryTail", "","/nosql/mgo.mgoQueryTail"},
+
+        {"gopkg.in/mgo%2ev2.(*Pipe).All", "/nosql/mgo.WrapmgoPipeAll", "","/nosql/mgo.mgoPipeAll"},
+        {"gopkg.in/mgo%2ev2.(*Pipe).Explain", "/nosql/mgo.WrapmgoPipeExplain", "","/nosql/mgo.mgoPipeExplain"},
+        {"gopkg.in/mgo%2ev2.(*Pipe).Iter", "/nosql/mgo.WrapmgoPipeIter", "","/nosql/mgo.mgoPipeIter"},
+        {"gopkg.in/mgo%2ev2.(*Pipe).One", "/nosql/mgo.WrapmgoPipeOne", "","/nosql/mgo.mgoPipeOne"},
+
         {0, 0, 0, 0}
     };
     return targets;
@@ -130,9 +182,12 @@ extern const WrapItem* TingyunWraps() {
 
         {"github.com/go-redis/redis/v7.NewClient", "/nosql/go-redis/v7.", "redisNewClient"},
         {"github.com/go-redis/redis/v7.NewClusterClient", "/nosql/go-redis/v7.", "redisNewClusterClient"},
+        {"github.com/go-redis/redis/v7.NewFailoverClient", "/nosql/go-redis/v7.", "redisNewFailoverClient"},
 
         {"github.com/go-redis/redis/v8.NewClient", "/nosql/go-redis/v8.", "redisNewClient"},
         {"github.com/go-redis/redis/v8.NewClusterClient", "/nosql/go-redis/v8.", "redisNewClusterClient"},
+        {"github.com/go-redis/redis/v8.NewFailoverClient", "/nosql/go-redis/v8.", "redisNewFailoverClient"},
+        {"github.com/go-redis/redis/v8.NewFailoverClusterClient", "/nosql/go-redis/v8.", "redisNewFailoverClusterClient"},
 
         {0, 0, 0}
     };

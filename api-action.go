@@ -70,6 +70,9 @@ type Action struct {
 	isTask         bool
 }
 
+func (a *Action) IsTask() bool {
+	return a.isTask
+}
 func (a *Action) checkComponent() bool {
 	if a == nil {
 		return false

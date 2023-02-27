@@ -387,6 +387,15 @@ func redisNewClusterClient(opt *redis.ClusterOptions) *redis.ClusterClient {
 		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 	return nil
 }
+func seriallizeAddresses(addresses []string) string {
+	if len(addresses) == 0 {
+		return "[]"
+	} else if len(addresses) == 1 {
+		return "[" + addresses[0] + "]"
+	} else {
+		return "[" + addresses[0] + ",...]"
+	}
+}
 
 //go:noinline
 func WrapredisNewClusterClient(opt *redis.ClusterOptions) *redis.ClusterClient {
@@ -394,14 +403,27 @@ func WrapredisNewClusterClient(opt *redis.ClusterOptions) *redis.ClusterClient {
 	if r == nil {
 		return r
 	}
-	addr := ""
-	if len(opt.Addrs) == 0 {
-		addr = "[]"
-	} else if len(opt.Addrs) == 1 {
-		addr = "[" + opt.Addrs[0] + "]"
-	} else {
-		addr = "[" + opt.Addrs[0] + ",...]"
+	addr := seriallizeAddresses(opt.Addrs)
+	r.AddHook(Hooks{host: addr})
+	return r
+}
+
+//go:noinline
+func redisNewFailoverClient(failoverOpt *redis.FailoverOptions) *redis.Client {
+	trampoline.arg10 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
+	return nil
+}
+
+//go:noinline
+func WrapredisNewFailoverClient(failoverOpt *redis.FailoverOptions) *redis.Client {
+
+	r := redisNewFailoverClient(failoverOpt)
+	if r == nil {
+		return nil
 	}
+	addr := seriallizeAddresses(failoverOpt.SentinelAddrs)
 	r.AddHook(Hooks{host: addr})
 	return r
 }
@@ -545,6 +567,7 @@ func init() {
 	tingyun3.Register(reflect.ValueOf(WrapbaseClientgeneralProcessPipeline).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapredisNewClient).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapredisNewClusterClient).Pointer())
+	tingyun3.Register(reflect.ValueOf(WrapredisNewFailoverClient).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapClusterClient_processPipeline).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapClusterClient_processTxPipeline).Pointer())
 	tingyun3.Register(reflect.ValueOf(initTrampoline).Pointer())

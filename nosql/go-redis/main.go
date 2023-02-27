@@ -246,6 +246,30 @@ func WrapredisClusterClientWrapProcessPipeline(c *redis.ClusterClient, fn func(o
 }
 
 //go:noinline
+func redisSentinelClientWrapProcess(c *redis.SentinelClient, fn func(func(redis.Cmder) error) func(redis.Cmder) error) {
+	trampoline.arg5 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
+}
+
+//go:noinline
+func WrapredisSentinelClientWrapProcess(c *redis.SentinelClient, fn func(func(redis.Cmder) error) func(redis.Cmder) error) {
+	redisSentinelClientWrapProcess(c, fn)
+}
+
+//go:noinline
+func redisSentinelClientWrapProcessPipeline(c *redis.SentinelClient, fn func(oldProcess func([]redis.Cmder) error) func([]redis.Cmder) error) {
+	trampoline.arg6 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
+}
+
+//go:noinline
+func WrapredisSentinelClientWrapProcessPipeline(c *redis.SentinelClient, fn func(oldProcess func([]redis.Cmder) error) func([]redis.Cmder) error) {
+	redisSentinelClientWrapProcessPipeline(c, fn)
+}
+
+//go:noinline
 func redisNewClient(opt *redis.Options) *redis.Client {
 	trampoline.arg9 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
 		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
@@ -332,6 +356,31 @@ func WrapredisNewClusterClient(opt *redis.ClusterOptions) *redis.ClusterClient {
 	return r
 }
 
+//go:noinline
+func redisNewFailoverClient(failoverOpt *redis.FailoverOptions) *redis.Client {
+	trampoline.arg10 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
+	return nil
+}
+
+//go:noinline
+func WrapredisNewFailoverClient(failoverOpt *redis.FailoverOptions) *redis.Client {
+
+	r := redisNewFailoverClient(failoverOpt)
+	if r == nil {
+		return nil
+	}
+	addr := strings.Join(failoverOpt.SentinelAddrs, ",")
+	redisClientWrapProcess(r, func(raw func(redis.Cmder) error) func(redis.Cmder) error {
+		return getProcessWrapper("redis.Client.process", addr, raw)
+	})
+	redisClientWrapProcessPipeline(r, func(raw func([]redis.Cmder) error) func([]redis.Cmder) error {
+		return getProcessPipelineWrapper("redisClient.Pipline", addr, raw)
+	})
+	return r
+}
+
 type instanceSet struct {
 	lock  sync.RWMutex
 	items map[*redis.Client]string
@@ -364,13 +413,20 @@ var dbs instanceSet
 func init() {
 	dbs.init()
 
+	tingyun3.Register(reflect.ValueOf(WrapbaseClientProcess).Pointer())
+
 	tingyun3.Register(reflect.ValueOf(WrapredisNewClient).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapredisNewClusterClient).Pointer())
+	tingyun3.Register(reflect.ValueOf(WrapredisNewFailoverClient).Pointer())
 
 	tingyun3.Register(reflect.ValueOf(WrapredisClientWrapProcess).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapredisClientWrapProcessPipeline).Pointer())
+
 	tingyun3.Register(reflect.ValueOf(WrapredisClusterClientWrapProcess).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapredisClusterClientWrapProcessPipeline).Pointer())
+
+	tingyun3.Register(reflect.ValueOf(WrapredisSentinelClientWrapProcess).Pointer())
+	tingyun3.Register(reflect.ValueOf(WrapredisSentinelClientWrapProcessPipeline).Pointer())
 
 	tingyun3.Register(reflect.ValueOf(initTrampoline).Pointer())
 }

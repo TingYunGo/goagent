@@ -63,7 +63,7 @@
     module http_example
     go 1.12
     require (
-    	github.com/TingYunGo/goagent v1.1.0
+    	github.com/TingYunGo/goagent v1.2.0
         github.com/golang/protobuf v1.5.2 // indirect
     )
     ```
@@ -188,7 +188,8 @@
 | github.com/go-redis/redis <br/> redis: go-redis default, GOMOD模式 | github.com/TingYunGo/goagent/nosql/go-redis | v6.10.0 ~ v8.11.4 |
 | github.com/go-redis/redis/v7 <br/> redis: go-redis v7, GOMOD模式 | github.com/TingYunGo/goagent/nosql/go-redis/v7 | v7.0.0 ~ v7.4.1 |
 | github.com/go-redis/redis/v8 <br/> redis: go-redis v8, GOMOD模式 | github.com/TingYunGo/goagent/nosql/go-redis/v8 | v8.0.0 ~ v8.11.4 |
-| Go.mongodb.org/mongo-driver/mongo <br/> mongodb | github.com/TingYunGo/goagent/nosql/mongodb | v1.1.0 ~ v1.7.3 |
+| go.mongodb.org/mongo-driver/mongo <br/> mongodb | github.com/TingYunGo/goagent/nosql/mongodb | v1.1.0 ~ v1.7.3 |
+| gopkg.in/mgo.v2 <br/> mongodb | github.com/TingYunGo/goagent/nosql/mgo | latest |
 
 ### 嵌码实例演示
 以开源项目 photoprism 为例 : 

@@ -67,6 +67,7 @@ const (
 	StorageIndexRedis    = 1 + 8*1
 	StorageIndexEcho     = 1 + 8*2
 	StorageIndexMongo    = 1 + 8*3
+	StorageIndexMgo      = 2 + 8*3
 	StorageIndexBeego    = 1 + 8*4
 	StorageIndexIris     = 1 + 8*5
 	StorageIndexGin      = 1 + 8*6

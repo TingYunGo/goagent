@@ -74,6 +74,9 @@ func FindString(array []string, target string) int {
 	}
 	return -1
 }
+func IsSpace(t byte) bool {
+	return (t <= 0x20) && (t > 0)
+}
 func TrimString(value string, isSep func(byte) bool) string {
 	begin := 0
 	for ; begin < len(value); begin++ {
@@ -98,7 +101,7 @@ func SplitMapString(source string, isSep func(byte) bool, handler func(string, s
 	if handler == nil || isSep == nil {
 		return
 	}
-	source = TrimString(source, isSep)
+	source = TrimString(source, IsSpace)
 	keyLen := len(source)
 	for i := 0; i < keyLen; i++ {
 		if isSep(source[i]) {
@@ -107,14 +110,42 @@ func SplitMapString(source string, isSep func(byte) bool, handler func(string, s
 		}
 	}
 	value := ""
+	found := false
 	for i := keyLen; i < len(source); i++ {
-		if !isSep(source[i]) {
+		if isSep(source[i]) {
+			found = true
+		} else {
 			value = source[i:]
 			break
 		}
 	}
-	if keyLen > 0 {
+	if keyLen > 0 || found || len(value) > 0 {
 		handler(source[:keyLen], value)
+	}
+	return
+}
+
+func SplitStrings(source string, isSep func(byte) bool, handler func(string) bool) {
+	if handler == nil || isSep == nil {
+		return
+	}
+	begin := -1
+	for i := 0; i < len(source); i++ {
+		if isSep(source[i]) {
+			if begin > -1 {
+				if handler(source[begin:i]) {
+					return
+				}
+				begin = -1
+			}
+		} else {
+			if begin == -1 {
+				begin = i
+			}
+		}
+	}
+	if begin > -1 && begin < len(source) {
+		handler(source[begin:len(source)])
 	}
 	return
 }

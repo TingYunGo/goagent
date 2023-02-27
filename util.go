@@ -546,28 +546,7 @@ func splitMapString(source string, isSep func(byte) bool, handler func(string, s
 }
 
 func splitStrings(source string, handler func(string) bool, isSep func(byte) bool) {
-	if handler == nil || isSep == nil {
-		return
-	}
-	begin := -1
-	for i := 0; i < len(source); i++ {
-		if isSep(source[i]) {
-			if begin > -1 {
-				if handler(source[begin:i]) {
-					return
-				}
-				begin = -1
-			}
-		} else {
-			if begin == -1 {
-				begin = i
-			}
-		}
-	}
-	if begin > -1 && begin < len(source) {
-		handler(source[begin:len(source)])
-	}
-	return
+	tystring.SplitStrings(source, isSep, handler)
 }
 func limitAppend(a, b []byte, size int) []byte {
 	if a == nil {
