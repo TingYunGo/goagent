@@ -1,4 +1,4 @@
-package ginframe
+package gorillaframe
 
 import (
 	"fmt"

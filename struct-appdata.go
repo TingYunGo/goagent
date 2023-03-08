@@ -136,6 +136,7 @@ func (r *structAppData) Append(action *Action) {
 			params.Key = component.table
 			params.Instance = component.instance
 			params.Vendor = component.getVender()
+			params.StatusCode = component.statusCode
 			params.TxData = component.txdata
 			if component._type == ComponentExternal {
 				params.ExternalId = component.unicID()

@@ -19,6 +19,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/http/httputil"
 	"reflect"
 	"runtime"
 	"strconv"
@@ -73,6 +74,7 @@ func WrapHttpClientDo(ptr *http.Client, req *http.Request) (*http.Response, erro
 		} else if res != nil {
 			if txdata := res.Header.Get("X-Tingyun-Data"); len(txdata) > 0 {
 				component.SetTxData(txdata)
+				component.SetStatusCode(res.StatusCode)
 			}
 		}
 		component.FixStackEnd(1, func(funcName string) bool {
@@ -81,6 +83,82 @@ func WrapHttpClientDo(ptr *http.Client, req *http.Request) (*http.Response, erro
 		})
 	}
 	return res, err
+}
+
+//go:noinline
+func httputilReverseProxyServeHTTP(p *httputil.ReverseProxy, rw http.ResponseWriter, req *http.Request) {
+	idPointer.arg6 = *idPointer.idpointer + idPointer.idindex + idPointer.arg1 + idPointer.arg2 + idPointer.arg3 + idPointer.arg4 + idPointer.arg5 + idPointer.arg6 + idPointer.arg7 +
+		idPointer.arg8 + idPointer.arg9 + idPointer.arg10 + idPointer.arg11 + idPointer.arg12 + idPointer.arg13 + idPointer.arg14 + idPointer.arg15 + idPointer.arg16 +
+		idPointer.arg17 + idPointer.arg18 + idPointer.arg19 + idPointer.arg20
+}
+
+//go:noinline
+func WraphttputilReverseProxyServeHTTP(p *httputil.ReverseProxy, rw http.ResponseWriter, req *http.Request) {
+	var component *Component = nil
+	if action := getAction(); action != nil {
+		_, pc := GetCallerPC(3)
+		methodName := runtime.FuncForPC(pc).Name()
+		url := req.URL.String()
+		component = action.CreateExternalComponent(url, methodName)
+		if component != nil {
+			SetComponent(component)
+			if trackID := component.CreateTrackID(); len(trackID) > 0 {
+				req.Header.Add("X-Tingyun", trackID)
+			}
+		}
+	}
+	defer func() {
+		if exception := recover(); exception != nil {
+			if component != nil {
+				component.setError(exception, "httputil.(*ReverseProxy).ServeHTTP", true)
+				component.Finish()
+			}
+			panic(exception)
+		}
+	}()
+	httputilReverseProxyServeHTTP(p, rw, req)
+	if component != nil {
+		if GetComponent() == component {
+			SetComponent(nil)
+		}
+		res := req.Response
+		if res != nil {
+			if txdata := res.Header.Get("X-Tingyun-Data"); len(txdata) > 0 {
+				component.SetTxData(txdata)
+			}
+		}
+		component.FixStackEnd(1, func(funcName string) bool {
+			token := "net/http"
+			return tystring.SubString(funcName, 0, len(token)) == token
+		})
+	}
+}
+
+//go:noinline
+func httpTransportroundTrip(t *http.Transport, req *http.Request) (*http.Response, error) {
+	idPointer.arg6 = *idPointer.idpointer + idPointer.idindex + idPointer.arg1 + idPointer.arg2 + idPointer.arg3 + idPointer.arg4 + idPointer.arg5 + idPointer.arg6 + idPointer.arg7 +
+		idPointer.arg8 + idPointer.arg9 + idPointer.arg10 + idPointer.arg11 + idPointer.arg12 + idPointer.arg13 + idPointer.arg14 + idPointer.arg15 + idPointer.arg16 +
+		idPointer.arg17 + idPointer.arg18 + idPointer.arg19 + idPointer.arg20
+	return nil, nil
+}
+
+//go:noinline
+func WraphttpTransportroundTrip(t *http.Transport, req *http.Request) (*http.Response, error) {
+	url := req.URL.String()
+	component := getComponent()
+	if component != nil {
+		component.SetURL(url)
+	}
+	r, e := httpTransportroundTrip(t, req)
+	if r != nil {
+		if component != nil {
+			if txdata := r.Header.Get("X-Tingyun-Data"); len(txdata) > 0 {
+				component.SetTxData(txdata)
+			}
+			component.SetStatusCode(r.StatusCode)
+		}
+	}
+	return r, e
 }
 
 type NetConnWrapper struct {
@@ -518,6 +596,8 @@ func init() {
 	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WraphttpNotFound).Pointer()))
 	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WrapServerMuxHandle).Pointer()))
 	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WrapHttpClientDo).Pointer()))
+	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WraphttputilReverseProxyServeHTTP).Pointer()))
+	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WraphttpTransportroundTrip).Pointer()))
 	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(GetGID).Pointer()))
 	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(setGID).Pointer()))
 }

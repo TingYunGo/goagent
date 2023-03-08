@@ -24,6 +24,7 @@ type Component struct {
 	time           timeRange
 	tracerID       int32
 	tracerParentID int32
+	statusCode     int32
 	exID           bool
 	_type          uint8
 }
@@ -71,6 +72,28 @@ func (c *Component) GetAction() *Action {
 		return nil
 	}
 	return c.action
+}
+func (c *Component) SetURL(url string) {
+	if c == nil {
+		return
+	}
+	if c.action == nil {
+		return
+	}
+
+	if c._type != ComponentExternal {
+		return
+	}
+	c.protocol, c.op = parseURL(url)
+}
+func (c *Component) SetStatusCode(statusCode int) {
+	if c == nil {
+		return
+	}
+	if c.action == nil {
+		return
+	}
+	c.statusCode = int32(statusCode)
 }
 func (c *Component) setError(e interface{}, errType string, isError bool) {
 	if c == nil {
@@ -224,6 +247,7 @@ func (c *Component) CreateComponent(method string) *Component {
 		tracerID:       c.action.makeTracerID(),
 		time:           timeRange{time.Now(), -1},
 		exID:           false,
+		statusCode:     0,
 		_type:          ComponentDefault,
 	}
 	c.action.current = c

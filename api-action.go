@@ -71,6 +71,9 @@ type Action struct {
 }
 
 func (a *Action) IsTask() bool {
+	if a == nil {
+		return false
+	}
 	return a.isTask
 }
 func (a *Action) checkComponent() bool {
@@ -87,17 +90,7 @@ func fixSQL(sql string) string {
 	return sql
 }
 
-//CreateExternalComponent : 创建Web Service性能分解组件
-//参数:
-//    url    : 调用Web Service的url,格式: http(s)://host/uri, 例如 http://www.baidu.com/
-//    method : 发起这个Web Service调用的类名.方法名, 例如 http.Get
-func (a *Action) CreateExternalComponent(url string, method string) *Component {
-	if app == nil || a == nil || a.stateUsed != actionUsing || !app.inited {
-		return nil
-	}
-	if !a.checkComponent() {
-		return nil
-	}
+func parseURL(url string) (string, string) {
 	protocol := ""
 	if tystring.SubString(url, 0, 8) == "https://" {
 		protocol = "https"
@@ -110,19 +103,35 @@ func (a *Action) CreateExternalComponent(url string, method string) *Component {
 	} else if len(urlRequest) > 1 && urlRequest[0] == '/' {
 		urlRequest = urlRequest[1:]
 	}
+	return protocol, urlRequest
+}
+
+//CreateExternalComponent : 创建Web Service性能分解组件
+//参数:
+//    url    : 调用Web Service的url,格式: http(s)://host/uri, 例如 http://www.baidu.com/
+//    method : 发起这个Web Service调用的类名.方法名, 例如 http.Get
+func (a *Action) CreateExternalComponent(url string, method string) *Component {
+	if app == nil || a == nil || a.stateUsed != actionUsing || !app.inited {
+		return nil
+	}
+	if !a.checkComponent() {
+		return nil
+	}
 	c := &Component{
 		action:         a,
 		instance:       url,
 		method:         method,
-		protocol:       protocol,
-		op:             urlRequest,
+		protocol:       "",
+		op:             "",
 		tracerParentID: a.current.tracerID,
 		tracerID:       a.makeTracerID(),
 		exID:           false,
+		statusCode:     0,
 		callStack:      nil,
 		time:           timeRange{time.Now(), -1},
 		_type:          ComponentExternal,
 	}
+	c.SetURL(url)
 	a.cache.Put(c)
 	return c
 }
@@ -157,6 +166,7 @@ func (a *Action) CreateMQComponent(vender string, isConsumer bool, host, queue s
 		tracerParentID: a.current.tracerID,
 		tracerID:       a.makeTracerID(),
 		exID:           false,
+		statusCode:     0,
 		callStack:      nil,
 		time:           timeRange{time.Now(), -1},
 		_type:          mqType,
@@ -209,6 +219,7 @@ func (a *Action) CreateRedisComponent(host, cmd, key, method string) *Component 
 		tracerID:       a.makeTracerID(),
 		exID:           false,
 		callStack:      nil,
+		statusCode:     0,
 		time:           timeRange{time.Now(), -1},
 		_type:          ComponentRedis,
 	}
@@ -247,6 +258,7 @@ func (a *Action) CreateDBComponent(dbType uint8, host string, dbname string, tab
 		tracerID:       a.makeTracerID(),
 		time:           timeRange{time.Now(), -1},
 		exID:           false,
+		statusCode:     0,
 		_type:          dbType,
 	}
 	a.cache.Put(c)
@@ -273,6 +285,7 @@ func (a *Action) CreateMongoComponent(host, database, collection, op, method str
 		tracerID:       a.makeTracerID(),
 		time:           timeRange{time.Now(), -1},
 		exID:           false,
+		statusCode:     0,
 		_type:          ComponentMongo,
 	}
 	a.cache.Put(c)
@@ -302,6 +315,7 @@ func (a *Action) CreateSQLComponent(dbType uint8, host string, dbname string, sq
 		tracerID:       a.makeTracerID(),
 		time:           timeRange{time.Now(), -1},
 		exID:           false,
+		statusCode:     0,
 		_type:          dbType,
 	}
 	a.cache.Put(c)
@@ -326,6 +340,7 @@ func (a *Action) CreateComponent(method string) *Component {
 		tracerID:       a.makeTracerID(),
 		time:           timeRange{time.Now(), -1},
 		exID:           false,
+		statusCode:     0,
 		_type:          ComponentDefault,
 	}
 	c.parent = a.current
@@ -636,6 +651,9 @@ func (a *Action) SetStatusCode(code uint16) int {
 
 //FixBegin : 内部使用, 重置事务开始时间
 func (a *Action) FixBegin(begin time.Time) {
+	if a == nil {
+		return
+	}
 	a.time.begin = begin
 }
 
@@ -842,6 +860,12 @@ func LocalDelete(id int) interface{} {
 		return local
 	})
 	return res
+}
+func (a *Action) GetTransactionID() string {
+	if a == nil {
+		return ""
+	}
+	return a.getTransactionID()
 }
 
 // GetComponent : 辅助功能函数: 将存储到协程局部存储器的组件对象取出

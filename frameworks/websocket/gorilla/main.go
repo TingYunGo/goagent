@@ -3,7 +3,7 @@
 // +build amd64 arm64
 // +build cgo
 
-package ginframe
+package gorillaframe
 
 import (
 	"io"

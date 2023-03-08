@@ -167,6 +167,8 @@ extern const ReplaceItem* TingyunReplaceItems() {
 extern const WrapItem* TingyunWraps() {
     
     static WrapItem targets[] = {
+        {"net/http.(*Transport).roundTrip", ".", "httpTransportroundTrip"},
+        {"net/http/httputil.(*ReverseProxy).ServeHTTP", ".", "httputilReverseProxyServeHTTP"},
         {"database/sql.Open", "/database.", "DBOpen"},
         {"database/sql.(*DB).Close", "/database.", "DBClose"},
         {"database/sql.(*DB).queryDC", "/database.", "DBqueryDC"},
