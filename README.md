@@ -63,7 +63,7 @@
     module http_example
     go 1.12
     require (
-    	github.com/TingYunGo/goagent v1.2.0
+    	github.com/TingYunGo/goagent v1.3.1
         github.com/golang/protobuf v1.5.2 // indirect
     )
     ```

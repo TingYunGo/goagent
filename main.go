@@ -476,21 +476,25 @@ func HttpServerServe(srv *http.Server, l net.Listener) error {
 
 //go:noinline
 func WrapHttpServerServe(srv *http.Server, l net.Listener) error {
-
-	pre := httpListenAddr
-	httpListenAddr = httpListenAddress{
-		Addr: srv.Addr,
-		tls:  srv.TLSConfig != nil,
+	addr := srv.Addr
+	network := ""
+	if len(addr) == 0 && l != nil {
+		a := l.Addr()
+		network = a.Network()
+		addr = a.String()
+	}
+	if len(addr) > 0 {
+		listens.Append(addr)
 	}
 	if app != nil {
-		app.logger.Println(LevelDebug, "http.Server.Serve:", httpListenAddr.Addr)
+		app.logger.Println(LevelDebug, "http.Server.Serve:", network, addr)
 	}
 
 	if srv.Handler != nil {
 		srv.Handler = wrapHandler("", srv.Handler)
 	}
+
 	e := HttpServerServe(srv, l)
-	httpListenAddr = pre
 	return e
 
 }

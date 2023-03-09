@@ -198,78 +198,6 @@ func WrapbaseClientProcess(c *baseClient, cmd redis.Cmder) error {
 }
 
 //go:noinline
-func redisClientWrapProcess(c *redis.Client, fn func(func(redis.Cmder) error) func(redis.Cmder) error) {
-	trampoline.arg5 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
-		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
-		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
-}
-
-//go:noinline
-func WrapredisClientWrapProcess(c *redis.Client, fn func(func(redis.Cmder) error) func(redis.Cmder) error) {
-	redisClientWrapProcess(c, fn)
-}
-
-//go:noinline
-func redisClientWrapProcessPipeline(c *redis.Client, fn func(oldProcess func([]redis.Cmder) error) func([]redis.Cmder) error) {
-	trampoline.arg6 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
-		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
-		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
-}
-
-//go:noinline
-func WrapredisClientWrapProcessPipeline(c *redis.Client, fn func(oldProcess func([]redis.Cmder) error) func([]redis.Cmder) error) {
-	redisClientWrapProcessPipeline(c, fn)
-}
-
-//go:noinline
-func redisClusterClientWrapProcess(c *redis.ClusterClient, fn func(func(redis.Cmder) error) func(redis.Cmder) error) {
-	trampoline.arg7 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
-		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
-		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
-}
-
-//go:noinline
-func WrapredisClusterClientWrapProcess(c *redis.ClusterClient, fn func(func(redis.Cmder) error) func(redis.Cmder) error) {
-	redisClusterClientWrapProcess(c, fn)
-}
-
-//go:noinline
-func redisClusterClientWrapProcessPipeline(c *redis.ClusterClient, fn func(oldProcess func([]redis.Cmder) error) func([]redis.Cmder) error) {
-	trampoline.arg8 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
-		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
-		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
-}
-
-//go:noinline
-func WrapredisClusterClientWrapProcessPipeline(c *redis.ClusterClient, fn func(oldProcess func([]redis.Cmder) error) func([]redis.Cmder) error) {
-	redisClusterClientWrapProcessPipeline(c, fn)
-}
-
-//go:noinline
-func redisSentinelClientWrapProcess(c *redis.SentinelClient, fn func(func(redis.Cmder) error) func(redis.Cmder) error) {
-	trampoline.arg5 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
-		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
-		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
-}
-
-//go:noinline
-func WrapredisSentinelClientWrapProcess(c *redis.SentinelClient, fn func(func(redis.Cmder) error) func(redis.Cmder) error) {
-	redisSentinelClientWrapProcess(c, fn)
-}
-
-//go:noinline
-func redisSentinelClientWrapProcessPipeline(c *redis.SentinelClient, fn func(oldProcess func([]redis.Cmder) error) func([]redis.Cmder) error) {
-	trampoline.arg6 = trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
-		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
-		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
-}
-
-//go:noinline
-func WrapredisSentinelClientWrapProcessPipeline(c *redis.SentinelClient, fn func(oldProcess func([]redis.Cmder) error) func([]redis.Cmder) error) {
-	redisSentinelClientWrapProcessPipeline(c, fn)
-}
-
-//go:noinline
 func redisNewClient(opt *redis.Options) *redis.Client {
 	trampoline.arg9 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
 		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
@@ -284,10 +212,10 @@ func WrapredisNewClient(opt *redis.Options) *redis.Client {
 		return nil
 	}
 	addr := opt.Addr
-	redisClientWrapProcess(r, func(raw func(redis.Cmder) error) func(redis.Cmder) error {
+	r.WrapProcess(func(raw func(redis.Cmder) error) func(redis.Cmder) error {
 		return getProcessWrapper("redis.Client.process", addr, raw)
 	})
-	redisClientWrapProcessPipeline(r, func(raw func([]redis.Cmder) error) func([]redis.Cmder) error {
+	r.WrapProcessPipeline(func(raw func([]redis.Cmder) error) func([]redis.Cmder) error {
 		return getProcessPipelineWrapper("redisClient.Pipline", addr, raw)
 	})
 	return r
@@ -347,10 +275,10 @@ func WrapredisNewClusterClient(opt *redis.ClusterOptions) *redis.ClusterClient {
 		return r
 	}
 	addr := strings.Join(opt.Addrs, ",")
-	redisClusterClientWrapProcess(r, func(raw func(redis.Cmder) error) func(redis.Cmder) error {
+	r.WrapProcess(func(raw func(redis.Cmder) error) func(redis.Cmder) error {
 		return getProcessWrapper("redis.ClusterClient.process", addr, raw)
 	})
-	redisClusterClientWrapProcessPipeline(r, func(raw func([]redis.Cmder) error) func([]redis.Cmder) error {
+	r.WrapProcessPipeline(func(raw func([]redis.Cmder) error) func([]redis.Cmder) error {
 		return getProcessPipelineWrapper("redisClusterClient.Pipline", addr, raw)
 	})
 	return r
@@ -372,10 +300,10 @@ func WrapredisNewFailoverClient(failoverOpt *redis.FailoverOptions) *redis.Clien
 		return nil
 	}
 	addr := strings.Join(failoverOpt.SentinelAddrs, ",")
-	redisClientWrapProcess(r, func(raw func(redis.Cmder) error) func(redis.Cmder) error {
+	r.WrapProcess(func(raw func(redis.Cmder) error) func(redis.Cmder) error {
 		return getProcessWrapper("redis.Client.process", addr, raw)
 	})
-	redisClientWrapProcessPipeline(r, func(raw func([]redis.Cmder) error) func([]redis.Cmder) error {
+	r.WrapProcessPipeline(func(raw func([]redis.Cmder) error) func([]redis.Cmder) error {
 		return getProcessPipelineWrapper("redisClient.Pipline", addr, raw)
 	})
 	return r
@@ -418,15 +346,6 @@ func init() {
 	tingyun3.Register(reflect.ValueOf(WrapredisNewClient).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapredisNewClusterClient).Pointer())
 	tingyun3.Register(reflect.ValueOf(WrapredisNewFailoverClient).Pointer())
-
-	tingyun3.Register(reflect.ValueOf(WrapredisClientWrapProcess).Pointer())
-	tingyun3.Register(reflect.ValueOf(WrapredisClientWrapProcessPipeline).Pointer())
-
-	tingyun3.Register(reflect.ValueOf(WrapredisClusterClientWrapProcess).Pointer())
-	tingyun3.Register(reflect.ValueOf(WrapredisClusterClientWrapProcessPipeline).Pointer())
-
-	tingyun3.Register(reflect.ValueOf(WrapredisSentinelClientWrapProcess).Pointer())
-	tingyun3.Register(reflect.ValueOf(WrapredisSentinelClientWrapProcessPipeline).Pointer())
 
 	tingyun3.Register(reflect.ValueOf(initTrampoline).Pointer())
 }

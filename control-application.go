@@ -5,6 +5,7 @@ package tingyun3
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -364,8 +365,24 @@ func makeLoginRequest() ([]byte, error) {
 	if os.Getenv("TINGYUN_ONEAGENT_GO") == "enable" {
 		oneagentUUID = trimSpace(fileCat("/opt/tingyun-oneagent/conf/oneagent.uuid"))
 	}
-	app.logger.Println(LevelDebug, "Login:", httpListenAddr.Addr)
-	port, _ := parsePort(httpListenAddr.Addr)
+	ports := ""
+	var lastPort uint16 = 0
+	portsMap := map[uint16]int{}
+	listens.ForEach(func(address string) {
+		port, err := parsePort(address)
+		if err != nil || port == 0 {
+			return
+		}
+		portsMap[port] = 1
+		lastPort = port
+	})
+	for port, _ := range portsMap {
+		if len(ports) > 0 {
+			ports += ","
+		}
+		ports += fmt.Sprintf("%d", port)
+	}
+	app.logger.Println(LevelDebug, "Login:", ports)
 	envInfo := map[string]string{}
 	for _, item := range os.Environ() {
 		if k, v := parseEnv(item); len(k) > 0 && len(v) > 0 {
@@ -377,7 +394,8 @@ func makeLoginRequest() ([]byte, error) {
 		"appName":      app.configs.local.CStrings.Read(configLocalStringNbsAppName, "TingYunDefault"),
 		"language":     "Go",
 		"oneAgentUuid": oneagentUUID,
-		"port":         port,
+		"port":         lastPort,
+		"ports":        ports,
 		"agentTime":    time.Now().Unix(),
 		"agentVersion": TINGYUN_GO_AGENT_VERSION,
 		"pid":          os.Getpid(),

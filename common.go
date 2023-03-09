@@ -2,15 +2,15 @@
 package tingyun3
 
 import (
+	"fmt"
 	"runtime"
+	"sync"
 )
 
 type httpListenAddress struct {
 	Addr string
 	tls  bool
 }
-
-var httpListenAddr httpListenAddress
 
 //GetCallerName : 取layer层调用栈函数名
 //go:noinline
@@ -20,6 +20,30 @@ func GetCallerName(layer int) string {
 	}
 	return ""
 }
+
+type listenSet struct {
+	lock    sync.RWMutex
+	listens map[string]int
+}
+
+func (l *listenSet) init() *listenSet {
+	l.listens = make(map[string]int)
+	return l
+}
+func (l *listenSet) ForEach(handler func(string)) {
+	l.lock.Lock()
+	for addr, _ := range l.listens {
+		handler(addr)
+	}
+	l.lock.Unlock()
+}
+func (l *listenSet) Append(address string) {
+	l.lock.Lock()
+	l.listens[address] = 1
+	l.lock.Unlock()
+}
+
+var listens listenSet = listenSet{}
 
 //go:noinline
 func GetRootCallerName(layer int) string {
@@ -36,6 +60,17 @@ func GetRootCallerName(layer int) string {
 		return runtime.FuncForPC(pc).Name()
 	}
 	return ""
+}
+
+func printCallers() {
+	callers := make([]uintptr, 30)
+	callerCount := runtime.Callers(1, callers)
+	for i := 0; i < callerCount; i++ {
+		f := runtime.FuncForPC(callers[i])
+		fname := f.Name()
+		file, line := f.FileLine(callers[i])
+		fmt.Printf("%s(%s:%d)\n", fname, file, line)
+	}
 }
 
 //go:noinline

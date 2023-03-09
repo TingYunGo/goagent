@@ -96,6 +96,7 @@ func envGetAppName() string {
 	return os.Getenv("TINGYUN_GO_APP_NAME")
 }
 func init() {
+	listens.init()
 	//check user defined
 	configFile := os.Getenv("TINGYUN_GO_APP_CONFIG")
 	//check oneagent defined

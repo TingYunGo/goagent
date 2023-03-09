@@ -71,19 +71,7 @@ extern const ReplaceItem* TingyunReplaceItems() {
         {"github.com/gomodule/redigo/redis.(*conn).DoWithTimeout", "/nosql/redigo.WrapRedigoDoWithTimeout", "","/nosql/redigo.RedigoDoWithTimeout"},
 
 
-        {"github.com/go-redis/redis.NewClient", "/nosql/go-redis.WrapredisNewClient", "","/nosql/go-redis.redisNewClient"},
-        {"github.com/go-redis/redis.NewClusterClient", "/nosql/go-redis.WrapredisNewClusterClient", "","/nosql/go-redis.redisNewClusterClient"},
-        {"github.com/go-redis/redis.NewSentinelClient", "/nosql/go-redis.WrapredisNewSentinelClient", "","/nosql/go-redis.redisNewSentinelClient"},
-        {"github.com/go-redis/redis.NewFailoverClient", "/nosql/go-redis.WrapredisNewFailoverClient", "","/nosql/go-redis.redisNewFailoverClient"},
-
         {"github.com/go-redis/redis.(*baseClient).Process", "/nosql/go-redis.WrapbaseClientProcess", "","/nosql/go-redis.baseClientProcess"},
-
-        {"github.com/go-redis/redis.(*Client).WrapProcess", "/nosql/go-redis.WrapredisClientWrapProcess", "","/nosql/go-redis.redisClientWrapProcess"},
-        {"github.com/go-redis/redis.(*Client).WrapProcessPipeline", "/nosql/go-redis.WrapredisClientWrapProcessPipeline", "","/nosql/go-redis.redisClientWrapProcessPipeline"},
-        {"github.com/go-redis/redis.(*ClusterClient).WrapProcess", "/nosql/go-redis.WrapredisClusterClientWrapProcess", "","/nosql/go-redis.redisClusterClientWrapProcess"},
-        {"github.com/go-redis/redis.(*ClusterClient).WrapProcessPipeline", "/nosql/go-redis.WrapredisClusterClientWrapProcessPipeline", "","/nosql/go-redis.redisClusterClientWrapProcessPipeline"},
-        {"github.com/go-redis/redis.(*SentinelClient).WrapProcess", "/nosql/go-redis.WrapredisSentinelClientWrapProcess", "","/nosql/go-redis.redisSentinelClientWrapProcess"},
-        {"github.com/go-redis/redis.(*SentinelClient).WrapProcessPipeline", "/nosql/go-redis.WrapredisSentinelClientWrapProcessPipeline", "","/nosql/go-redis.redisSentinelClientWrapProcessPipeline"},
 
         {"github.com/go-redis/redis/v7.(*baseClient).process", "/nosql/go-redis/v7.WrapbaseClientprocess", "","/nosql/go-redis/v7.baseClientprocess"},
         {"github.com/go-redis/redis/v7.(*baseClient).processPipeline", "/nosql/go-redis/v7.WrapbaseClientprocessPipeline", "","/nosql/go-redis/v7.baseClientprocessPipeline"},
@@ -181,6 +169,12 @@ extern const WrapItem* TingyunWraps() {
         
         {"github.com/kataras/iris/v12/core/router.(*APIBuilder).CreateRoutes", "/frameworks/iris/v12.", "irisCreateRoutes"},
         {"github.com/kataras/iris/v12/core/router.FileServer", "/frameworks/iris/v12.", "routerFileServer"},
+
+        {"github.com/go-redis/redis.NewClient", "/nosql/go-redis.", "redisNewClient"},
+        {"github.com/go-redis/redis.NewClusterClient", "/nosql/go-redis.", "redisNewClusterClient"},
+        {"github.com/go-redis/redis.NewSentinelClient", "/nosql/go-redis.", "redisNewSentinelClient"},
+        {"github.com/go-redis/redis.NewFailoverClient", "/nosql/go-redis.", "redisNewFailoverClient"},
+
 
         {"github.com/go-redis/redis/v7.NewClient", "/nosql/go-redis/v7.", "redisNewClient"},
         {"github.com/go-redis/redis/v7.NewClusterClient", "/nosql/go-redis/v7.", "redisNewClusterClient"},
