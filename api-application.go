@@ -95,9 +95,17 @@ func oneagentLogPath() string {
 func envGetAppName() string {
 	return os.Getenv("TINGYUN_GO_APP_NAME")
 }
+func envGetLicenseKey() string {
+	return os.Getenv("TINGYUN_LICENSE_KEY")
+}
+func envGetCollectors() string {
+	return os.Getenv("TINGYUN_COLLECTORS")
+}
+func isEq(ch byte) bool {
+	return ch == '='
+}
 func init() {
 	listens.init()
-	//check user defined
 	configFile := os.Getenv("TINGYUN_GO_APP_CONFIG")
 	//check oneagent defined
 	if len(configFile) == 0 {
@@ -108,7 +116,10 @@ func init() {
 	}
 	//default
 	if len(configFile) == 0 {
-		configFile = "/etc/tingyun/go_app_config.json"
+		configFile = "/etc/tingyun/go_app_config.conf"
+		if !fileExist(configFile) {
+			configFile = "/etc/tingyun/go_app_config.json"
+		}
 	}
 	if appname := envGetAppName(); len(appname) > 0 {
 		defaultAppName = appname

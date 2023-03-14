@@ -402,7 +402,7 @@ func makeLoginRequest() ([]byte, error) {
 		"firstRun":     firstRun,
 		"environment": map[string]interface{}{
 			"config": map[string]interface{}{
-				"license_key":       app.configs.local.CStrings.Read(configLocalStringNbsLicenseKey, ""),
+				"license_key":       getLicense(&app.configs),
 				"nbs.log_file_name": app.configs.local.CStrings.Read(configLocalStringNbsLogFileName, "agent.log"),
 				"audit":             app.configs.local.CBools.Read(configLocalBoolAudit, false),
 				"nbs.max_log_count": app.configs.local.CIntegers.Read(configLocalIntegerNbsMaxLogCount, 3),

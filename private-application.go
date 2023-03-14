@@ -83,7 +83,7 @@ func (a *application) init(configfile string) (*application, error) {
 		return nil, errors.New("Agent Is disabled by config file")
 	}
 
-	if license := a.configs.local.CStrings.Read(configLocalStringNbsLicenseKey, ""); license == "" {
+	if license := getLicense(&a.configs); license == "" {
 		return nil, errors.New(configfile + ": nbs.license_key not found")
 	}
 	a.serverCtrl.Reset()

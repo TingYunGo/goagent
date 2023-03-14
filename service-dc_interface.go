@@ -62,17 +62,31 @@ func (s *serviceDC) keepAlive(callback func(error, map[string]interface{})) {
 		callback(er, jsonData)
 	})
 }
+func getCollectors(config *configurations) string {
+	host := envGetCollectors()
+	if len(host) > 0 {
+		return host
+	}
+	return config.local.CStrings.Read(configLocalStringNbsHost, "")
+}
+
+func getLicense(config *configurations) string {
+	if license := envGetLicenseKey(); len(license) > 0 {
+		return license
+	}
+	return config.local.CStrings.Read(configLocalStringNbsLicenseKey, "")
+}
 
 //Login --启动登陆过程,如果已经在login中,返回error
 func (s *serviceDC) Login(callback func(error, map[string]interface{})) error {
 	if s.request != nil {
 		return errors.New("Login already Startd")
 	}
-	if host := s.configs.local.CStrings.Read(configLocalStringNbsHost, ""); len(host) == 0 {
+	if host := getCollectors(s.configs); len(host) == 0 {
 		return errors.New("No collector address in configuration file")
 	}
 	appName := s.configs.local.CStrings.Read(configLocalStringNbsAppName, "GO_LANG")
-	license := s.configs.local.CStrings.Read(configLocalStringNbsLicenseKey, "_")
+	license := getLicense(s.configs)
 
 	requrl := fmt.Sprintf("%s/redirect?app=%s&license=%s&request=entry&version=%s", getRedirectHost(s, s.getConfigProtocol()), url.QueryEscape(appName), license, "3.2.0")
 	params := make(map[string]string)
@@ -147,7 +161,7 @@ func (s *serviceDC) makeTraceURL(request string) (string, error) {
 		return "", errors.New("makeTraceUrl: " + request + " server session key not found.")
 	}
 	appName := s.configs.local.CStrings.Read(configLocalStringNbsAppName, "GO_LANG")
-	license := s.configs.local.CStrings.Read(configLocalStringNbsLicenseKey, "_")
+	license := getLicense(s.configs)
 	requrl := fmt.Sprintf("%s://%s/%s?app=%s&license=%s&sessionKey=%s&version=%s", s.getConfigProtocol(), s.uploadHost, request, url.QueryEscape(appName), url.QueryEscape(license), url.QueryEscape(sessionKey), "3.2.0")
 	return requrl, nil
 }
@@ -245,7 +259,7 @@ func parseRedirectResult(jsonData map[string]interface{}) (string, error) {
 }
 
 func getRedirectHost(s *serviceDC, protocol string) string {
-	hosts := strings.Split(s.configs.local.CStrings.Read(configLocalStringNbsHost, ""), ",")
+	hosts := strings.Split(getCollectors(s.configs), ",")
 	if len(hosts) == 0 {
 		return ""
 	}
