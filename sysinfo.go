@@ -4,7 +4,6 @@ package tingyun3
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"runtime"
@@ -43,9 +42,9 @@ func (s *sysInfo) Init() *sysInfo {
 		return nil
 	}
 
-	s.FdSize, s.err = elementCount(fmt.Sprintf("/proc/%d/fd/", os.Getpid()))
-	s.Threads, s.err = elementCount(fmt.Sprintf("/proc/%d/task/", os.Getpid()))
-	bytes, err := ioutil.ReadFile(fmt.Sprintf("/proc/%d/stat", os.Getpid()))
+	s.FdSize, s.err = elementCount("/proc/self/fd/")
+	s.Threads, s.err = elementCount("/proc/self/task/")
+	bytes, err := ioutil.ReadFile("/proc/self/stat")
 	if err != nil {
 		s.err = err
 		return nil
@@ -69,7 +68,7 @@ func (s *sysInfo) Init() *sysInfo {
 	s.cpuSystem.Idle, _ = strconv.ParseUint(array[4], 10, 64)
 	s.cpuSystem.IoWait, _ = strconv.ParseUint(array[5], 10, 64)
 
-	bytes, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/status", os.Getpid()))
+	bytes, err = ioutil.ReadFile("/proc/self/status")
 	if err != nil {
 		s.err = err
 		return nil

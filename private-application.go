@@ -93,7 +93,7 @@ func (a *application) init(configfile string) (*application, error) {
 		a.server.init(&a.configs)
 		a.serverCtrl.init()
 		a.reportQueue.Init()
-		a.Runtime.Init()
+		a.runtimeSnap.Snap()
 		a.svc.Start(a.loop)
 	}
 	a.logger.Println(log.LevelInfo, "App Init by ", configfile)
@@ -153,6 +153,6 @@ type application struct {
 	server      serviceDC
 	serverCtrl  serverControl
 	reportQueue list.List
-	Runtime     runtimePerf
+	runtimeSnap RuntimeSnap
 	inited      bool
 }

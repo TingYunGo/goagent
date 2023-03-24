@@ -20,14 +20,50 @@ import (
 //登陆中..1.inredirect
 //       2.inInit
 type serviceDC struct {
-	locked       int32 //login由redirect状态切换到init状态时提供保护，防止这时候Release
-	configs      *configurations
-	request      *postRequest.Request
-	aliveRequest *postRequest.Request
-	uploadHost   string
-	lastAlive    time.Time
-	lastValidDC  int
-	uploadSet    map[*postRequest.Request]int
+	locked        int32 //login由redirect状态切换到init状态时提供保护，防止这时候Release
+	configs       *configurations
+	request       *postRequest.Request
+	aliveRequest  *postRequest.Request
+	reportRequest *postRequest.Request
+	uploadHost    string
+	lastAlive     time.Time
+	lastReport    time.Time
+	lastValidDC   int
+	uploadSet     map[*postRequest.Request]int
+}
+
+func (s *serviceDC) reportRuntime(queryRuntime func() []byte, callback func(error, map[string]interface{})) {
+	//jvm?version=3.2.0&sessionKey=4112274
+	currTime := time.Now()
+	if currTime.Sub(s.lastReport) < 60*time.Second {
+		return
+	}
+	if s.reportRequest != nil {
+		return
+	}
+	requrl, err := s.makeTraceURL("jvm")
+	if err != nil {
+		return
+	}
+	b := queryRuntime()
+	if b == nil {
+		return
+	}
+	s.lastReport = currTime
+
+	Log().Println(LevelInfo, "jvm:", requrl)
+	Log().Println(LevelInfo|Audit, "Post Data:", string(b))
+	s.reportRequest, err = postRequest.New(requrl, map[string]string{}, b, time.Second*10, func(data []byte, statusCode int, err error) {
+		if err == nil {
+			Log().Println(LevelInfo, "jvm Status Code:", statusCode)
+			if len(data) > 0 {
+				Log().Println(LevelInfo|Audit, "jvm Response Data:", string(data))
+			}
+		}
+		jsonData, er := parseJSON(data, statusCode, err)
+		s.reportRequest = nil
+		callback(er, jsonData)
+	})
 }
 
 func (s *serviceDC) keepAlive(callback func(error, map[string]interface{})) {
@@ -217,6 +253,8 @@ func (s *serviceDC) Release() {
 func (s *serviceDC) init(config *configurations) {
 	s.configs = config
 	s.request = nil
+	s.reportRequest = nil
+	s.aliveRequest = nil
 	s.locked = 0
 	s.lastValidDC = 0
 	s.uploadSet = map[*postRequest.Request]int{}

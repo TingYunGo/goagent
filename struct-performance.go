@@ -4,31 +4,25 @@ package tingyun3
 
 type structPerformance struct {
 	sum         float64 //累加和
-	exclusive   float64
 	valueMax    float64 //最大值
 	valueMin    float64 //最小值
-	sumSquare   float64 //平方和
 	accessCount int32   //累加次数
 }
 
 func (p *structPerformance) IntSlice() []int64 {
-	r := make([]int64, 6)
+	r := make([]int64, 4)
 	r[0] = int64(p.accessCount)
 	r[1] = int64(p.sum)
-	r[2] = int64(p.exclusive)
-	r[3] = int64(p.valueMax)
-	r[4] = int64(p.valueMin)
-	r[5] = int64(p.sumSquare)
+	r[2] = int64(p.valueMax)
+	r[3] = int64(p.valueMin)
 	return r
 }
 func (p *structPerformance) FloatSlice() []interface{} {
-	r := make([]interface{}, 6)
+	r := make([]interface{}, 4)
 	r[0] = p.accessCount
 	r[1] = p.sum
-	r[2] = p.exclusive
-	r[3] = p.valueMax
-	r[4] = p.valueMin
-	r[5] = p.sumSquare
+	r[2] = p.valueMax
+	r[3] = p.valueMin
 	return r
 }
 
@@ -39,10 +33,8 @@ func newStructPerformance() *structPerformance {
 }
 func (p *structPerformance) Reset() *structPerformance {
 	p.sum = 0
-	p.exclusive = 0
 	p.valueMax = 0
 	p.valueMin = 0
-	p.sumSquare = 0
 	p.accessCount = 0
 	return p
 }
@@ -56,8 +48,6 @@ func (p *structPerformance) Append(q *structPerformance) {
 		if p.accessCount == 0 || q.valueMin < p.valueMin {
 			p.valueMin = q.valueMin
 		}
-		p.sumSquare += q.sumSquare
-		p.exclusive += q.exclusive
 		p.accessCount += q.accessCount
 	}
 }
@@ -75,8 +65,6 @@ func (p *structPerformance) AddComponent(value float64, excl float64) {
 		}
 	}
 	p.accessCount++
-	p.sumSquare += excl * excl
-	p.exclusive += excl
 }
 func (p *structPerformance) AddValue(value float64, excl float64) {
 	p.sum += value
@@ -92,6 +80,4 @@ func (p *structPerformance) AddValue(value float64, excl float64) {
 		}
 	}
 	p.accessCount++
-	p.sumSquare += value * value
-	p.exclusive += excl
 }

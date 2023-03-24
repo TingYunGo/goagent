@@ -223,6 +223,18 @@ func (a *application) checkFaildState() {
 	}
 	a.serverCtrl.loginState = serverUnInited
 }
+func (a *application) queryRuntime() []byte {
+	lastSnap := a.runtimeSnap
+	s := &a.runtimeSnap
+	s.Snap()
+	block := s.Sub(&lastSnap)
+
+	b, e := block.Serialize()
+	if e != nil {
+		a.logger.Println(log.LevelError, "runtime serialize error", e)
+	}
+	return b
+}
 
 func (a *application) timerCheck() {
 	if a.serverCtrl.postIsReturn {
@@ -233,7 +245,10 @@ func (a *application) timerCheck() {
 	if !a.checkLogin() {
 		return
 	}
-	a.configs.UpdateConfig(a.Runtime.Init)
+	a.configs.UpdateConfig(func() {
+		s := &a.runtimeSnap
+		s.Snap()
+	})
 	a.upload()
 	a.server.keepAlive(func(err error, jsonData map[string]interface{}) {
 		if err != nil {
@@ -258,6 +273,13 @@ func (a *application) timerCheck() {
 			}
 		}
 	})
+	if readLocalConfigBool(configLocalBoolReportGoRuntime, false) {
+		queryRuntime := func() []byte {
+			return a.queryRuntime()
+		}
+		a.server.reportRuntime(queryRuntime, func(err error, jsonData map[string]interface{}) {
+		})
+	}
 }
 
 var dropTrace int = 0

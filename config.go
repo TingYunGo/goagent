@@ -34,6 +34,7 @@ const (
 	configLocalBoolGormEnabled            = 6
 	configLocalBoolWarningDBInfo          = 7
 	configLocalBoolGorillaWebsocket       = 8
+	configLocalBoolReportGoRuntime        = 9
 	configLocalBoolMax                    = 16
 	configLocalIntegerNbsPort             = 1
 	configLocalIntegerNbsSaveCount        = 2
@@ -134,6 +135,7 @@ var localBoolKeyMap = map[string]int{
 	"GORM_ENABLED":        configLocalBoolGormEnabled,
 	"WARNING_DBINFO":      configLocalBoolWarningDBInfo,
 	"gorilla.websocket":   configLocalBoolGorillaWebsocket,
+	"runtime.report":      configLocalBoolReportGoRuntime,
 }
 
 var localIntegerKeyMap = map[string]int{
