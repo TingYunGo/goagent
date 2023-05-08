@@ -88,7 +88,7 @@
 
 ###  听云 goagent 是什么?
   - 听云 goagent是一个Go语言第三方模块, 发布根路径是: github.com/TingYunGo/goagent
-  - 听云 goagent 支持 amd64架构处理器 的linux环境， go1.9 到 最新的 go1.19.x Go语言版本。
+  - 听云 goagent 支持 amd64架构处理器 的linux环境， go1.9 到 最新的 go1.20.x Go语言版本。
   - 听云 goagent 提供自动嵌码和自定义嵌码(Go API)两种嵌码机制。
   - 自动嵌码支持列表参考  [框架支持列表](#tingyun_agent_frame)  和  [组件支持列表](#tingyun_agent_component) 
 
@@ -165,7 +165,7 @@
 
 | 框架 | 听云探针嵌码 import 模块路径 | 支持版本 |
 |-----|---------------------------|--------|
-| net/http <br/> 内置http框架 | github.com/TingYunGo/goagent | go1.9 ~ go1.19.x |
+| net/http <br/> 内置http框架 | github.com/TingYunGo/goagent | go1.9 ~ go1.20.x |
 | github.com/gin-gonic/gin <br/>gin框架 | github.com/TingYunGo/goagent/frameworks/gin | gin v1.3.0 ~ gin v1.8.2 |
 | github.com/astaxie/beego <br/>beego框架: GOPATH模式  | github.com/TingYunGo/goagent/frameworks/beego/path/astaxie | beego v1.12.0 ~ beego v2.0.0-beta |
 | github.com/beego/beego <br/>beego框架: GOPATH模式  | github.com/TingYunGo/goagent/frameworks/beego/path | beego v1.12.0 ~ beego v2.0.1 |
@@ -182,7 +182,7 @@
 
 | 组件 | 听云探针嵌码 import 模块路径 | 支持版本 |
 |-----|---------------------------|---------|
-| database/sql <br/> 数据库 | github.com/TingYunGo/goagent/database | go1.9 ~ go1.19.x<br/>驱动列表:<br/>mssql: github.com/denisenkom/go-mssqldb v0.9.0 ~ v0.11.0 <br/>mysql: github.com/go-sql-driver/mysql v1.0.0 ~ v1.6.0 <br/> postgresql: github.com/lib/pq v1.0.0 ~ v1.10.3 <br> sqlite: github.com/mattn/go-sqlite3 v1.0.0 ~ v1.14.8 |
+| database/sql <br/> 数据库 | github.com/TingYunGo/goagent/database | go1.9 ~ go1.20.x<br/>驱动列表:<br/>mssql: github.com/denisenkom/go-mssqldb v0.9.0 ~ v0.11.0 <br/>mysql: github.com/go-sql-driver/mysql v1.0.0 ~ v1.6.0 <br/> postgresql: github.com/lib/pq v1.0.0 ~ v1.10.3 <br> sqlite: github.com/mattn/go-sqlite3 v1.0.0 ~ v1.14.8 |
 | github.com/gomodule/redigo <br/> redis: redigo | github.com/TingYunGo/goagent/nosql/redigo | v1.7.0 ~ v1.8.5 |
 | github.com/go-redis/redis <br/> redis: go-redis, GOPATH模式 | github.com/TingYunGo/goagent/nosql/go-redis | v6.10.0 ~ v8.11.4 |
 | github.com/go-redis/redis <br/> redis: go-redis default, GOMOD模式 | github.com/TingYunGo/goagent/nosql/go-redis | v6.10.0 ~ v8.11.4 |
