@@ -48,6 +48,7 @@ const (
 	configLocalIntegerGoRedisFLAG         = 10
 	configLocalIntegerRedisInstanceUseKey = 11
 	ConfigLocalIntegerWebsocketIgnore     = 12
+	ConfigLocalIntegerRestfulUUIDMinSize  = 13
 	configLocalIntegerMax                 = 16
 
 	configServerStringAppSessionKey     = 1
@@ -157,6 +158,7 @@ var localIntegerKeyMap = map[string]int{
 	"agent_sql_size_max":        configLocalIntegerMaxSQLSize,
 	"REDIS_INST_USE_KEY":        configLocalIntegerRedisInstanceUseKey,
 	"websocket.ignore.duration": ConfigLocalIntegerWebsocketIgnore,
+	"uri.restful_uuid_min_size": ConfigLocalIntegerRestfulUUIDMinSize,
 }
 
 var serverStringKeyMap = map[string]int{
@@ -280,6 +282,7 @@ type configurations struct {
 	server        cache_config.Configuration
 	serverExt     cache_config.Configuration
 	serverArrays  cache_config.Arrays
+	serverNaming  nameingConfig
 	svc           service.Service
 	apdexs        apdexActionMap
 	dataItemRules dataItemRulesConfig
@@ -399,6 +402,7 @@ func (c *configurations) Init(configfile string) error {
 	if len(c.configfile) > 0 {
 		return c.update(configfile)
 	}
+	c.serverNaming.Init()
 	c.local.Init(configLocalStringMax, configLocalBoolMax, configLocalIntegerMax)
 	c.server.Init(configServerStringMax, configServerBoolMax, configServerIntegerMax)
 	c.serverExt.Init(configServerConfigStringMax, configServerConfigBoolMax, configServerConfigIntegerMax)
@@ -461,6 +465,12 @@ func (c *configurations) UpdateServerConfig(result map[string]interface{}, login
 			if config, err := jsonReadObjects(result, "config"); err == nil {
 				for k, v := range config {
 					c.serverExt.Update(serverConfigStringKeyMap, serverConfigBoolKeyMap, serverConfigIntegerKeyMap, k, v)
+				}
+				if namingconfig, err := jsonReadString(config, "action_naming.rules"); err == nil {
+
+					if namingRules, err := parseNamingRules(namingconfig); err == nil {
+						c.serverNaming.Update(namingRules)
+					}
 				}
 			}
 			c.apdexs.apdexT = readServerConfigInt(configServerConfigIntegerApdexThreshold, 500)

@@ -46,6 +46,7 @@ const (
 
 //Action : 事务对象
 type Action struct {
+	name           string
 	category       string
 	url            string
 	path           string
@@ -421,7 +422,7 @@ func (a *Action) SetTrackID(id string) {
 		a.trackID = id
 	}
 }
-func formatActionName(instance string, method string, isTransaction bool, isTask bool) string {
+func formatActionName(instance string, method string, prefix string) string {
 	if len(instance) == 0 {
 		classEnd := strings.LastIndex(method, ".")
 		if classEnd != -1 {
@@ -433,16 +434,11 @@ func formatActionName(instance string, method string, isTransaction bool, isTask
 	// if mlen > 1 && method[0:1] == "/" {
 	// 	method = method[1:mlen]
 	// }
-	preName := "WebAction/"
-	if isTask {
-		preName = "TaskAction/"
-	} else if isTransaction {
-		preName = "Transaction/"
-	}
+
 	if len(method) > 0 && method[0:1] == "/" {
 		method = method[1:]
 	}
-	return preName + instance + "/" + method
+	return prefix + instance + "/" + method
 	//	return preName + url.QueryEscape(instance) + "/" + url.QueryEscape(method)
 }
 
@@ -465,7 +461,13 @@ func (a *Action) SetName(name string, method string) {
 		a.method = method
 		a.root.method = method
 	}
-	a.category = name
+	if name == "URI" {
+		if len(a.category) == 0 || !readServerConfigBool(configServerConfigBoolAutoActionNaming, true) {
+			a.category = name
+		}
+	} else {
+		a.category = name
+	}
 }
 
 // SetHTTPMethod : 设置 HTTP请求方法名
@@ -487,6 +489,9 @@ func (a *Action) GetName() string {
 	if a == nil {
 		return ""
 	}
+	if len(a.name) > 0 {
+		return a.prefixName() + a.name
+	}
 	path := a.path
 	category := a.category
 	if a.category == "CLASS" {
@@ -499,7 +504,10 @@ func (a *Action) GetName() string {
 	} else if a.category != "URI" {
 		path = a.method
 	}
-	return formatActionName(category, path, !strings.Contains(a.trackID, ";n="), a.isTask)
+	if path == a.path {
+		path = formatRestfulURI(path, int(readLocalConfigInteger(ConfigLocalIntegerRestfulUUIDMinSize, 8)))
+	}
+	return formatActionName(category, path, a.prefixName())
 }
 
 // GetURL : 取事务的 URL
@@ -731,6 +739,7 @@ func (a *Action) destroy() {
 	if a == nil || a.stateUsed == actionUnused {
 		return
 	}
+	a.name = ""
 	a.category = ""
 	a.url = ""
 	a.path = ""

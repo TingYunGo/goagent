@@ -240,9 +240,9 @@ func (w *writeWrapper) parseSwitchProtocol() bool {
 				}
 			})
 		})
-		for _, line := range parts {
-			fmt.Println("SWITCH:", line)
-		}
+		// for _, line := range parts {
+		// 	fmt.Println("SWITCH:", line)
+		// }
 		if answer_code > 0 {
 			w.action.SetHTTPStatus(uint16(answer_code), 3)
 			w.answerd = true
@@ -312,8 +312,16 @@ func (w *writeWrapper) onAnswer(statusCode int) {
 			}
 		}
 	}
+
 	w.action.SetHTTPStatus(uint16(statusCode), 3)
 	w.answerd = true
+	if statusCode == 101 {
+		w.action.Finish()
+		if w.gid != 0 {
+			removeRoutineLocal(w.gid)
+		}
+		w.reset()
+	}
 }
 
 func (w *writeWrapper) Header() http.Header {
@@ -352,16 +360,17 @@ func (w *writeWrapper) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	}
 	return c, rw, e
 }
+
 func wrapHandler(pattern string, handler http.Handler) http.Handler {
 	h := handler
 	var methodName string
-	isRouteMode := true
+	// isRouteMode := true
 	className := reflect.TypeOf(handler).String()
 	if className == "http.HandlerFunc" || className == "HandlerFunc" {
 		handlerPC := reflect.ValueOf(handler).Pointer()
 		methodName = runtime.FuncForPC(handlerPC).Name()
 	} else {
-		isRouteMode = false
+		// isRouteMode = false
 		if len(className) > 0 && className[0] == '*' {
 			className = className[1:]
 		}
@@ -376,7 +385,7 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 			component = action.CreateComponent(methodName)
 		}
 		if !preAction {
-			if isRouteMode {
+			if readServerConfigBool(configServerConfigBoolAutoActionNaming, true) {
 				action, _ = CreateAction("ROUTER", methodName)
 			} else {
 				action, _ = CreateAction("URI", r.URL.Path)
@@ -386,6 +395,9 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 				}
 			}
 			if action != nil {
+				if len(action.name) == 0 {
+					action.name = namingCustomizeName(r)
+				}
 				r = r.WithContext(context.WithValue(r.Context(), "TingYunWebAction", action))
 			}
 		}

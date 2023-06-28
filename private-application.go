@@ -50,6 +50,12 @@ func readServerConfigBool(id int, defaultValue bool) bool {
 	}
 	return app.configs.serverExt.CBools.Read(id, defaultValue)
 }
+func getServerNamingRules() *namingRules {
+	if app == nil {
+		return nil
+	}
+	return app.configs.serverNaming.Get()
+}
 func readLocalConfigInteger(id int, defaultValue int64) int64 {
 	if app == nil {
 		return defaultValue

@@ -4,6 +4,7 @@ package tingyun3
 
 import (
 	"crypto/md5"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -408,12 +409,91 @@ func isSpace(t byte) bool {
 func isHex(ch byte) bool {
 	return ch-'0' < 10 || ch-'a' < 6 || ch-'A' < 6
 }
+func isDigit(ch byte) bool {
+	return ch-'0' < 10
+}
 func trimString(value string, isSep func(byte) bool) string {
 	return tystring.TrimString(value, isSep)
 }
 func trimSpace(value string) string {
 	return trimString(value, isSpace)
 }
+
+func getStringParts(source string, sep byte, parts int) string {
+	if parts == 0 {
+		return ""
+	}
+	source = trimSpace(source)
+	part := 0
+
+	if parts > 0 {
+		for i := 0; i < len(source); i++ {
+			if source[i] == sep && i > 0 {
+				part++
+				if part == parts {
+					return subString(source, 0, i)
+				}
+			}
+		}
+	} else {
+		parts = -parts
+		for i := len(source); i > 0; i-- {
+			if source[i-1] == sep {
+				part++
+				if part == parts {
+					return subString(source, i-1, len(source))
+				}
+			}
+		}
+	}
+	return source
+}
+
+func formatRestfulURI(uri string, uuidCheckMinSize int) string {
+	if uuidCheckMinSize < 2 {
+		uuidCheckMinSize = 2
+	}
+	res := ""
+	begin := 0
+	i := 0
+	appendPart := func() {
+		if begin == i {
+			return
+		}
+		needFix := true
+		if i-begin > uuidCheckMinSize {
+			for x := begin + 1; x < i; x++ {
+				if !isHex(uri[x]) {
+					needFix = false
+					break
+				}
+			}
+		} else if i-begin > 1 {
+			for x := begin + 1; x < i; x++ {
+				if !isDigit(uri[x]) {
+					needFix = false
+					break
+				}
+			}
+		} else {
+			needFix = false
+		}
+		if !needFix {
+			res += subString(uri, begin, i-begin)
+		} else {
+			res += "/*"
+		}
+	}
+	for ; i < len(uri); i++ {
+		if uri[i] == '/' {
+			appendPart()
+			begin = i
+		}
+	}
+	appendPart()
+	return res
+}
+
 func fileCat(filename string) string {
 	bytes, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -567,4 +647,266 @@ func limitAppend(a, b []byte, size int) []byte {
 	}
 	size = size - leftSize
 	return append(a, b[0:size]...)
+}
+
+type namingRules struct {
+	rules []*nameRule
+}
+
+func (nr *namingRules) init(rules int) *namingRules {
+	nr.rules = make([]*nameRule, rules)
+	for i := 0; i < rules; i++ {
+		nr.rules[i] = &nameRule{}
+	}
+	return nr
+}
+
+func (nr *namingRules) Valid() bool {
+	if len(nr.rules) < 1 {
+		return false
+	}
+	for _, v := range nr.rules {
+		if v.Valid() {
+			return true
+		}
+	}
+	return false
+}
+
+func (nr *namingRules) Print() {
+	for i, v := range nr.rules {
+		if v != nil {
+			fmt.Println("rules[", i, "]:")
+			v.Print()
+		}
+	}
+}
+
+type nameRule struct {
+	name      string //规则名
+	matchRule nameMatchRule
+	naming    namingRule
+}
+
+func (nr *nameRule) Valid() bool {
+	if len(nr.name) == 0 {
+		return false
+	}
+	if !nr.matchRule.Valid() {
+		return false
+	}
+	return true
+}
+
+func (nr *nameRule) Print() {
+	fmt.Println("  name: ", nr.name)
+	fmt.Println("  match:")
+	nr.matchRule.Print()
+	fmt.Println("  naming:")
+	nr.naming.Print()
+}
+
+func (nr *nameRule) inst() *nameRule {
+	return nr
+}
+func (nr *nameRule) init(ruleData map[string]interface{}) error {
+
+	nr.matchRule.methodMatch = -1
+	nr.matchRule.methodMatch = -1
+
+	match, err := jsonReadObjects(ruleData, "match")
+	if err != nil {
+		return err
+	}
+	if err = nr.matchRule.init(match); err != nil {
+		return err
+	}
+
+	naming, err := jsonReadObjects(ruleData, "naming")
+	if err != nil {
+		return err
+	}
+	if err = nr.naming.init(naming); err != nil {
+		return err
+	}
+
+	nr.name, _ = jsonReadString(ruleData, "name")
+	return nil
+}
+
+type nameMatchRule struct {
+	methodMatch    int              //0-所有方法, 1-GET, 2-POST, 3-PUT, 4-DELETE, 5-HEAD
+	howToMatchURI  int              //1-等于, 2-开始于, 3-结束于, 4-包含, 5-正则匹配
+	uriMatchTarget string           //uri匹配目标
+	params         []nameMatchParam //匹配参数列表
+}
+
+var matchMethodList = []string{
+	"ALL", "GET", "POST", "PUT", "DELETE", "HEAD",
+}
+
+func (mr *nameMatchRule) MethodEnabled() string {
+	if mr.methodMatch < 0 || mr.methodMatch > 5 {
+		return ""
+	}
+	return matchMethodList[mr.methodMatch]
+}
+func (mr *nameMatchRule) Valid() bool {
+	if mr.methodMatch < 0 || mr.methodMatch > 5 {
+		return false
+	}
+	if mr.howToMatchURI < 0 {
+		return false
+	}
+	return true
+}
+func (mr *nameMatchRule) Print() {
+	fmt.Println("    method:", mr.methodMatch)
+	fmt.Println("    match: ", mr.howToMatchURI)
+	fmt.Println("    value: ", mr.uriMatchTarget)
+	for i := 0; i < len(mr.params); i++ {
+		fmt.Println("    params[", i, "]:")
+		mr.params[i].Print()
+	}
+}
+
+func (mr *nameMatchRule) init(matchRule map[string]interface{}) error {
+	if v, err := jsonReadInt(matchRule, "method"); err == nil {
+		mr.methodMatch = v
+	}
+	if v, err := jsonReadInt(matchRule, "match"); err == nil {
+		mr.howToMatchURI = v
+	}
+	if s, err := jsonReadString(matchRule, "value"); err == nil {
+		mr.uriMatchTarget = s
+	}
+	if params, err := jsonReadArray(matchRule, "params"); err == nil {
+		if len(params) < 1 {
+			return nil
+		}
+		mr.params = make([]nameMatchParam, len(params))
+
+		for i, v := range params {
+
+			if param, ok := v.(map[string]interface{}); ok {
+
+				mr.params[i].init(param)
+			}
+		}
+	}
+	return nil
+}
+
+type nameMatchParam struct {
+	matchType       int    //1-url参数, 2-header参数, 3-body参数
+	paramName       string //匹配的参数名
+	howToMatchParam int    //0-任意值, 1-等于, 2-开始于, 3-结束于, 4-包含, 5-正则匹配
+	matchTarget     string //参数匹配目标
+}
+
+func (mp *nameMatchParam) Print() {
+	fmt.Println("      type: ", mp.matchType)
+	fmt.Println("      name: ", mp.paramName)
+	fmt.Println("      match:", mp.howToMatchParam)
+	fmt.Println("      value:", mp.matchTarget)
+}
+
+func (mp *nameMatchParam) init(param map[string]interface{}) error {
+	mp.matchType = -1
+	mp.howToMatchParam = -1
+	if matchType, err := jsonReadInt(param, "type"); err == nil {
+		mp.matchType = matchType
+	}
+	if name, err := jsonReadString(param, "name"); err == nil {
+		mp.paramName = name
+	}
+	if match, err := jsonReadInt(param, "match"); err == nil {
+		mp.howToMatchParam = match
+	}
+	if value, err := jsonReadString(param, "value"); err == nil {
+		mp.matchTarget = value
+	}
+	return nil
+}
+
+type namingRule struct {
+	method bool //是否添加method前缀
+
+	//空串(null)表示按URI命名规则被禁用
+	//正整数,表示将restful前几段添加到事务名称
+	//负整数,表示将restful后几段添加到事务名称
+	//值为正整数并且逗号分隔时,将uri中的指定的段添加到事务名
+	uri string
+
+	//空串(null)表示按参数命名规则被禁用
+	//不为null时,表示匹配的header名,以逗号分隔
+	//匹配成功后将header的key和value添加到事务名称
+	param  string
+	header string
+	body   string
+	cookie string
+}
+
+func (nr *namingRule) Print() {
+	fmt.Println("    method:", nr.method)
+	fmt.Println("    uri:   ", nr.uri)
+	fmt.Println("    param: ", nr.param)
+	fmt.Println("    header:", nr.header)
+	fmt.Println("    body:  ", nr.body)
+	fmt.Println("    cookie:", nr.cookie)
+}
+
+func (nr *namingRule) init(namingRule map[string]interface{}) error {
+
+	nr.method, _ = jsonReadBool(namingRule, "method")
+	nr.uri, _ = jsonReadString(namingRule, "uri")
+	nr.param, _ = jsonReadString(namingRule, "param")
+	nr.header, _ = jsonReadString(namingRule, "header")
+	nr.body, _ = jsonReadString(namingRule, "body")
+	nr.cookie, _ = jsonReadString(namingRule, "cookie")
+	return nil
+}
+
+type nameingConfig struct {
+	current int
+	arrays  [4]*namingRules
+	inited  bool
+}
+
+func (nc *nameingConfig) Init() {
+	nc.current = 3
+	for i := 0; i < 4; i++ {
+		nc.arrays[i] = nil
+	}
+	nc.inited = true
+}
+
+func (nc *nameingConfig) Update(rules *namingRules) {
+
+	nc.arrays[(nc.current+1)%4] = rules
+	nc.current = (nc.current + 1) % 4
+}
+func (nc *nameingConfig) Get() *namingRules {
+	return nc.arrays[nc.current%4]
+}
+func parseNamingRules(data string) (*namingRules, error) {
+
+	jsonData := make([]interface{}, 0)
+	if err := json.Unmarshal([]byte(data), &jsonData); err != nil {
+		return nil, err
+	}
+
+	if len(jsonData) == 0 {
+		return nil, errors.New("no rules")
+	}
+	rules := &namingRules{}
+	rules.init(len(jsonData))
+
+	for i, v := range jsonData {
+
+		if rule, ok := v.(map[string]interface{}); ok {
+			rules.rules[i].init(rule)
+		}
+	}
+	return rules, nil
 }
