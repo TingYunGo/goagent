@@ -72,6 +72,9 @@ func (r *structAppData) Append(action *Action) {
 		default:
 		}
 	}
+	if len(action.trackID) > 0 {
+		trace.UnableBack = !action.enabledBack
+	}
 	if trace.Tmd5 == "" {
 		trace.Tmd5 = md5sum(trace.Action)
 	}

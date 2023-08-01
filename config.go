@@ -72,7 +72,7 @@ const (
 	configServerConfigStringMax                              = 16
 
 	configServerConfigBoolAgentEnabled                   = 1
-	configServerConfigBoolAutoActionNaming               = 2
+	ServerConfigBoolAutoActionNaming                     = 2
 	configServerConfigBoolCaptureParams                  = 3
 	configServerConfigBoolErrorCollectorEnabled          = 4
 	configServerConfigBoolErrorCollectorRecordDBErrors   = 5
@@ -91,6 +91,7 @@ const (
 	configServerConfigBoolResourceEnabled                = 18
 	configServerConfigBoolLogTracking                    = 19
 	configServerConfigBoolActionTracerStackTraceEnabled  = 20
+	ServerConfigBoolErrorCollectorStackEnabled           = 21
 	configServerConfigBoolMax                            = 24
 
 	configServerConfigIntegerActionTracerActionThreshold     = 1
@@ -190,9 +191,10 @@ var serverConfigStringKeyMap = map[string]int{
 
 var serverConfigBoolKeyMap = map[string]int{
 	"agent_enabled":                          configServerConfigBoolAgentEnabled,
-	"auto_action_naming":                     configServerConfigBoolAutoActionNaming,
+	"auto_action_naming":                     ServerConfigBoolAutoActionNaming,
 	"action_tracer.capture_params":           configServerConfigBoolCaptureParams,
 	"error_collector.enabled":                configServerConfigBoolErrorCollectorEnabled,
+	"error_collector.stack_enabled":          ServerConfigBoolErrorCollectorStackEnabled,
 	"nbs.error_collector.record_db_errors":   configServerConfigBoolErrorCollectorRecordDBErrors,
 	"action_tracer.enabled":                  configServerConfigBoolActionTracerEnabled,
 	"action_tracer.stack_enabled":            configServerConfigBoolActionTracerStackTraceEnabled,

@@ -69,6 +69,7 @@ type Action struct {
 	stateUsed      uint8
 	trackEnable    bool
 	isTask         bool
+	enabledBack    bool
 }
 
 func (a *Action) IsTask() bool {
@@ -81,7 +82,8 @@ func (a *Action) checkComponent() bool {
 	if a == nil {
 		return false
 	}
-	return a.cache.Size() < int32(app.configs.local.CIntegers.Read(configLocalIntegerComponentMax, 3000))
+	maxCacheSize := int32(app.configs.local.CIntegers.Read(configLocalIntegerComponentMax, 3000))
+	return a.cache.Size() < maxCacheSize
 }
 func fixSQL(sql string) string {
 	maxSize := int(app.configs.local.CIntegers.Read(configLocalIntegerMaxSQLSize, 5000))
@@ -97,6 +99,8 @@ func parseURL(url string) (string, string) {
 		protocol = "https"
 	} else if tystring.SubString(url, 0, 7) == "http://" {
 		protocol = "http"
+	} else if tystring.SubString(url, 0, 7) == "grpc://" {
+		protocol = "grpc"
 	}
 	urlRequest := parseUriRequest(parseURI(url))
 	if len(urlRequest) == 0 {
@@ -422,9 +426,17 @@ func (a *Action) SetTrackID(id string) {
 		a.trackID = id
 	}
 }
+
+func (a *Action) SetBackEnabled(enabled bool) {
+	if a == nil || a.stateUsed != actionUsing {
+		return
+	}
+	a.enabledBack = enabled
+}
+
 func formatActionName(instance string, method string, prefix string) string {
 	if len(instance) == 0 {
-		classEnd := strings.LastIndex(method, ".")
+		classEnd := strings.Index(method, ".")
 		if classEnd != -1 {
 			instance = method[0:classEnd]
 			method = method[classEnd+1:]
@@ -462,7 +474,7 @@ func (a *Action) SetName(name string, method string) {
 		a.root.method = method
 	}
 	if name == "URI" {
-		if len(a.category) == 0 || !readServerConfigBool(configServerConfigBoolAutoActionNaming, true) {
+		if len(a.category) == 0 || !readServerConfigBool(ServerConfigBoolAutoActionNaming, true) {
 			a.category = name
 		}
 	} else {

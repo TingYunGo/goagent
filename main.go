@@ -360,7 +360,16 @@ func (w *writeWrapper) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	}
 	return c, rw, e
 }
-
+func CatchRequestHeaders() []string {
+	if app == nil {
+		return nil
+	}
+	rule := app.configs.dataItemRules.Get()
+	if rule == nil {
+		return nil
+	}
+	return rule.requestHeader
+}
 func wrapHandler(pattern string, handler http.Handler) http.Handler {
 	h := handler
 	var methodName string
@@ -385,7 +394,7 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 			component = action.CreateComponent(methodName)
 		}
 		if !preAction {
-			if readServerConfigBool(configServerConfigBoolAutoActionNaming, true) {
+			if readServerConfigBool(ServerConfigBoolAutoActionNaming, true) {
 				action, _ = CreateAction("ROUTER", methodName)
 			} else {
 				action, _ = CreateAction("URI", r.URL.Path)
@@ -453,7 +462,7 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 //go:noinline
 func WrapServerMuxHandle(ptr *http.ServeMux, pattern string, handler http.Handler) {
 	// fmt.Println("Wrap: ", pattern, ", By: ", reflect.TypeOf(handler).String())
-	ServerMuxHandle(ptr, pattern, wrapHandler(pattern, handler))
+	ServerMuxHandle(ptr, pattern, wrapHandler("ServeMuxHandle: pattern="+pattern, handler))
 }
 
 //go:noinline
@@ -486,6 +495,10 @@ func HttpServerServe(srv *http.Server, l net.Listener) error {
 	return nil
 }
 
+func AppendListenAddress(address string) {
+	listens.Append(address)
+}
+
 //go:noinline
 func WrapHttpServerServe(srv *http.Server, l net.Listener) error {
 	addr := srv.Addr
@@ -503,7 +516,7 @@ func WrapHttpServerServe(srv *http.Server, l net.Listener) error {
 	}
 
 	if srv.Handler != nil {
-		srv.Handler = wrapHandler("", srv.Handler)
+		srv.Handler = wrapHandler("HttpServerServe", srv.Handler)
 	}
 
 	e := HttpServerServe(srv, l)

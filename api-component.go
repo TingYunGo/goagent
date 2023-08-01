@@ -85,6 +85,11 @@ func (c *Component) SetURL(url string) {
 		return
 	}
 	c.protocol, c.op = parseURL(url)
+	if len(c.op) > 0 {
+		if c.op[0] != '/' {
+			c.op = "/" + c.op
+		}
+	}
 }
 func (c *Component) SetStatusCode(statusCode int) {
 	if c == nil {

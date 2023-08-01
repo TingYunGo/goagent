@@ -175,6 +175,8 @@
 | github.com/labstack/echo/v4 <br/>echo 框架 V4 GOMOD模式 | github.com/TingYunGo/goagent/frameworks/echo/v4 | echo v4.0.0 ~ echo v4.6.1 |
 | github.com/kataras/iris/v12 <br/> iris 框架 v12.1.x | github.com/TingYunGo/goagent/frameworks/iris/v12 | iris v12.1.0 ~ iris v12.1.8 |
 | github.com/kataras/iris/v12 <br/>iris 框架 v12.2  | github.com/TingYunGo/goagent/frameworks/iris/v12/2 | iris v12.2.0-alpha ~ iris v12.2.0-alpha3 |
+| google.golang.org/grpc <br/>grpc 框架  | github.com/TingYunGo/goagent/frameworks/grpc | grpc v1.32.0 ~ grpc v1.57.0 |
+| github.com/go-kratos/kratos/v2 <br/>kratos 框架 v2  | github.com/TingYunGo/goagent/frameworks/kratosV2 | kratos v2.0.0 ~ kratos v2.6.3 |
 
 <span id="tingyun_agent_component">
 

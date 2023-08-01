@@ -21,10 +21,14 @@ func (a *Action) setError(e interface{}, errType string, skipStack int, isError 
 		return
 	} //errorTrace 聚合,以 callstack + message
 	errTime := time.Now()
-	a.errors.Put(&errInfo{errTime, patchSize(toString(e), 4000), callStack(skipStack), errType, isError})
+	errorStack := []string{}
+	if readServerConfigBool(ServerConfigBoolErrorCollectorStackEnabled, false) {
+		errorStack = callStack(skipStack)
+	}
+	a.errors.Put(&errInfo{errTime, patchSize(toString(e), 4000), errorStack, errType, isError})
 }
 func (a *Action) makeTracerID() int32 {
-	return atomic.AddInt32(&a.tracerIDMaker, 1)
+	return atomic.AddInt32(&a.tracerIDMaker, 1) - 1
 }
 
 func (a *Action) prefixName() string {

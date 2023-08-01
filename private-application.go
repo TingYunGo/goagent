@@ -50,6 +50,9 @@ func readServerConfigBool(id int, defaultValue bool) bool {
 	}
 	return app.configs.serverExt.CBools.Read(id, defaultValue)
 }
+func ReadServerConfigBool(id int, defaultValue bool) bool {
+	return readServerConfigBool(id, defaultValue)
+}
 func getServerNamingRules() *namingRules {
 	if app == nil {
 		return nil
@@ -118,6 +121,7 @@ func (a *application) createAction(category string, method string, istask bool) 
 		url:            "",
 		trackID:        "",
 		trackEnable:    false,
+		enabledBack:    true,
 		statusCode:     0,
 		requestParams:  make(map[string]string),
 		responseParams: make(map[string]string),

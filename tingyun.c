@@ -170,6 +170,18 @@ extern const WrapItem* TingyunWraps() {
         {"github.com/kataras/iris/v12/core/router.(*APIBuilder).CreateRoutes", "/frameworks/iris/v12.", "irisCreateRoutes"},
         {"github.com/kataras/iris/v12/core/router.FileServer", "/frameworks/iris/v12.", "routerFileServer"},
 
+        {"google.golang.org/grpc.(*Server).RegisterService", "/frameworks/grpc.", "ServerRegisterService"},
+        {"google.golang.org/grpc.(*Server).Serve", "/frameworks/grpc.", "ServerServe"},
+        {"google.golang.org/grpc.(*ClientConn).Invoke", "/frameworks/grpc.", "ClientConnInvoke"},
+        {"google.golang.org/grpc.(*ClientConn).NewStream", "/frameworks/grpc.", "ClientConnNewStream"},
+
+        {"github.com/gorilla/mux.(*Router).HandleFunc", "/frameworks/gorilla/mux.", "RouterHandleFunc"},
+        {"github.com/gorilla/mux.(*Router).Handle", "/frameworks/gorilla/mux.", "RouterHandle"},
+
+        {"github.com/go-kratos/kratos/v2/transport/http.(*wrapper).Middleware", "/frameworks/kratosV2.", "TransportHttpContextMiddleware"},
+        {"github.com/go-kratos/kratos/v2/transport/http.(*Router).Handle", "/frameworks/kratosV2.", "TransportHttpRouterHandle"},
+
+
         {"github.com/go-redis/redis.NewClient", "/nosql/go-redis.", "redisNewClient"},
         {"github.com/go-redis/redis.NewClusterClient", "/nosql/go-redis.", "redisNewClusterClient"},
         {"github.com/go-redis/redis.NewSentinelClient", "/nosql/go-redis.", "redisNewSentinelClient"},
