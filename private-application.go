@@ -75,6 +75,13 @@ func readLocalConfigBool(id int, defaultValue bool) bool {
 	return app.configs.local.CBools.Read(id, defaultValue)
 }
 
+func readLocalConfigString(id int, defaultValue string) string {
+	if app == nil {
+		return defaultValue
+	}
+	return app.configs.local.CStrings.Read(id, defaultValue)
+}
+
 func readServerConfigString(id int, defaultValue string) string {
 	if app == nil {
 		return defaultValue

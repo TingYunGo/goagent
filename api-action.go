@@ -55,6 +55,7 @@ type Action struct {
 	clientIP       string
 	trackID        string
 	actionID       string
+	transagentID   string
 	cache          pool.SerialReadPool
 	errors         pool.Pool
 	requestParams  map[string]string
@@ -148,6 +149,20 @@ func (a *Action) OnEnd(cb func()) {
 	}
 }
 
+func (a *Action) SetConsumer(vender string, host, queue string) {
+	if app == nil || a == nil || a.stateUsed != actionUsing || !app.inited {
+		return
+	}
+	if !a.checkComponent() {
+		return
+	}
+
+	a.root.instance = getValidString(host, "NULL")
+	a.root.op = getValidString(queue, "NULL")
+	a.root.vender = vender
+	a.root._type = ComponentMQC
+}
+
 // CreateMQComponent : 创建一个消息队列组件
 //   vender : mq类型: kafka/rabbit MQ/ActiveMQ
 func (a *Action) CreateMQComponent(vender string, isConsumer bool, host, queue string) *Component {
@@ -167,7 +182,8 @@ func (a *Action) CreateMQComponent(vender string, isConsumer bool, host, queue s
 		method:         GetCallerName(1),
 		protocol:       "",
 		vender:         vender,
-		instance:       getValidString(host, "NULL") + "/" + getValidString(queue, "NULL"),
+		instance:       getValidString(host, "NULL"),
+		op:             getValidString(queue, "NULL"),
 		tracerParentID: a.current.tracerID,
 		tracerID:       a.makeTracerID(),
 		exID:           false,

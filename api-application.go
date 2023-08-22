@@ -128,3 +128,20 @@ func init() {
 	}
 	tingyunAppInit(configFile)
 }
+
+//return token_name, token_value
+func GetTrackToken() (string, string) {
+
+	if !readServerConfigBool(configServerConfigBoolLogTracking, false) {
+		return "", ""
+	}
+	action := GetAction()
+	if action == nil {
+		return "", ""
+	}
+	appId := readServerConfigInt(configServerIntegerApplicationID, 0)
+	traceId := action.getTransactionID()
+	actionId := action.unicID()
+	tagName := readLocalConfigString(configLocalStringLogTrackName, "tingyun")
+	return tagName, fmt.Sprintf("[tingyun_app_id:%d,tingyun_trace_id:%s,tingyun_span_id:%s]", appId, traceId, actionId)
+}

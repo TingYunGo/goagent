@@ -166,7 +166,7 @@ func (c *Component) FixStackEnd(skip int, checkRemovedFunction func(string) bool
 			c.parent = c.action.root
 		}
 		c.time.End()
-		if c._type == ComponentDefault && c.action.current == c && c != c.action.root {
+		if (c._type == ComponentDefault || c._type == ComponentMQC) && c.action.current == c && c != c.action.root {
 			c.action.current = c.parent
 		}
 		if len(c.callStack) > 0 {
@@ -185,7 +185,7 @@ func (c *Component) FixStackEnd(skip int, checkRemovedFunction func(string) bool
 //
 //返回值: 字符串,一个包含授权id,应用id,实例id,事务id等信息的追踪id
 func (c *Component) CreateTrackID() string {
-	if app == nil || c == nil || c.action == nil || c._type != ComponentExternal {
+	if app == nil || c == nil || c.action == nil || (c._type != ComponentExternal && c._type != ComponentMQP) {
 		return ""
 	}
 	if !readLocalConfigBool(configLocalBoolTransactionEnabled, true) {
@@ -237,7 +237,7 @@ func (c *Component) AppendSQL(sql string) {
 
 // CreateComponent : 在函数/方法中调用其他函数/方法时,如果认为有必要,调用此方法测量子过程性能
 func (c *Component) CreateComponent(method string) *Component {
-	if c == nil || c.action == nil || c._type != ComponentDefault {
+	if c == nil || c.action == nil || c._type != ComponentDefault || c._type != ComponentMQC {
 		return nil
 	}
 	if !c.action.checkComponent() {

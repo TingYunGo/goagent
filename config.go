@@ -19,23 +19,26 @@ import (
 )
 
 const (
-	configLocalStringNbsHost              = 1
-	configLocalStringNbsLicenseKey        = 2
-	configLocalStringNbsAppName           = 3
-	configLocalStringNbsLevel             = log.ConfigStringNBSLevel
-	configLocalStringNbsLogFileName       = log.ConfigStringNBSLogFileName
-	configLocalStringAppUUID              = 6
-	configLocalStringMax                  = 8
-	configLocalBoolAgentEnable            = 1
-	configLocalBoolSSL                    = 2
-	configLocalBoolAudit                  = log.ConfigBoolNBSAudit
-	configLocalBoolWebsocketEnabled       = 4
-	configLocalBoolTransactionEnabled     = 5
-	configLocalBoolGormEnabled            = 6
-	configLocalBoolWarningDBInfo          = 7
-	configLocalBoolGorillaWebsocket       = 8
-	configLocalBoolReportGoRuntime        = 9
-	configLocalBoolMax                    = 16
+	configLocalStringNbsHost        = 1
+	configLocalStringNbsLicenseKey  = 2
+	configLocalStringNbsAppName     = 3
+	configLocalStringNbsLevel       = log.ConfigStringNBSLevel
+	configLocalStringNbsLogFileName = log.ConfigStringNBSLogFileName
+	configLocalStringAppUUID        = 6
+	configLocalStringLogTrackName   = 7
+	configLocalStringMax            = 16
+
+	configLocalBoolAgentEnable        = 1
+	configLocalBoolSSL                = 2
+	configLocalBoolAudit              = log.ConfigBoolNBSAudit
+	configLocalBoolWebsocketEnabled   = 4
+	configLocalBoolTransactionEnabled = 5
+	configLocalBoolGormEnabled        = 6
+	configLocalBoolWarningDBInfo      = 7
+	configLocalBoolGorillaWebsocket   = 8
+	configLocalBoolReportGoRuntime    = 9
+	configLocalBoolMax                = 16
+
 	configLocalIntegerNbsPort             = 1
 	configLocalIntegerNbsSaveCount        = 2
 	configLocalIntegerNbsMaxLogSize       = log.ConfigIntegerNBSMaxLogSize
@@ -59,6 +62,7 @@ const (
 	configServerBoolMax                 = 24
 	configServerIntegerDataSentInterval = 1
 	configServerIntegerApdexT           = 2
+	configServerIntegerApplicationID    = 3
 	configServerIntegerMax              = 16
 
 	configServerConfigStringActionTracerRecordSQL            = 1
@@ -87,7 +91,7 @@ const (
 	configServerConfigBoolHotspotEnabled                 = 14
 	configServerConfigBoolRumMixEnabled                  = 15
 	configServerConfigBoolTransactionTracerThrift        = 16
-	configServerConfigBoolMQEnabled                      = 17
+	ServerConfigBoolMQEnabled                            = 17
 	configServerConfigBoolResourceEnabled                = 18
 	configServerConfigBoolLogTracking                    = 19
 	configServerConfigBoolActionTracerStackTraceEnabled  = 20
@@ -123,6 +127,7 @@ var localStringKeyMap = map[string]int{
 	"license_key":         configLocalStringNbsLicenseKey,
 	"agent_log_level":     configLocalStringNbsLevel,
 	"agent_log_file":      configLocalStringNbsLogFileName,
+	"log_track_name":      configLocalStringLogTrackName,
 	"UUID":                configLocalStringAppUUID,
 }
 var localBoolKeyMap = map[string]int{
@@ -176,6 +181,7 @@ var serverBoolKeyMap = map[string]int{
 var serverIntegerKeyMap = map[string]int{
 	"dataSentInterval": configServerIntegerDataSentInterval,
 	"apdex_t":          configServerIntegerApdexT,
+	"appId":            configServerIntegerApplicationID,
 }
 
 var serverConfigStringKeyMap = map[string]int{
@@ -207,9 +213,10 @@ var serverConfigBoolKeyMap = map[string]int{
 	"nbs.hotspot.enabled":                    configServerConfigBoolHotspotEnabled,
 	"nbs.rum.mix_enabled":                    configServerConfigBoolRumMixEnabled,
 	"nbs.transaction_tracer.thrift":          configServerConfigBoolTransactionTracerThrift,
-	"mq.enabled":                             configServerConfigBoolMQEnabled,
+	"mq.enabled":                             ServerConfigBoolMQEnabled,
 	"nbs.resource.enabled":                   configServerConfigBoolResourceEnabled,
 	"nbs.log_tracking":                       configServerConfigBoolLogTracking,
+	"log_tracking":                           configServerConfigBoolLogTracking,
 }
 
 var serverConfigIntegerKeyMap = map[string]int{
@@ -224,6 +231,7 @@ var serverConfigIntegerKeyMap = map[string]int{
 	"nbs.resource.low":                     configServerConfigIntegerResourceLow,
 	"nbs.resource.high":                    configServerConfigIntegerResourceHigh,
 	"nbs.resource.safe":                    configServerConfigIntegerResourceSafe,
+	"appId":                                configServerIntegerApplicationID,
 }
 
 type configKeyMaps struct {

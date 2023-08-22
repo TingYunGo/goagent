@@ -107,4 +107,5 @@ const (
 	StorageIndexIris     = 1 + 8*5
 	StorageIndexGin      = 1 + 8*6
 	StorageGorillaWS     = 1 + 8*7
+	StorageMQKafka       = 1 + 8*8
 )

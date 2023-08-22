@@ -14,6 +14,11 @@ typedef struct {
 } ReplaceItem;
 extern const ReplaceItem* TingyunReplaceItems() {
     static ReplaceItem targets[] = {
+
+     {"runtime.(*_type).string", "/runtime.WrapTypeString", "", "/runtime.TypeString"},
+     {"runtime.chansend", "/runtime.Wrapchansend", "", "/runtime.chansend"},
+     {"runtime.selectgo", "/runtime.Wrapselectgo", "", "/runtime.selectgo"},
+
      {"net/http.NotFound", ".WraphttpNotFound", "net/http", ".httpNotFound"},
      {"net/http.(*Server).Serve", ".WrapHttpServerServe", "", ".HttpServerServe"},
      {"net/http.(*ServeMux).Handle", ".WrapServerMuxHandle", "", ".ServerMuxHandle"},
@@ -79,6 +84,9 @@ extern const ReplaceItem* TingyunReplaceItems() {
         {"github.com/go-redis/redis/v8.(*baseClient).process", "/nosql/go-redis/v8.WrapbaseClientprocess", "","/nosql/go-redis/v8.baseClientprocess"},
         {"github.com/go-redis/redis/v8.(*baseClient).processPipeline", "/nosql/go-redis/v8.WrapbaseClientprocessPipeline", "","/nosql/go-redis/v8.baseClientprocessPipeline"},
         {"github.com/go-redis/redis/v8.(*baseClient).generalProcessPipeline", "/nosql/go-redis/v8.WrapbaseClientgeneralProcessPipeline", "","/nosql/go-redis/v8.baseClientgeneralProcessPipeline"},
+       {"github.com/redis/go-redis/v9.(*baseClient).process", "/nosql/go-redis/v9.WrapbaseClientprocess", "","/nosql/go-redis/v9.baseClientprocess"},
+       {"github.com/redis/go-redis/v9.(*baseClient).processPipeline", "/nosql/go-redis/v9.WrapbaseClientprocessPipeline", "","/nosql/go-redis/v9.baseClientprocessPipeline"},
+       {"github.com/redis/go-redis/v9.(*baseClient).generalProcessPipeline", "/nosql/go-redis/v9.WrapbaseClientgeneralProcessPipeline", "","/nosql/go-redis/v9.baseClientgeneralProcessPipeline"},
 
         {"go.mongodb.org/mongo-driver/mongo.(*Collection).BulkWrite", "/nosql/mongodb.WrapmongodbBulkWrite", "","/nosql/mongodb.mongodbBulkWrite"},
         {"go.mongodb.org/mongo-driver/mongo.(*Collection).InsertOne", "/nosql/mongodb.WrapmongodbInsertOne", "","/nosql/mongodb.mongodbInsertOne"},
@@ -155,6 +163,7 @@ extern const ReplaceItem* TingyunReplaceItems() {
 extern const WrapItem* TingyunWraps() {
     
     static WrapItem targets[] = {
+        {"runtime.chanrecv", "/runtime.", "chanrecv"},
         {"net/http.(*Transport).roundTrip", ".", "httpTransportroundTrip"},
         {"net/http/httputil.(*ReverseProxy).ServeHTTP", ".", "httputilReverseProxyServeHTTP"},
         {"database/sql.Open", "/database.", "DBOpen"},
@@ -197,6 +206,22 @@ extern const WrapItem* TingyunWraps() {
         {"github.com/go-redis/redis/v8.NewFailoverClient", "/nosql/go-redis/v8.", "redisNewFailoverClient"},
         {"github.com/go-redis/redis/v8.NewFailoverClusterClient", "/nosql/go-redis/v8.", "redisNewFailoverClusterClient"},
 
+        {"github.com/redis/go-redis/v9.NewClient", "/nosql/go-redis/v9.", "redisNewClient"},
+        {"github.com/redis/go-redis/v9.NewClusterClient", "/nosql/go-redis/v9.", "redisNewClusterClient"},
+        {"github.com/redis/go-redis/v9.NewFailoverClient", "/nosql/go-redis/v9.", "redisNewFailoverClient"},
+        {"github.com/redis/go-redis/v9.NewFailoverClusterClient", "/nosql/go-redis/v9.", "redisNewFailoverClusterClient"},
+
+        {"github.com/IBM/sarama.(*syncProducer).SendMessage", "/mq/kafka/sarama.", "syncProducerSendMessage"},
+        {"github.com/IBM/sarama.(*syncProducer).SendMessages", "/mq/kafka/sarama.", "syncProducerSendMessages"},
+        {"github.com/IBM/sarama.(*asyncProducer).Input", "/mq/kafka/sarama.", "asyncProducerInput"},
+        {"github.com/IBM/sarama.(*partitionOffsetManager).MarkOffset", "/mq/kafka/sarama.", "partitionOffsetManagerMarkOffset"},
+        {"github.com/IBM/sarama.(*Broker).CommitOffset", "/mq/kafka/sarama.", "BrokerCommitOffset"},
+        {"github.com/IBM/sarama.(*partitionConsumer).Messages", "/mq/kafka/sarama.", "partitionConsumerMessages"},
+
+        {"github.com/segmentio/kafka-go.(*Writer).WriteMessages", "/mq/kafka/kafka-go.", "writerWriteMessages"},
+        {"github.com/segmentio/kafka-go.(*Reader).FetchMessage", "/mq/kafka/kafka-go.", "ReaderFetchMessage"},
+        
+        {"go.uber.org/zap/zapcore.(*CheckedEntry).Write", "/frameworks/zap.", "zapcoreCheckedEntryWrite"},
         {0, 0, 0}
     };
     return targets;
