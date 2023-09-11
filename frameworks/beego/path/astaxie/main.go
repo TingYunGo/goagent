@@ -14,7 +14,6 @@ import (
 
 	"github.com/TingYunGo/goagent"
 	beego "github.com/astaxie/beego/server/web"
-	param "github.com/astaxie/beego/server/web/context/param"
 )
 
 const (
@@ -31,7 +30,9 @@ var tempVar = 0x1234567890
 
 //go:noinline
 func beegoAddMethod(p *beego.ControllerRegister, method, pattern string, f beego.FilterFunc) {
-	tempVar += 10
+	trampoline.arg1 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 }
 
 var methodMap = map[string]string{
@@ -60,7 +61,9 @@ func WrapbeegoAddMethod(p *beego.ControllerRegister, method, pattern string, f b
 
 //go:noinline
 func beegoHandler(p *beego.ControllerRegister, pattern string, h http.Handler, options ...interface{}) {
-	tempVar += 10
+	trampoline.arg1 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 }
 
 //go:noinline
@@ -83,12 +86,14 @@ func WrapbeegoHandler(p *beego.ControllerRegister, pattern string, h http.Handle
 }
 
 //go:noinline
-func beegoaddWithMethodParams(p *beego.ControllerRegister, pattern string, c beego.ControllerInterface, methodParams []*param.MethodParam, mappingMethods ...string) {
-	tempVar += 10
+func beegoaddWithMethodParams(p *beego.ControllerRegister, pattern string, c beego.ControllerInterface, methodParams []uintptr, mappingMethods ...string) {
+	trampoline.arg1 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 }
 
 //go:noinline
-func WrapbeegoaddWithMethodParams(p *beego.ControllerRegister, pattern string, c beego.ControllerInterface, methodParams []*param.MethodParam, mappingMethods ...string) {
+func WrapbeegoaddWithMethodParams(p *beego.ControllerRegister, pattern string, c beego.ControllerInterface, methodParams []uintptr, mappingMethods ...string) {
 	reflectVal := reflect.ValueOf(c)
 	info := handlerInfo{
 		name:   reflect.Indirect(reflectVal).Type().String(),
@@ -101,7 +106,9 @@ func WrapbeegoaddWithMethodParams(p *beego.ControllerRegister, pattern string, c
 
 //go:noinline
 func beegoAddAutoPrefix(p *beego.ControllerRegister, prefix string, c beego.ControllerInterface) {
-	tempVar += 10
+	trampoline.arg1 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 }
 
 //go:noinline
@@ -120,7 +127,9 @@ var routeMap map[string]bool = nil
 
 //go:noinline
 func beegoaddToRouter(p *beego.ControllerRegister, method, pattern string, r *beego.ControllerInfo) {
-	tempVar += 10
+	trampoline.arg1 = *trampoline.idpointer + trampoline.idindex + trampoline.arg1 + trampoline.arg2 + trampoline.arg3 + trampoline.arg4 + trampoline.arg5 + trampoline.arg6 + trampoline.arg7 +
+		trampoline.arg8 + trampoline.arg9 + trampoline.arg10 + trampoline.arg11 + trampoline.arg12 + trampoline.arg13 + trampoline.arg14 + trampoline.arg15 + trampoline.arg16 +
+		trampoline.arg17 + trampoline.arg18 + trampoline.arg19 + trampoline.arg20
 }
 
 //go:noinline

@@ -68,15 +68,28 @@ func (d *instanceSet) remove(conn uintptr) {
 	delete(d.items, conn)
 }
 
+func matchMethod(method, matcher string) bool {
+	return tystring.SubString(method, 0, len(matcher)) == matcher
+}
+
+var skipPackList = []string{
+	"github.com/gomodule/",
+	"github.com/TingYunGo/",
+}
+
+func isNative(methodName string) bool {
+	for _, t := range skipPackList {
+		if matchMethod(methodName, t) {
+			return true
+		}
+	}
+	return false
+}
+
 //go:noinline
 func getCallName(skip int) (callerName string) {
-	skip++
-	callerName = tingyun3.GetCallerName(skip)
-	token := "github.com/gomodule/redigo/redis"
-	for tystring.SubString(callerName, 0, len(token)) == token {
-		skip++
-		callerName = tingyun3.GetCallerName(skip)
-	}
+	callerTmp := [8]uintptr{}
+	callerName = tingyun3.FindCallerName(skip+1, callerTmp[:], isNative)
 	return
 }
 
@@ -141,6 +154,9 @@ var objectSkipList = []string{
 }
 
 func coreRedigoDoWithTimeout(begin time.Time, c unsafe.Pointer, readTimeout time.Duration, cmd string, args []interface{}, r interface{}, err error) {
+	if len(cmd) == 0 || tystring.FindString(objectSkipList, cmd) != -1 {
+		return
+	}
 	action, _ := tingyun3.FindAction(nil)
 	callerName := ""
 	if action == nil {
@@ -164,7 +180,7 @@ func coreRedigoDoWithTimeout(begin time.Time, c unsafe.Pointer, readTimeout time
 		callerName = getCallName(3)
 	}
 	object := ""
-	if len(args) > 0 && tystring.FindString(objectSkipList, cmd) == -1 {
+	if len(args) > 0 {
 		if o, ok := args[0].(string); ok {
 			object = o
 		}

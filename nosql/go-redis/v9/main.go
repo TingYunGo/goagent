@@ -7,7 +7,6 @@ package redisv9
 import (
 	"context"
 	"reflect"
-	"runtime"
 	"time"
 
 	"github.com/TingYunGo/goagent/libs/tystring"
@@ -44,36 +43,22 @@ func readConfigInt(name string, defaultValue int) int {
 	}
 	return defaultValue
 }
-
-func matchMethod(method, matcher string) bool {
-	return tystring.SubString(method, 0, len(matcher)) == matcher
-}
-func isNativeMethod(method string) bool {
-
-	if matchMethod(method, skipTokens[0]) {
-		return true
-	}
-	if matchMethod(method, skipTokens[1]) {
-		return true
-	}
-	if matchMethod(method, skipTokens[2]) {
-		return true
+func isNative(methodName string) bool {
+	for _, t := range skipTokens {
+		if matchMethod(methodName, t) {
+			return true
+		}
 	}
 	return false
+}
+func matchMethod(method, matcher string) bool {
+	return tystring.SubString(method, 0, len(matcher)) == matcher
 }
 
 //go:noinline
 func getCallName(skip int) (callerName string) {
-
-	stackList := make([]uintptr, 8)
-	count := runtime.Callers(skip, stackList)
-
-	for i := 0; i < count; i++ {
-		callerName = runtime.FuncForPC(stackList[i] - 1).Name()
-		if !isNativeMethod(callerName) {
-			break
-		}
-	}
+	callerTmp := [8]uintptr{}
+	callerName = tingyun3.FindCallerName(skip+1, callerTmp[:], isNative)
 	return
 }
 
@@ -192,7 +177,7 @@ func handleGoRedis(ctx context.Context, host, cmd, object string, begin time.Tim
 	if err != nil {
 		component.SetException(err, callerName, 3)
 	}
-	component.FixStackEnd(skip, isNativeMethod)
+	component.FixStackEnd(skip, isNative)
 }
 
 //go:noinline

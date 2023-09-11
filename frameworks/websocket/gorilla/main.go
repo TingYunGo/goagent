@@ -40,12 +40,8 @@ func isNativeMethod(method string) bool {
 
 //go:noinline
 func getCallName(skip int) (callerName string) {
-	skip++
-	callerName = tingyun3.GetCallerName(skip)
-	for isNativeMethod(callerName) {
-		skip++
-		callerName = tingyun3.GetCallerName(skip)
-	}
+	callerTmp := [8]uintptr{}
+	callerName = tingyun3.FindCallerName(skip+1, callerTmp[:], isNativeMethod)
 	return
 }
 

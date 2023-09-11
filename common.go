@@ -97,6 +97,21 @@ func GetCallerPC(layer int) (l int, pc uintptr) {
 	return 0, 0
 }
 
+//go:noinline
+func FindCallerName(skip int, tempStacks []uintptr, isNative func(string) bool) (callerName string) {
+	callers := tempStacks
+	callerCount := runtime.Callers(skip+1, callers)
+	callerName = ""
+	for i := 0; i < callerCount; i++ {
+		f := runtime.FuncForPC(callers[i] - 1)
+		callerName = f.Name()
+		if !isNative(callerName) {
+			return
+		}
+	}
+	return
+}
+
 const (
 	StorageIndexDatabase = 1 + 8*0
 	StorageIndexRedis    = 1 + 8*1

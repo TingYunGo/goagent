@@ -307,7 +307,7 @@ func matchMethod(method, matcher string) bool {
 //go:noinline
 func getCallerName() string {
 
-	localList := [6]uintptr{0, 0, 0, 0}
+	localList := [6]uintptr{0, 0, 0, 0, 0, 0}
 	stackList := localList[:]
 	count := runtime.Callers(3, stackList)
 	for i := 0; i < count; i++ {

@@ -19,14 +19,15 @@ import (
 )
 
 const (
-	configLocalStringNbsHost        = 1
-	configLocalStringNbsLicenseKey  = 2
-	configLocalStringNbsAppName     = 3
-	configLocalStringNbsLevel       = log.ConfigStringNBSLevel
-	configLocalStringNbsLogFileName = log.ConfigStringNBSLogFileName
-	configLocalStringAppUUID        = 6
-	configLocalStringLogTrackName   = 7
-	configLocalStringMax            = 16
+	configLocalStringNbsHost               = 1
+	configLocalStringNbsLicenseKey         = 2
+	configLocalStringNbsAppName            = 3
+	configLocalStringNbsLevel              = log.ConfigStringNBSLevel
+	configLocalStringNbsLogFileName        = log.ConfigStringNBSLogFileName
+	configLocalStringAppUUID               = 6
+	configLocalStringLogTrackName          = 7
+	configLocalStringDefaultBusinessSystem = 8
+	configLocalStringMax                   = 16
 
 	configLocalBoolAgentEnable        = 1
 	configLocalBoolSSL                = 2
@@ -115,20 +116,21 @@ const (
 )
 
 var localStringKeyMap = map[string]int{
-	"nbs.host":            configLocalStringNbsHost,
-	"nbs.license_key":     configLocalStringNbsLicenseKey,
-	"nbs.app_name":        configLocalStringNbsAppName,
-	"nbs.level":           configLocalStringNbsLevel,
-	"nbs.log_file_name":   configLocalStringNbsLogFileName,
-	"app_name":            configLocalStringNbsAppName,
-	"collectors":          configLocalStringNbsHost,
-	"collector.address":   configLocalStringNbsHost,
-	"collector.addresses": configLocalStringNbsHost,
-	"license_key":         configLocalStringNbsLicenseKey,
-	"agent_log_level":     configLocalStringNbsLevel,
-	"agent_log_file":      configLocalStringNbsLogFileName,
-	"log_track_name":      configLocalStringLogTrackName,
-	"UUID":                configLocalStringAppUUID,
+	"nbs.host":                configLocalStringNbsHost,
+	"nbs.license_key":         configLocalStringNbsLicenseKey,
+	"nbs.app_name":            configLocalStringNbsAppName,
+	"nbs.level":               configLocalStringNbsLevel,
+	"nbs.log_file_name":       configLocalStringNbsLogFileName,
+	"app_name":                configLocalStringNbsAppName,
+	"collectors":              configLocalStringNbsHost,
+	"collector.address":       configLocalStringNbsHost,
+	"collector.addresses":     configLocalStringNbsHost,
+	"license_key":             configLocalStringNbsLicenseKey,
+	"agent_log_level":         configLocalStringNbsLevel,
+	"agent_log_file":          configLocalStringNbsLogFileName,
+	"log_track_name":          configLocalStringLogTrackName,
+	"UUID":                    configLocalStringAppUUID,
+	"default_business_system": configLocalStringDefaultBusinessSystem,
 }
 var localBoolKeyMap = map[string]int{
 	"nbs.agent_enabled":   configLocalBoolAgentEnable,

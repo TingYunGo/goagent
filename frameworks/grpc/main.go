@@ -10,7 +10,6 @@ import (
 	"io"
 	"net"
 	"reflect"
-	"runtime"
 
 	"github.com/TingYunGo/goagent"
 	"github.com/TingYunGo/goagent/libs/tystring"
@@ -205,18 +204,8 @@ func isNativeMethod(method string) bool {
 
 //go:noinline
 func getCallName(skip int) (callerName string) {
-	stackCount := skip + 3
-	skip++
-	stackList := make([]uintptr, stackCount)
-	count := runtime.Callers(skip, stackList)
-
-	for i := 0; i < count; i++ {
-
-		callerName = runtime.FuncForPC(stackList[i]).Name()
-		if !isNativeMethod(callerName) {
-			break
-		}
-	}
+	callerTmp := [8]uintptr{}
+	callerName = tingyun3.FindCallerName(skip+1, callerTmp[:], isNativeMethod)
 	return
 }
 

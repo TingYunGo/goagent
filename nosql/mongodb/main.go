@@ -31,26 +31,25 @@ const (
 
 var skipTokens = []string{
 	"go.mongodb.org/mongo-driver/",
-	//	"github.com/mongodb/mongo-go-driver/",
 	"github.com/TingYunGo/goagent",
+}
+
+func isNative(methodName string) bool {
+	for _, t := range skipTokens {
+		if matchMethod(methodName, t) {
+			return true
+		}
+	}
+	return false
+}
+func matchMethod(method, matcher string) bool {
+	return tystring.SubString(method, 0, len(matcher)) == matcher
 }
 
 //go:noinline
 func getCallName(skip int) (callerName string) {
-	skip++
-	callerName = tingyun3.GetCallerName(skip)
-	isSkipName := func(name string) bool {
-		for _, token := range skipTokens {
-			if tystring.SubString(name, 0, len(token)) == token {
-				return true
-			}
-		}
-		return false
-	}
-	for isSkipName(callerName) {
-		skip++
-		callerName = tingyun3.GetCallerName(skip)
-	}
+	callerTmp := [8]uintptr{}
+	callerName = tingyun3.FindCallerName(skip+1, callerTmp[:], isNative)
 	return
 }
 

@@ -43,23 +43,22 @@ func readConfigInt(name string, defaultValue int) int {
 	}
 	return defaultValue
 }
+func isNative(methodName string) bool {
+	for _, t := range skipTokens {
+		if matchMethod(methodName, t) {
+			return true
+		}
+	}
+	return false
+}
+func matchMethod(method, matcher string) bool {
+	return tystring.SubString(method, 0, len(matcher)) == matcher
+}
 
 //go:noinline
 func getCallName(skip int) (callerName string) {
-	skip++
-	callerName = tingyun3.GetCallerName(skip)
-	isSkipName := func(name string) bool {
-		for _, token := range skipTokens {
-			if tystring.SubString(name, 0, len(token)) == token {
-				return true
-			}
-		}
-		return false
-	}
-	for isSkipName(callerName) {
-		skip++
-		callerName = tingyun3.GetCallerName(skip)
-	}
+	callerTmp := [8]uintptr{}
+	callerName = tingyun3.FindCallerName(skip+1, callerTmp[:], isNative)
 	return
 }
 
@@ -185,11 +184,7 @@ func handleGoRedis(ctx context.Context, host, cmd, object string, begin time.Tim
 	if err != nil {
 		component.SetException(err, callerName, 3)
 	}
-	component.FixStackEnd(skip, func(funcname string) bool {
-		token := "github.com/go-redis/redis/"
-		token1 := "github.com/TingYunGo/goagent/"
-		return tystring.SubString(funcname, 0, len(token)) == token || tystring.SubString(funcname, 0, len(token1)) == token1
-	})
+	component.FixStackEnd(skip, isNative)
 }
 
 //go:noinline

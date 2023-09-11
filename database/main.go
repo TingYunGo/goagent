@@ -409,17 +409,6 @@ func DBQueryContext(db *sql.DB, ctx context.Context, query string, args ...inter
 }
 
 //go:noinline
-func getCallName(skip int) (callerName string) {
-	skip++
-	callerName = tingyun3.GetCallerName(skip)
-	for isNativeMethod(callerName) {
-		skip++
-		callerName = tingyun3.GetCallerName(skip)
-	}
-	return
-}
-
-//go:noinline
 func WrapDBQueryContext(db *sql.DB, ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
 	recursiveChecker := &recursiveCheck{rlsID: StorageIndexLock, success: false}
 
@@ -826,6 +815,13 @@ func isNativeMethod(method string) bool {
 		return matchMethod(method, "gorm.io/") || matchMethod(method, "github.com/jinzhu/gorm.")
 	}
 	return false
+}
+
+//go:noinline
+func getCallName(skip int) (callerName string) {
+	callerTmp := [8]uintptr{}
+	callerName = tingyun3.FindCallerName(skip+1, callerTmp[:], isNativeMethod)
+	return
 }
 
 type recursiveCheck struct {
