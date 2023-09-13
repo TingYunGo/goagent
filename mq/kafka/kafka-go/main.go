@@ -85,6 +85,9 @@ func appendHeader(component *tingyun3.Component, msg *kafka.Message) {
 	if !tingyun3.ReadServerConfigBool(tingyun3.ServerConfigBoolMQEnabled, false) {
 		return
 	}
+	if !tingyun3.ReadServerConfigBool(tingyun3.ServerConfigBoolKafkaTracingEnabled, false) {
+		return
+	}
 	if trackID := component.CreateTrackID(); len(trackID) > 0 {
 		msg.Headers = append(msg.Headers, kafka.Header{
 			Key:   "X-Tingyun",
@@ -142,7 +145,9 @@ func WrapReaderFetchMessage(r *kafka.Reader, ctx context.Context) (kafka.Message
 	onConsumerActionEnd(false)
 	m, err := ReaderFetchMessage(r, ctx)
 
-	if err == nil && tingyun3.ReadServerConfigBool(tingyun3.ServerConfigBoolMQEnabled, false) {
+	serverConfigEnableKafkaTracing := tingyun3.ReadServerConfigBool(tingyun3.ServerConfigBoolMQEnabled, false) && tingyun3.ReadServerConfigBool(tingyun3.ServerConfigBoolKafkaTracingEnabled, false)
+
+	if err == nil && serverConfigEnableKafkaTracing {
 		onConsumerActionStart(r, &m)
 	}
 	return m, err

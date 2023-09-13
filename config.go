@@ -97,6 +97,7 @@ const (
 	configServerConfigBoolLogTracking                    = 19
 	configServerConfigBoolActionTracerStackTraceEnabled  = 20
 	ServerConfigBoolErrorCollectorStackEnabled           = 21
+	ServerConfigBoolKafkaTracingEnabled                  = 22
 	configServerConfigBoolMax                            = 24
 
 	configServerConfigIntegerActionTracerActionThreshold     = 1
@@ -219,6 +220,7 @@ var serverConfigBoolKeyMap = map[string]int{
 	"nbs.resource.enabled":                   configServerConfigBoolResourceEnabled,
 	"nbs.log_tracking":                       configServerConfigBoolLogTracking,
 	"log_tracking":                           configServerConfigBoolLogTracking,
+	"mq.kafka_tracing.enabled":               ServerConfigBoolKafkaTracingEnabled,
 }
 
 var serverConfigIntegerKeyMap = map[string]int{

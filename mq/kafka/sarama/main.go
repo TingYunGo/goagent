@@ -42,6 +42,9 @@ func appendHeader(component *tingyun3.Component, msg *sarama.ProducerMessage) {
 	if !tingyun3.ReadServerConfigBool(tingyun3.ServerConfigBoolMQEnabled, false) {
 		return
 	}
+	if !tingyun3.ReadServerConfigBool(tingyun3.ServerConfigBoolKafkaTracingEnabled, false) {
+		return
+	}
 	if trackID := component.CreateTrackID(); len(trackID) > 0 {
 		msg.Headers = append(msg.Headers, sarama.RecordHeader{
 			Key:   []byte("X-Tingyun"),
@@ -290,6 +293,9 @@ func (ch *chanrecvHandler) Ret(selected, received bool) {
 	if !tingyun3.ReadServerConfigBool(tingyun3.ServerConfigBoolMQEnabled, false) {
 		return
 	}
+	if !tingyun3.ReadServerConfigBool(tingyun3.ServerConfigBoolKafkaTracingEnabled, false) {
+		return
+	}
 	type pointerTopointer struct {
 		p unsafe.Pointer
 	}
@@ -343,6 +349,9 @@ func (sh *selectgoHandler) Ret(tyneName string, elem unsafe.Pointer, retId int, 
 		return
 	}
 	if !tingyun3.ReadServerConfigBool(tingyun3.ServerConfigBoolMQEnabled, false) {
+		return
+	}
+	if !tingyun3.ReadServerConfigBool(tingyun3.ServerConfigBoolKafkaTracingEnabled, false) {
 		return
 	}
 
