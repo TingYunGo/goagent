@@ -466,6 +466,33 @@ func WrapServerMuxHandle(ptr *http.ServeMux, pattern string, handler http.Handle
 }
 
 //go:noinline
+func ServerMux121handle(ptr *http.ServeMux, pattern string, handler http.Handler) {
+	idPointer.arg7 = *idPointer.idpointer + idPointer.idindex + idPointer.arg1 + idPointer.arg2 + idPointer.arg3 + idPointer.arg4 + idPointer.arg5 + idPointer.arg6 + idPointer.arg7 +
+		idPointer.arg8 + idPointer.arg9 + idPointer.arg10 + idPointer.arg11 + idPointer.arg12 + idPointer.arg13 + idPointer.arg14 + idPointer.arg15 + idPointer.arg16 +
+		idPointer.arg17 + idPointer.arg18 + idPointer.arg19 + idPointer.arg20
+}
+
+//go:noinline
+func WrapServerMux121handle(ptr *http.ServeMux, pattern string, handler http.Handler) {
+	ServerMux121handle(ptr, pattern, wrapHandler("ServeMux121.handle: pattern="+pattern, handler))
+}
+
+//func (mux *ServeMux) registerErr(patstr string, handler Handler) error
+
+//go:noinline
+func ServeMuxregisterErr(ptr *http.ServeMux, pattern string, handler http.Handler) error {
+	idPointer.arg7 = *idPointer.idpointer + idPointer.idindex + idPointer.arg1 + idPointer.arg2 + idPointer.arg3 + idPointer.arg4 + idPointer.arg5 + idPointer.arg6 + idPointer.arg7 +
+		idPointer.arg8 + idPointer.arg9 + idPointer.arg10 + idPointer.arg11 + idPointer.arg12 + idPointer.arg13 + idPointer.arg14 + idPointer.arg15 + idPointer.arg16 +
+		idPointer.arg17 + idPointer.arg18 + idPointer.arg19 + idPointer.arg20
+	return nil
+}
+
+//go:noinline
+func WrapServeMuxregisterErr(ptr *http.ServeMux, pattern string, handler http.Handler) error {
+	return ServeMuxregisterErr(ptr, pattern, wrapHandler("ServeMux.registerErr: pattern="+pattern, handler))
+}
+
+//go:noinline
 func ServerMuxHandler(ptr *http.ServeMux, r *http.Request) (h http.Handler, pattern string) {
 	idPointer.arg5 = *idPointer.idpointer + idPointer.idindex + idPointer.arg1 + idPointer.arg2 + idPointer.arg3 + idPointer.arg4 + idPointer.arg5 + idPointer.arg6 + idPointer.arg7 +
 		idPointer.arg8 + idPointer.arg9 + idPointer.arg10 + idPointer.arg11 + idPointer.arg12 + idPointer.arg13 + idPointer.arg14 + idPointer.arg15 + idPointer.arg16 +
@@ -624,6 +651,8 @@ func init() {
 	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WrapServerMuxHandler).Pointer()))
 	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WraphttpNotFound).Pointer()))
 	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WrapServerMuxHandle).Pointer()))
+	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WrapServerMux121handle).Pointer()))
+	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WrapServeMuxregisterErr).Pointer()))
 	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WrapHttpClientDo).Pointer()))
 	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WraphttputilReverseProxyServeHTTP).Pointer()))
 	C.tingyun_go_init(unsafe.Pointer(reflect.ValueOf(WraphttpTransportroundTrip).Pointer()))

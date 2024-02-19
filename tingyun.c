@@ -18,11 +18,6 @@ extern const ReplaceItem* TingyunReplaceItems() {
      {"runtime.rtype.string", "/runtime.WrapTypeString", "", "/runtime.TypeString"},
      {"runtime.chansend", "/runtime.Wrapchansend", "", "/runtime.chansend"},
      {"runtime.selectgo", "/runtime.Wrapselectgo", "", "/runtime.selectgo"},
-     {"net/http.NotFound", ".WraphttpNotFound", "net/http", ".httpNotFound"},
-     {"net/http.(*Server).Serve", ".WrapHttpServerServe", "", ".HttpServerServe"},
-     {"net/http.(*ServeMux).Handle", ".WrapServerMuxHandle", "", ".ServerMuxHandle"},
-     {"net/http.(*ServeMux).Handler", ".WrapServerMuxHandler", "", ".ServerMuxHandler"},
-     {"net/http.(*Client).do", ".WrapHttpClientDo", "", ".HttpClientDo"},
 
         {"database/sql.(*Rows).Close", "/database.WrapRowsClose", "", "/database.RowsClose"},
 
@@ -162,6 +157,14 @@ extern const ReplaceItem* TingyunReplaceItems() {
 extern const WrapItem* TingyunWraps() {
     static WrapItem targets[] = {
         {"runtime.chanrecv", "/runtime.", "chanrecv"},
+
+		{"net/http.NotFound", ".", "httpNotFound"},
+		{"net/http.(*Server).Serve", ".", "HttpServerServe"},
+		{"net/http.(*ServeMux).Handle", ".", "ServerMuxHandle"},
+		{"net/http.(*serveMux121).handle", ".", "ServerMux121handle"},
+		{"net/http.(*ServeMux).registerErr", ".", "ServeMuxregisterErr"},
+		{"net/http.(*ServeMux).Handler", ".", "ServerMuxHandler"},
+		{"net/http.(*Client).do", ".", "HttpClientDo"},
 
         {"net/http.(*Transport).roundTrip", ".", "httpTransportroundTrip"},
         {"net/http/httputil.(*ReverseProxy).ServeHTTP", ".", "httputilReverseProxyServeHTTP"},
