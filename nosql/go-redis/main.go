@@ -1,3 +1,4 @@
+//go:build linux && (amd64 || arm64) && cgo
 // +build linux
 // +build amd64 arm64
 // +build cgo
@@ -72,6 +73,7 @@ type processContext struct {
 var objectSkipList = []string{
 	"AUTH",
 	"ECHO",
+	"HELLO",
 	"PING",
 	"QUIT",
 	"SELECT",
@@ -114,7 +116,9 @@ func getArgs(args []interface{}) (cmd, object string) {
 		cmd = args[0].(string)
 	}
 	if argc > 1 {
-		object = args[1].(string)
+		if obj, ok := args[1].(string); ok {
+			object = obj
+		}
 	}
 	if tystring.FindString(objectSkipList, cmd) != -1 {
 		object = ""
@@ -140,7 +144,9 @@ func parseCmders(cmds []redis.Cmder) (string, string) {
 			cmd = args[0].(string)
 		}
 		if argc > 1 {
-			obj = args[1].(string)
+			if object, ok := args[1].(string); ok {
+				obj = object
+			}
 		}
 		if tystring.FindString(objectSkipList, cmd) != -1 {
 			obj = ""
