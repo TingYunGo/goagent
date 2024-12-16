@@ -165,17 +165,17 @@
 
 | 框架 | 听云探针嵌码 import 模块路径 | 支持版本 |
 |-----|---------------------------|--------|
-| net/http <br/> 内置http框架 | github.com/TingYunGo/goagent | go1.9 ~ go1.21.x |
-| github.com/gin-gonic/gin <br/>gin框架 | github.com/TingYunGo/goagent/frameworks/gin | gin v1.3.0 ~ gin v1.8.2 |
+| net/http <br/> 内置http框架 | github.com/TingYunGo/goagent | go1.9 ~ go1.23.x |
+| github.com/gin-gonic/gin <br/>gin框架 | github.com/TingYunGo/goagent/frameworks/gin | gin v1.3.0 ~ gin v1.10.0 |
 | github.com/astaxie/beego <br/>beego框架: GOPATH模式  | github.com/TingYunGo/goagent/frameworks/beego/path/astaxie | beego v1.12.0 ~ beego v2.0.0-beta |
 | github.com/beego/beego <br/>beego框架: GOPATH模式  | github.com/TingYunGo/goagent/frameworks/beego/path | beego v1.12.0 ~ beego v2.0.1 |
 | github.com/beego/beego <br/> beego框架v1: GOMOD模式  | github.com/TingYunGo/goagent/frameworks/beego | beego v1.12.0 ~ beego v1.12.3 |
 | github.com/beego/beego/v2 <br/> beego框架v2: GOMOD模式  | github.com/TingYunGo/goagent/frameworks/beego/v2 | beego v2.0.0 ~ beego v2.0.1 |
 | github.com/labstack/echo <br/>echo 框架 GOPATH模式 | github.com/TingYunGo/goagent/frameworks/echo | echo v3.3.10 ~ echo v4.6.1 |
-| github.com/labstack/echo/v4 <br/>echo 框架 V4 GOMOD模式 | github.com/TingYunGo/goagent/frameworks/echo/v4 | echo v4.0.0 ~ echo v4.6.1 |
+| github.com/labstack/echo/v4 <br/>echo 框架 V4 GOMOD模式 | github.com/TingYunGo/goagent/frameworks/echo/v4 | echo v4.0.0 ~ echo v4.13.2 |
 | github.com/kataras/iris/v12 <br/> iris 框架 v12.1.x | github.com/TingYunGo/goagent/frameworks/iris/v12 | iris v12.1.0 ~ iris v12.1.8 |
 | github.com/kataras/iris/v12 <br/>iris 框架 v12.2  | github.com/TingYunGo/goagent/frameworks/iris/v12/2 | iris v12.2.0-alpha ~ iris v12.2.0-alpha3 |
-| google.golang.org/grpc <br/>grpc 框架  | github.com/TingYunGo/goagent/frameworks/grpc | grpc v1.32.0 ~ grpc v1.57.0 |
+| google.golang.org/grpc <br/>grpc 框架  | github.com/TingYunGo/goagent/frameworks/grpc | grpc v1.32.0 ~ grpc v1.69.0 |
 | github.com/go-kratos/kratos/v2 <br/>kratos 框架 v2  | github.com/TingYunGo/goagent/frameworks/kratosV2 | kratos v2.0.0 ~ kratos v2.6.3 |
 
 <span id="tingyun_agent_component">
@@ -184,13 +184,13 @@
 
 | 组件 | 听云探针嵌码 import 模块路径 | 支持版本 |
 |-----|---------------------------|---------|
-| database/sql <br/> 数据库 | github.com/TingYunGo/goagent/database | go1.9 ~ go1.21.x<br/>驱动列表:<br/>mssql: github.com/denisenkom/go-mssqldb v0.9.0 ~ v0.11.0 <br/>mysql: github.com/go-sql-driver/mysql v1.0.0 ~ v1.6.0 <br/> postgresql: github.com/lib/pq v1.0.0 ~ v1.10.3 <br> sqlite: github.com/mattn/go-sqlite3 v1.0.0 ~ v1.14.8 |
+| database/sql <br/> 数据库 | github.com/TingYunGo/goagent/database | go1.9 ~ go1.23.x<br/>驱动列表:<br/>mssql: github.com/denisenkom/go-mssqldb v0.9.0 ~ v0.12.3 <br/>mysql: github.com/go-sql-driver/mysql v1.0.0 ~ v1.8.1 <br/> postgresql: github.com/lib/pq v1.0.0 ~ v1.10.3 <br> sqlite: github.com/mattn/go-sqlite3 v1.0.0 ~ v1.14.8 |
 | github.com/gomodule/redigo <br/> redis: redigo | github.com/TingYunGo/goagent/nosql/redigo | v1.7.0 ~ v1.8.5 |
-| github.com/go-redis/redis <br/> redis: go-redis, GOPATH模式 | github.com/TingYunGo/goagent/nosql/go-redis | v6.10.0 ~ v8.11.4 |
+| github.com/go-redis/redis <br/> redis: go-redis, GOPATH模式 | github.com/TingYunGo/goagent/nosql/go-redis | v6.10.0 ~ v9.7.0 |
 | github.com/go-redis/redis <br/> redis: go-redis default, GOMOD模式 | github.com/TingYunGo/goagent/nosql/go-redis | v6.10.0 ~ v8.11.4 |
 | github.com/go-redis/redis/v7 <br/> redis: go-redis v7, GOMOD模式 | github.com/TingYunGo/goagent/nosql/go-redis/v7 | v7.0.0 ~ v7.4.1 |
 | github.com/go-redis/redis/v8 <br/> redis: go-redis v8, GOMOD模式 | github.com/TingYunGo/goagent/nosql/go-redis/v8 | v8.0.0 ~ v8.11.4 |
-| github.com/redis/go-redis/v9 <br/> redis: go-redis v9, GOMOD模式 | github.com/TingYunGo/goagent/nosql/go-redis/v9 | v9.0.0 ~ v9.1.0 |
+| github.com/redis/go-redis/v9 <br/> redis: go-redis v9, GOMOD模式 | github.com/TingYunGo/goagent/nosql/go-redis/v9 | v9.0.0 ~ v9.7.0 |
 | go.mongodb.org/mongo-driver/mongo <br/> mongodb | github.com/TingYunGo/goagent/nosql/mongodb | v1.1.0 ~ v1.7.3 |
 | gopkg.in/mgo.v2 <br/> mongodb | github.com/TingYunGo/goagent/nosql/mgo | latest |
 | go.uber.org/zap <br/> zap 日志溯源 | github.com/TingYunGo/goagent/frameworks/zap | v1.0.0 ~ latest |
