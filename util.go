@@ -50,6 +50,9 @@ func patchSize(src string, maxSize int) string {
 func toString(e interface{}) string {
 	return fmt.Sprint(e)
 }
+func CallStack(skip int) []string {
+	return callStack(skip)
+}
 func callStack(skip int) []string {
 	var slice []string
 	slice = make([]string, 0, 15)

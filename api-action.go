@@ -762,6 +762,12 @@ func CreateTask(method string) (*Action, error) {
 	a, e := app.createAction("Job", method, true)
 	return a, e
 }
+func (a *Action) Alive() bool {
+	if a == nil {
+		return false
+	}
+	return a.stateUsed == actionUsing
+}
 
 func (a *Action) destroy() {
 	if a == nil || a.stateUsed == actionUnused {

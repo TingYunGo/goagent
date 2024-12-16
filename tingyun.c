@@ -192,6 +192,7 @@ extern const WrapItem* TingyunWraps() {
         {"github.com/go-kratos/kratos/v2/transport/http.(*wrapper).Middleware", "/frameworks/kratosV2.", "TransportHttpContextMiddleware"},
         {"github.com/go-kratos/kratos/v2/transport/http.(*Router).Handle", "/frameworks/kratosV2.", "TransportHttpRouterHandle"},
 
+        {"github.com/zeromicro/go-zero/rest.(*Server).AddRoutes", "/frameworks/go-zero.", "_rest_Server_AddRoutes"},
 
         {"github.com/go-redis/redis.NewClient", "/nosql/go-redis.", "redisNewClient"},
         {"github.com/go-redis/redis.NewClusterClient", "/nosql/go-redis.", "redisNewClusterClient"},

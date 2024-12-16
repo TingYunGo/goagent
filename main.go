@@ -447,7 +447,9 @@ func wrapHandler(pattern string, handler http.Handler) http.Handler {
 			if component != nil {
 				component.Finish()
 			} else if action != nil {
-				resWriter.(*writeWrapper).reset()
+				if write_wrapper, ok := resWriter.(*writeWrapper); ok {
+					write_wrapper.reset()
+				}
 			}
 			action.Finish()
 			//re throw
